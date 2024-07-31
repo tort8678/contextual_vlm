@@ -18,7 +18,7 @@ export default function Test() {
 
   async function sendRequestOpenAI(){
     try{
-      const res = await sendRequest({content: `${userInput} ${image}`})
+      const res = await sendRequest({text:userInput, image: image as string})
       console.log(res.data.content)
       setOpenAIResponse(res.data.content)
       return res

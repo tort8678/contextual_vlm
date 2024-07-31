@@ -1,4 +1,4 @@
-import express, { Request, Response , Application, NextFunction } from 'express';
+import express, {Request, Response, Application, NextFunction} from 'express';
 import dotenv from 'dotenv';
 import OpenAI from "openai";
 import cors from "cors"
@@ -17,14 +17,25 @@ export interface AppContext {
 }
 
 
-async function openAIReq(ctx: AppContext, content: string) {
+
+async function openAIReq(ctx: AppContext, content: { text: string, image: string }) {
   const {res} = ctx
   try {
     const chatCompletion = await client.chat.completions.create({
-      messages: [{role: 'user', content}],
+      messages: [{
+        role: 'user', content: [
+          {type: 'text', text: content.text},
+          {
+            type: 'image_url', image_url: {
+              url: content.image,
+              detail: "low"
+            }
+          }
+        ]
+      }],
       model: 'gpt-4o-mini-2024-07-18',
     });
-    console.log(chatCompletion.choices)
+    //console.log(chatCompletion.choices)
     res.json({data: chatCompletion.choices[0].message})
   } catch (e) {
     console.error(e);
@@ -43,13 +54,12 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 app.post('/testing', (req: Request, res: Response) => {
-  const {content} = req.body
+  const {text,image} = req.body
 
-  if(content !== ""){
-     openAIReq({req, res}, content)
+  if (text !== "") {
+    openAIReq({req, res}, {text, image})
     // console.log(process.env.OPENAI_API_KEY
-  }
-  else res.send("you didn't send me test")
+  } else res.send("you didn't send me test")
 })
 
 app.listen(port, () => {
