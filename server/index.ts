@@ -21,22 +21,31 @@ export interface AppContext {
 async function openAIReq(ctx: AppContext, content: { text: string, image: string }) {
   const {res} = ctx
   try {
-    const chatCompletion = await client.chat.completions.create({
-      messages: [{
-        role: 'user', content: [
-          {type: 'text', text: content.text},
-          {
-            type: 'image_url', image_url: {
-              url: content.image,
-              detail: "low"
+    if(content.image) {
+      const chatCompletion = await client.chat.completions.create({
+        messages: [{
+          role: 'user', content: [
+            {type: 'text', text: content.text},
+            {
+              type: 'image_url', image_url: {
+                url: content.image,
+                detail: "low"
+              }
             }
-          }
-        ]
-      }],
-      model: 'gpt-4o-mini-2024-07-18',
-    });
-    //console.log(chatCompletion.choices)
-    res.json({data: chatCompletion.choices[0].message})
+          ]
+        }],
+        model: 'gpt-4o-mini-2024-07-18',
+      });
+      //console.log(chatCompletion.choices)
+      res.json({data: chatCompletion.choices[0].message})
+    } else{
+      const chatCompletion = await client.chat.completions.create({
+        messages: [{role: 'user', content: content.text}],
+        model: 'gpt-4o-mini-2024-07-18',
+      });
+
+      res.json({data: chatCompletion.choices[0].message})
+    }
   } catch (e) {
     console.error(e);
   }
