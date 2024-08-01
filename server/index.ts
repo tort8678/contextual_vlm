@@ -1,7 +1,9 @@
-import express, {Request, Response, Application, NextFunction} from 'express';
+import express, {Request, Response, Application,} from 'express';
 import dotenv from 'dotenv';
 import OpenAI from "openai";
 import cors from "cors"
+// import fs from "fs";
+// import path from "path";
 
 dotenv.config();
 
@@ -17,7 +19,7 @@ export interface AppContext {
 }
 
 
-async function openAIReq(ctx: AppContext, content: { text: string; image: string; coords: { latitude: number; longitude: number } | null }) {
+async function openAITextReq(ctx: AppContext, content: { text: string; image: string; coords: { latitude: number; longitude: number } | null }) {
   const {res} = ctx
   let userContent = content.text;
 
@@ -40,10 +42,30 @@ async function openAIReq(ctx: AppContext, content: { text: string; image: string
       }],
       model: 'gpt-4o-mini-2024-07-18',
     });
-    //console.log(chatCompletion.choices)
-    res.json({data: chatCompletion.choices[0].message})
+    res.status(200).json({text: chatCompletion.choices[0].message.content})
   } catch (e) {
     console.error(e);
+  }
+}
+
+async function openAIAudioRequest(ctx: AppContext, text:string){
+  const {res} = ctx
+  // const speechFile = path.resolve("./speech.mp3");
+  //console.log(text)
+  try{
+    const mp3 = await client.audio.speech.create({
+      model: "tts-1",
+      voice: "echo",
+      input: text
+    })
+    const buffer = Buffer.from(await mp3.arrayBuffer());
+    // await fs.promises.writeFile(speechFile, buffer);
+
+    res.contentType("audio/mpeg")
+    res.status(200).send(buffer)
+  }
+  catch(e){
+    console.error(e)
   }
 }
 
@@ -58,13 +80,21 @@ app.get('/', (_req: Request, res: Response) => {
   res.send('Welcome to Express & TypeScript Server');
 });
 
-app.post('/testing', (req: Request, res: Response) => {
+app.post('/text', (req: Request, res: Response) => {
   const {text,image, coords} = req.body
 
   if (text !== "") {
-    openAIReq({req, res}, {text, image, coords})
+    openAITextReq({req, res}, {text, image, coords})
     // console.log(process.env.OPENAI_API_KEY
   } else res.send("you didn't send me test")
+})
+
+app.post('/audio',(req: Request, res: Response)  =>{
+  const {text} = req.body
+  //console.log(req.body)
+  if(text !== ""){
+    openAIAudioRequest({req,res}, text)
+  }
 })
 
 app.listen(port, () => {
