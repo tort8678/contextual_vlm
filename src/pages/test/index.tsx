@@ -19,7 +19,7 @@ export default function Test() {
   async function sendRequestOpenAI() {
     try {
       const data = {
-        text: userInput,
+        text: "You are a blind assistent, be quick and to the point, describe the setting and geographical location for a blidn user. Do not tell them what we provide you. Userinput: " + userInput,
         image: image as string,
         coords: coords ? { latitude: coords.latitude, longitude: coords.longitude } : null
       };
