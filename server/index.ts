@@ -17,35 +17,31 @@ export interface AppContext {
 }
 
 
-
-async function openAIReq(ctx: AppContext, content: { text: string, image: string }) {
+async function openAIReq(ctx: AppContext, content: { text: string; image: string; coords: { latitude: number; longitude: number } | null }) {
   const {res} = ctx
-  try {
-    if(content.image) {
-      const chatCompletion = await client.chat.completions.create({
-        messages: [{
-          role: 'user', content: [
-            {type: 'text', text: content.text},
-            {
-              type: 'image_url', image_url: {
-                url: content.image,
-                detail: "low"
-              }
-            }
-          ]
-        }],
-        model: 'gpt-4o-mini-2024-07-18',
-      });
-      //console.log(chatCompletion.choices)
-      res.json({data: chatCompletion.choices[0].message})
-    } else{
-      const chatCompletion = await client.chat.completions.create({
-        messages: [{role: 'user', content: content.text}],
-        model: 'gpt-4o-mini-2024-07-18',
-      });
+  let userContent = content.text;
 
-      res.json({data: chatCompletion.choices[0].message})
-    }
+  if (content.coords) {
+    userContent += ` Coordinates: Latitude ${content.coords.latitude}, Longitude ${content.coords.longitude}`;
+  }
+  
+  try {
+    const chatCompletion = await client.chat.completions.create({
+      messages: [{
+        role: 'user', content: [
+          {type: 'text', text: userContent},
+          {
+            type: 'image_url', image_url: {
+              url: content.image,
+              detail: "low"
+            }
+          }
+        ]
+      }],
+      model: 'gpt-4o-mini-2024-07-18',
+    });
+    //console.log(chatCompletion.choices)
+    res.json({data: chatCompletion.choices[0].message})
   } catch (e) {
     console.error(e);
   }
@@ -63,10 +59,10 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 app.post('/testing', (req: Request, res: Response) => {
-  const {text,image} = req.body
+  const {text,image, coords} = req.body
 
   if (text !== "") {
-    openAIReq({req, res}, {text, image})
+    openAIReq({req, res}, {text, image, coords})
     // console.log(process.env.OPENAI_API_KEY
   } else res.send("you didn't send me test")
 })

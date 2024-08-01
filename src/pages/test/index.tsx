@@ -1,5 +1,5 @@
 import {Camera, CameraType} from "react-camera-pro";
-import {useRef, useState, Suspense} from "react";
+import {useRef, useState} from "react";
 import {Box, Button, TextField, Stack} from "@mui/material";
 import {useGeolocated} from "react-geolocated";
 import sendRequest from "../../api/openAi.ts";
@@ -18,12 +18,17 @@ export default function Test() {
 
   async function sendRequestOpenAI() {
     try {
-      const res = await sendRequest({text: userInput, image: image as string})
-      console.log(res.data.content)
-      setOpenAIResponse(res.data.content)
-      return res
+      const data = {
+        text: userInput,
+        image: image as string,
+        coords: coords ? { latitude: coords.latitude, longitude: coords.longitude } : null
+      };
+      const res = await sendRequest(data);
+      console.log(res.data.content);
+      setOpenAIResponse(res.data.content);
+      return res;
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
   }
 
