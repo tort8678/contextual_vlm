@@ -4,7 +4,7 @@ const baseRequest = axios.create({baseURL: "http://localhost:8000"});
 
 
 
-export default async function sendRequest(data: {text:string, image: string}){
+export default async function sendRequest(data: {text:string, image: string|null}){
   if(data.text !== ""){
     try {
       const res = await baseRequest.post("/testing", data)
