@@ -73,6 +73,28 @@ async function openAIReq(ctx: AppContext, content: { text: string; image: string
   }
 }
 
+async function openAIAudioRequest(ctx: AppContext, text:string){
+  const {res} = ctx
+  // const speechFile = path.resolve("./speech.mp3");
+  //console.log(text)
+  try{
+    const mp3 = await client.audio.speech.create({
+      model: "tts-1",
+      voice: "echo",
+      input: text
+    })
+    const buffer = Buffer.from(await mp3.arrayBuffer());
+    // await fs.promises.writeFile(speechFile, buffer);
+
+    res.contentType("audio/mpeg")
+    res.status(200).send(buffer)
+  }
+  catch(e){
+    console.error(e)
+  }
+}
+
+
 const app: Application = express();
 const port = process.env.PORT || 8000;
 app.use(cors());

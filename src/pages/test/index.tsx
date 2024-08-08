@@ -2,6 +2,7 @@ import { Camera, CameraType } from 'react-camera-pro';
 import { useRef, useState, useEffect } from 'react';
 import { Box, Button, TextField, Stack, Typography, Switch, FormControlLabel } from '@mui/material';
 import { useGeolocated } from 'react-geolocated';
+import {sendTextRequest, sendAudioRequest} from "../../api/openAi.ts";
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
 
@@ -57,7 +58,8 @@ export default function Test() {
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [openAIResponse, setOpenAIResponse] = useState<string>('');
   const [userInput, setUserInput] = useState<string>('Describe the image');
-  const { coords, isGeolocationEnabled } = useGeolocated({
+  const [audioUrl, setAudioUrl] = useState("")
+  const { coords } = useGeolocated({
     positionOptions: {
       enableHighAccuracy: true,
     },
@@ -170,7 +172,12 @@ export default function Test() {
       setOpenAIResponse('An error occurred while processing your request. Please try again.');
     }
   }
-  
+
+  function reset() {
+    setImage(null)
+    URL.revokeObjectURL(audioUrl)
+    setAudioUrl("")
+  }
 
   return (
     <Stack
