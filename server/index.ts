@@ -112,6 +112,14 @@ app.post('/testing', (req: Request, res: Response) => {
   } else res.send("you didn't send me text");
 });
 
+app.post('/audio',(req: Request, res: Response)  =>{
+  const {text} = req.body
+  //console.log(req.body)
+  if(text !== ""){
+    openAIAudioRequest({req,res}, text)
+  }
+})
+
 app.listen(port, () => {
   console.log(`Server is live at http://localhost:${port}`);
 });

@@ -2,9 +2,10 @@ import { Camera, CameraType } from 'react-camera-pro';
 import { useRef, useState, useEffect } from 'react';
 import { Box, Button, TextField, Stack, Typography, Switch, FormControlLabel } from '@mui/material';
 import { useGeolocated } from 'react-geolocated';
-//import {sendTextRequest, sendAudioRequest} from "../../api/openAi.ts";
+import {sendTextRequest, sendAudioRequest} from "../../api/openAi.ts";
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
+
 
 const AccessibleButton = styled(Button)({
   backgroundColor: '#000000',
@@ -109,6 +110,8 @@ export default function Test() {
   const handleRetake = () => {
     setVideoBlob(null);
     setImage(null);
+    URL.revokeObjectURL(audioUrl)
+    setAudioUrl("")
   };
 
   const extractFrames = async (videoBlob: Blob): Promise<string[]> => {
@@ -164,6 +167,16 @@ export default function Test() {
       if (res.data && res.data.data) {
         const content = res.data.data.content;
         setOpenAIResponse(content);
+        const res2 = await sendAudioRequest(content)
+        if (res2) {
+
+          const blob = new Blob([res2], {type: "audio/mpeg"})
+          console.log(blob)
+          const url = URL.createObjectURL(blob);
+          setAudioUrl(url)
+          console.log(res2)
+          console.log(url)
+        }
       } else {
         throw new Error('Invalid response from API.');
       }
@@ -171,12 +184,6 @@ export default function Test() {
       console.error('Error sending request to OpenAI:', e);
       setOpenAIResponse('An error occurred while processing your request. Please try again.');
     }
-  }
-
-  function reset() {
-    setImage(null)
-    URL.revokeObjectURL(audioUrl)
-    setAudioUrl("")
   }
 
   return (
@@ -270,6 +277,7 @@ export default function Test() {
           <Box aria-live="polite" role="status" sx={{ marginTop: 2 }}>
             <AccessibleTypography>{openAIResponse}</AccessibleTypography>
           </Box>
+          {audioUrl !== "" && <audio controls src={audioUrl}></audio>}
         </>
       )}
     </Stack>
