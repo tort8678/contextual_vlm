@@ -2,7 +2,7 @@ import { Camera, CameraType } from 'react-camera-pro';
 import { useRef, useState, useEffect } from 'react';
 import { Box, Button, TextField, Stack, Typography, Switch, FormControlLabel } from '@mui/material';
 import { useGeolocated } from 'react-geolocated';
-import {sendTextRequest, sendAudioRequest} from "../../api/openAi.ts";
+import {sendAudioRequest} from "../../api/openAi.ts";
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
 

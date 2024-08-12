@@ -7,7 +7,7 @@ interface openAIData {
 }
 
 
-export default async function sendRequest(data: {text:string, image: string|null}){
+export async function sendTextRequest(data: {text:string, image: string|null}){
   if(data.text !== ""){
     try {
       const res: AxiosResponse<openAIData> = await baseRequest.post("/text", data)

@@ -20,7 +20,8 @@ export interface AppContext {
 
 //* Google API
 async function fetchNearbyPlaces(latitude: number, longitude: number) {
-  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1500&type=point_of_interest&key=${googleApiKey}`;
+  // can add "Types" and "keywords" to the google query
+  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1500&type=convenience_store&key=${googleApiKey}`;
   console.log(`Fetching nearby places with URL: ${url}`);
 
   try {
@@ -73,6 +74,7 @@ async function openAIReq(ctx: AppContext, content: { text: string; image: string
   }
 }
 
+//* OpenAI Audio API
 async function openAIAudioRequest(ctx: AppContext, text:string){
   const {res} = ctx
   // const speechFile = path.resolve("./speech.mp3");
