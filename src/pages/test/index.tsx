@@ -17,7 +17,7 @@ export default function Test() {
   const [openAIResponse, setOpenAIResponse] = useState<string>('');
   const [userInput, setUserInput] = useState<string>('Describe the image');
   const [audioUrl, setAudioUrl] = useState("")
-  const {coords, isGeolocationEnabled, getPosition} = useGeolocated({
+  const {coords, isGeolocationEnabled} = useGeolocated({
     positionOptions: {
       enableHighAccuracy: true,
     },
@@ -28,10 +28,13 @@ export default function Test() {
   const [isRecording, setIsRecording] = useState(false);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
 
-  // useEffect(() => {
-  //   // FirebaseStart()
-  //   getPosition()
-  // }, []);
+  useEffect(() => {
+    // FirebaseStart()
+    // getPosition()
+    navigator.geolocation.getCurrentPosition((pos) => {console.log(pos.coords)}, (error)=> {console.log(error.message); setOpenAIResponse(error.message)});
+  }, []);
+
+
 //! Switch to video mode
   useEffect(() => {
     if (cameraMode === 'video' && videoRef.current) {
@@ -267,7 +270,7 @@ export default function Test() {
         )}
       </Box>
 
-      {(image || videoBlob) && (
+
         <>
           <AccessibleTextField
             value={userInput}
@@ -285,7 +288,7 @@ export default function Test() {
           </Box>
           {audioUrl !== "" && <audio controls src={audioUrl} autoPlay></audio>}
         </>
-      )}
+
     </Stack>
   );
 }
