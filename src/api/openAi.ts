@@ -10,7 +10,7 @@ interface openAIData {
 export async function sendTextRequest(data: {text:string, image: string|null}){
   if(data.text !== ""){
     try {
-      const res: AxiosResponse<openAIData> = await axios.post(`localhost:8000/text`, data)
+      const res: AxiosResponse<openAIData> = await axios.post(`/text`, data)
       //console.log(res)
       return res.data;
     } catch(e){
@@ -23,7 +23,7 @@ export async function sendAudioRequest(text:string){
   if(text !== ""){
     try{
       const audioRequest = axios.create({responseType: "arraybuffer"});
-      const res:AxiosResponse<Buffer> = await audioRequest.post(`http://${window.location.host.substring(0,window.location.host.length-4)}8000/audio`, {text})
+      const res:AxiosResponse<Buffer> = await audioRequest.post(`/audio`, {text})
       console.log(res)
       return res.data
     } catch(e){
