@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "concurrently \"npm run app-dev \" \"npm run backend \" ",
+    "dev": "concurrently \"npm run frontend \" \"npm run backend \" ",
     "build": "vite build && npm run server-build",
     "server-build": "npx tsc --project tsconfig.node.json",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",

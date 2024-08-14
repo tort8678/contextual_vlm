@@ -1,6 +1,6 @@
 import {Camera, CameraType} from 'react-camera-pro';
 import {useRef, useState, useEffect} from 'react';
-import {Box, Stack, Switch, FormControlLabel} from '@mui/material';
+import {Box, Stack, Switch, FormControlLabel, useMediaQuery} from '@mui/material';
 import {useGeolocated} from 'react-geolocated';
 import {sendAudioRequest} from "../../api/openAi.ts";
 import axios from 'axios';
@@ -11,12 +11,13 @@ import {AccessibleButton, AccessibleTypography, AccessibleTextField} from "./sty
 
 export default function Test() {
   const camera = useRef<CameraType>(null);
+  const isMobile = useMediaQuery('(max-width:600px)');
   const videoRef = useRef<HTMLVideoElement>(null);
   const [image, setImage] = useState<string | null>(null);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [openAIResponse, setOpenAIResponse] = useState<string>('');
   const [userInput, setUserInput] = useState<string>('Describe the image');
-  const [audioUrl, setAudioUrl] = useState("")
+  const [audioUrl, setAudioUrl] = useState("");
   const {coords, isGeolocationEnabled} = useGeolocated({
     positionOptions: {
       enableHighAccuracy: true,
@@ -116,7 +117,7 @@ export default function Test() {
       }
 
       const data: RequestData = {
-        text: `You are a blind assistant, be quick and to the point, use the coordinates to add to the depth of your description of what is happening in the photo/video frames. Always List 1 nearby specific location with corresponding details in addition to description. Have normal basic sentence formatting: ${userInput}`,
+        text: `You are a blind assistant, be quick and to the point, use the coordinates to add to the depth of your description of what is happening in the photo/video frames. Always List nearby specific location with corresponding details in addition to description. Make sure all info is useful to an average blind user. DONT TELL USER COORDINATES, TELL THEM THEIR LOCATION. User input: ${userInput}`,
         image: frames.length > 0 ? frames[0] : image,
         coords: coords ? {latitude: coords.latitude, longitude: coords.longitude} : null,
       };
@@ -196,31 +197,80 @@ export default function Test() {
       component="main"
       role="main"
       sx={{
-        paddingLeft: '16px',
-        paddingRight: '16px',
+        paddingLeft: isMobile ? '8px' : '32px',
+        paddingRight: isMobile ? '8px' : '32px',
         backgroundColor: '#FFFFFF',
+        height: '100vh',
+        overflowY: 'auto',
+        alignItems: 'center',
       }}
     >
-      <FormControlLabel
-        control={<Switch checked={cameraMode === 'video'}
-                         onChange={() => setCameraMode(cameraMode === 'photo' ? 'video' : 'photo')}/>}
-        label={cameraMode === 'photo' ? 'Switch to Video' : 'Switch to Photo'}
-        aria-label="Toggle camera mode"
-      />
-
+      {/* Condition for displaying either camera or video view depending on whether the image or videoBlob exists */}
       {!image && !videoBlob ? (
         <>
-          <Box>
-            {cameraMode === 'photo' ? (
-              <Camera aspectRatio={4 / 3} facingMode={'environment'} ref={camera} errorMessages={{}}
-                      aria-label="Camera viewfinder"/>
+          <Box sx={{ width: '100%', maxWidth: '600px', textAlign: 'center' }}>
+            {/* Display the Camera component on desktop only */}
+            {cameraMode === 'photo' && !isMobile ? (
+              <Box sx={{ width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden' }}>
+                <Camera
+                  aspectRatio={4 / 3}
+                  facingMode={'environment'}
+                  ref={camera}
+                  aria-label="Camera viewfinder"
+                  errorMessages={{}}
+                />
+              </Box>
             ) : (
-              <video ref={videoRef} autoPlay muted aria-label="Camera video feed" style={{width: '100%'}}/>
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                aria-label="Camera video feed"
+                style={{ width: '100%', borderRadius: '12px', overflow: 'hidden' }} 
+              />
             )}
-            <input accept="image/*" type="file" capture="environment" onChange={(e) => handleCapture(e.target)}/>
-
           </Box>
-          {cameraMode === 'photo' ? (
+  
+          {/* Upload file input visible on both mobile and desktop */}
+          <Box
+            component="label"
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: isMobile ? '200px' : '100%',
+              height: isMobile ? '200px' : 'auto',
+              padding: '20px',
+              fontSize: isMobile ? '2rem' : '1.5rem',
+              marginTop: '16px',
+              marginBottom: '16px',  // Added padding below the button
+              backgroundColor: '#000',
+              color: '#fff',
+              borderRadius: '12px',
+              textAlign: 'center',
+              cursor: 'pointer',
+              '&:hover': {
+                backgroundColor: '#303030',
+              },
+              '&:focus': {
+                outline: '3px solid #FFA500',
+                outlineOffset: '2px',
+              },
+            }}
+            aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
+          >
+            Upload File
+            <input
+              accept="image/*"
+              type="file"
+              capture="environment"
+              onChange={(e) => handleCapture(e.target)}
+              style={{ display: 'none' }}
+            />
+          </Box>
+  
+          {/* Take photo button should only be visible on desktop */}
+          {!isMobile && cameraMode === 'photo' && (
             <AccessibleButton
               onClick={() => {
                 const capturedImage = camera.current?.takePhoto() as string;
@@ -232,63 +282,109 @@ export default function Test() {
                 }
               }}
               aria-label="Take photo"
+              sx={{ width: '100%', maxWidth: '600px', marginTop: '16px', marginBottom: '16px' }}
             >
               Take photo
-            </AccessibleButton>
-          ) : (
-            <AccessibleButton onClick={handleVideoRecording}
-                              aria-label={isRecording ? 'Stop recording' : 'Start recording'}>
-              {isRecording ? 'Stop Recording' : 'Start Recording'}
             </AccessibleButton>
           )}
         </>
       ) : (
         <>
-          {videoBlob ? (
-            <video src={URL.createObjectURL(videoBlob)} controls aria-label="Recorded video"/>
-          ) : (
-            <img src={image as string} alt="Taken photo" aria-hidden="true"/>
-          )}
-          <AccessibleButton onClick={handleRetake} aria-label="Retake photo or video">
-            Retake
-          </AccessibleButton>
+          <Box sx={{ width: '100%', maxWidth: '600px', textAlign: 'center' }}>
+            {videoBlob ? (
+              <video
+                src={URL.createObjectURL(videoBlob)}
+                controls
+                aria-label="Recorded video"
+                style={{
+                  width: '100%',
+                  height: isMobile ? 'auto' : '60vh',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                }}
+              />
+            ) : (
+              <img
+                src={image as string}
+                alt="Taken photo"
+                aria-hidden="true"
+                style={{ width: '100%', borderRadius: '12px' }}
+              />
+            )}
+            <AccessibleButton
+              onClick={handleRetake}
+              aria-label="Retake photo or video"
+              sx={{ width: '100%', maxWidth: '600px', marginTop: '16px', marginBottom: '16px' }}
+            >
+              Retake
+            </AccessibleButton>
+          </Box>
         </>
       )}
-
-      <Box aria-live="polite">
-        {!isGeolocationEnabled ? (
-          <AccessibleTypography>Your browser does not support geolocation</AccessibleTypography>
-        ) : coords ? (
-          <Box component="ul" sx={{listStyleType: 'none', padding: 0}}>
-            <AccessibleTypography>Latitude: {coords.latitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
-            <AccessibleTypography>Longitude: {coords.longitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
-            <AccessibleTypography>Accuracy: {coords.accuracy ? `${Math.round(coords.accuracy)} meters` : 'N/A'}</AccessibleTypography>
-            <AccessibleTypography>Heading: {coords.heading ? `${Math.round(coords.heading)} degrees` : 'N/A'}</AccessibleTypography>
-          </Box>
-        ) : (
-          <AccessibleTypography>Getting the location data... </AccessibleTypography>
-        )}
+  
+      {/* Geolocation data display for desktop */}
+      {!isMobile && (
+        <Box
+          aria-live="polite"
+          sx={{
+            display: 'block',
+            marginTop: '16px',
+            textAlign: 'center',
+            maxWidth: '600px',
+          }}
+        >
+          {!isGeolocationEnabled ? (
+            <AccessibleTypography>Your browser does not support geolocation</AccessibleTypography>
+          ) : coords ? (
+            <Box component="ul" sx={{ listStyleType: 'none', padding: 0 }}>
+              <AccessibleTypography>Latitude: {coords.latitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
+              <AccessibleTypography>Longitude: {coords.longitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
+              <AccessibleTypography>Accuracy: {coords.accuracy ? `${Math.round(coords.accuracy)} meters` : 'N/A'}</AccessibleTypography>
+              <AccessibleTypography>Heading: {coords.heading ? `${Math.round(coords.heading)} degrees` : 'N/A'}</AccessibleTypography>
+            </Box>
+          ) : (
+            <AccessibleTypography>Getting the location data...</AccessibleTypography>
+          )}
+        </Box>
+      )}
+  
+      {/* Question input field */}
+      <AccessibleTextField
+        value={userInput}
+        onChange={(e) => setUserInput(e.target.value)}
+        sx={{ bgcolor: 'white', marginY: 2, maxWidth: '600px' }}
+        label="Question"
+        aria-label="User input"
+        fullWidth
+      />
+  
+      {/* Get Description button */}
+      <AccessibleButton
+        onClick={() => sendRequestOpenAI()}
+        aria-label="Get description"
+        sx={{ width: '100%', maxWidth: '600px', marginTop: '16px' }}
+      >
+        Get Description
+      </AccessibleButton>
+      <Box aria-live="polite" role="status" sx={{ marginTop: 2, maxWidth: '600px' }}>
+        <AccessibleTypography>{openAIResponse}</AccessibleTypography>
       </Box>
-
-
-        <>
-          <AccessibleTextField
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            sx={{bgcolor: 'white', marginY: 2}}
-            label="User input"
-            aria-label="User input"
-            fullWidth
-          />
-          <AccessibleButton onClick={() => sendRequestOpenAI()} aria-label="Get description">
-            Get Description
-          </AccessibleButton>
-          <Box aria-live="polite" role="status" sx={{marginTop: 2}}>
-            <AccessibleTypography>{openAIResponse}</AccessibleTypography>
-          </Box>
-          {audioUrl !== "" && <audio controls src={audioUrl} autoPlay></audio>}
-        </>
-
+      {audioUrl && <audio controls src={audioUrl} autoPlay style={{ maxWidth: '600px', marginTop: '16px' }} />}
+  
+      {/* Toggle switch for camera mode visible on desktop */}
+      {!isMobile && (
+        <FormControlLabel
+          control={
+            <Switch
+              checked={cameraMode === 'video'}
+              onChange={() => setCameraMode(cameraMode === 'photo' ? 'video' : 'photo')}
+            />
+          }
+          label={cameraMode === 'photo' ? 'Switch to Video' : 'Switch to Photo'}
+          aria-label="Toggle camera mode"
+          sx={{ width: '100%', maxWidth: '600px', marginTop: '16px' }}
+        />
+      )}
     </Stack>
   );
 }
