@@ -5,6 +5,8 @@ import { useGeolocated } from 'react-geolocated';
 import {sendAudioRequest} from "../../api/openAi.ts";
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
+import targetImage from '/target2.png'; // Import the image
+
 
 
 const AccessibleButton = styled(Button)({
@@ -52,6 +54,26 @@ interface RequestData {
   coords: GeolocationCoords | null;
 }
 
+// Utility function to convert an image to a Base64 string
+const convertImageToBase64 = (url: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+      const reader = new FileReader();
+      reader.onloadend = function() {
+        resolve(reader.result as string);
+      }
+      reader.readAsDataURL(xhr.response);
+    };
+    xhr.onerror = function() {
+      reject(new Error('Failed to convert image to Base64'));
+    };
+    xhr.open('GET', url);
+    xhr.responseType = 'blob';
+    xhr.send();
+  });
+};
+
 export default function Test() {
   const camera = useRef<CameraType>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -59,7 +81,7 @@ export default function Test() {
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [openAIResponse, setOpenAIResponse] = useState<string>('');
   const [userInput, setUserInput] = useState<string>('Describe the image');
-  const [audioUrl, setAudioUrl] = useState("")
+  const [audioUrl, setAudioUrl] = useState("");
   const { coords, isGeolocationEnabled } = useGeolocated({
     positionOptions: {
       enableHighAccuracy: true,
@@ -70,26 +92,14 @@ export default function Test() {
   const [isRecording, setIsRecording] = useState(false);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
 
-//! Switch to video mode
+  //! Convert the target image to Base64 when the component mounts
   useEffect(() => {
-    if (cameraMode === 'video' && videoRef.current) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((stream) => {
-          videoRef.current!.srcObject = stream;
-          const newRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-          newRecorder.ondataavailable = (event: BlobEvent) => {
-            if (event.data.size > 0) {
-              setVideoBlob(event.data);
-            }
-          };
-          setRecorder(newRecorder);
-        })
-        .catch((error) => {
-          console.error('Error accessing media devices.', error);
-        });
-    }
-  }, [cameraMode]);
+    convertImageToBase64(targetImage).then(base64 => {
+      setImage(base64);
+    }).catch(error => {
+      console.error("Failed to convert image to Base64:", error);
+    });
+  }, []);
 
   const handleVideoRecording = () => {
     if (isRecording && recorder) {
@@ -150,8 +160,8 @@ export default function Test() {
       }
   
       const data: RequestData = {
-        text: `You are a blind assistant, be quick and to the point, use the coordinates to add to the depth of your description of what is happening in the photo/video frames. Always List 1 nearby specific location with corresponding details in addition to description. Have normal basic sentence formatting: ${userInput}`,
-        image: frames.length > 0 ? frames[0] : image,
+        text: `You are a blind assistant, be quick and to the point, use the coordinates to add to the depth of your description of what is happening in the photo/video frames. Have normal basic sentence formatting: ${userInput}`,
+        image: image, // Use the Base64 string of the image
         coords: coords ? { latitude: coords.latitude, longitude: coords.longitude } : null,
       };
   

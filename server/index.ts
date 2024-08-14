@@ -21,9 +21,9 @@ export interface AppContext {
 //* Google API
 async function fetchNearbyPlaces(latitude: number, longitude: number) {
   // can add "Types" and "keywords" to the google query
-  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1500&type=convenience_store&key=${googleApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=40.71426864245695,-74.01130211294604&radius=50&type=convenience_store&key=${googleApiKey}`;
   console.log(`Fetching nearby places with URL: ${url}`);
-
+//40.71426864245695, -74.01130211294604
   try {
     const response = await axios.get(url);
     console.log('Google Places API response:', response.data);
@@ -74,7 +74,7 @@ async function openAIReq(ctx: AppContext, content: { text: string; image: string
   }
 }
 
-//* OpenAI Audio API
+/* OpenAI Audio API
 async function openAIAudioRequest(ctx: AppContext, text:string){
   const {res} = ctx
   // const speechFile = path.resolve("./speech.mp3");
@@ -95,12 +95,13 @@ async function openAIAudioRequest(ctx: AppContext, text:string){
     console.error(e)
   }
 }
-
+*/
 
 const app: Application = express();
 const port = process.env.PORT || 8000;
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.get('/', (_req: Request, res: Response) => {
   res.send('Welcome to Express & TypeScript Server');
@@ -114,13 +115,14 @@ app.post('/testing', (req: Request, res: Response) => {
   } else res.send("you didn't send me text");
 });
 
+/*
 app.post('/audio',(req: Request, res: Response)  =>{
   const {text} = req.body
   //console.log(req.body)
   if(text !== ""){
     openAIAudioRequest({req,res}, text)
   }
-})
+}) */
 
 app.listen(port, () => {
   console.log(`Server is live at http://localhost:${port}`);
