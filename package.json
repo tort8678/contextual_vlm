@@ -9,9 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "frontend": "vite --host",
-    "backend": "nodemon --exec npx tsx ./server/index.ts",
-    "production": "",
-    "app-dev": "npm --prefix ./app run dev"
+    "backend": "nodemon --exec npx tsx ./server/index.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.13.0",
