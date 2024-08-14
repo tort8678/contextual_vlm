@@ -3,6 +3,10 @@ import express, { Request, Response, Application } from 'express';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
 import cors from 'cors';
+// import nunjucks from "nunjucks";
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 
 dotenv.config();
 
@@ -31,7 +35,7 @@ async function fetchNearbyPlaces(latitude: number, longitude: number) {
     console.log('Google Places API response:', response.data);
     return response.data.results;
   } catch (error) {
-    console.error('Error fetching nearby places:', error.response ? error.response.data : error.message);
+    console.error('Error fetching nearby places:',error);
     throw error;
   }
 }
@@ -46,10 +50,10 @@ async function openAIReq(ctx: AppContext, content: { text: string; image: string
     userContent += ` Coordinates: Latitude ${content.coords.latitude}, Longitude ${content.coords.longitude}`;
     try {
       const places = await fetchNearbyPlaces(content.coords.latitude, content.coords.longitude);
-      nearbyPlaces = places.map((place: any) => place.name).join(', ');
+      nearbyPlaces = places.map((place: {name:string}) => place.name).join(', ');
       userContent += ` Nearby Places: ${nearbyPlaces}`;
     } catch (error) {
-      console.error('Error including nearby places in OpenAI request:', error.message);
+      console.error('Error including nearby places in OpenAI request:', error);
     }
   }
 
@@ -101,12 +105,19 @@ async function openAIAudioRequest(ctx: AppContext, text:string){
 
 const app: Application = express();
 const port = process.env.PORT || 8000;
+// nunjucks.configure("dist", {
+//   autoescape: true,
+//   express: app,
+// });
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static("../dist"));
+app.use(express.static(path.join(__dirname, '../dist')));
+console.log(path.join(__dirname, '../dist'))
+
 
 app.get('/', (_req: Request, res: Response) => {
-  res.send('Welcome to Express & TypeScript Server');
+  res.send(path.join(__dirname, '../dist'));
 });
 
 app.post('/text', (req: Request, res: Response) => {
@@ -127,4 +138,8 @@ app.post('/audio',(req: Request, res: Response)  =>{
 
 app.listen(port, () => {
   console.log(`Server is live at http://localhost:${port}`);
+});
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
 });

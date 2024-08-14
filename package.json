@@ -2,14 +2,16 @@
   "name": "contextual-vlm",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run frontend \" \"npm run backend \" ",
-    "build": "tsc -b && vite build",
+    "dev": "concurrently \"npm run app-dev \" \"npm run backend \" ",
+    "build": "vite build && npm run server-build",
+    "server-build": "npx tsc --project tsconfig.node.json",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "frontend": "vite --host",
-    "backend": "nodemon --exec npx tsx ./server/index.ts"
+    "backend": "nodemon --exec npx tsx ./server/index.ts",
+    "production": "",
+    "app-dev": "npm --prefix ./app run dev"
   },
   "dependencies": {
     "@emotion/react": "^11.13.0",
@@ -24,6 +26,7 @@
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.1",
     "nodemon": "^3.1.4",
+    "nunjucks": "^3.2.4",
     "openai": "^4.53.2",
     "react": "^18.3.1",
     "react-camera-pro": "^1.4.0",
@@ -34,6 +37,7 @@
     "vercel": "^35.2.4"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -43,9 +47,8 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
-    "typescript": "^5.2.2",
+    "typescript": "^5.5.4",
     "vite": "^5.3.4",
     "vite-plugin-pwa": "^0.20.1"
   }
-
 }

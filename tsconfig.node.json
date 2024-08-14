@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
     "composite": true,
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-    "skipLibCheck": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
+    "module": "CommonJS",
+    "target": "ES6",
+    "outDir": "./dist/server",
+    "rootDir": "./server",
     "strict": true,
-    "noEmit": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node"
   },
-  "include": ["vite.config.ts"]
+  "include": ["server/**/*.ts"],
+  "exclude": ["node_modules"]
 }

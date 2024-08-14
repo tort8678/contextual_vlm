@@ -16,6 +16,7 @@ COPY . .
 # Build the frontend and backend
 RUN npm run build
 
+
 # Expose the port the app runs on
 EXPOSE 8000
 
