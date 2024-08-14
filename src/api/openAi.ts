@@ -22,7 +22,8 @@ export async function sendTextRequest(data: {text:string, image: string|null}){
 export async function sendAudioRequest(text:string){
   if(text !== ""){
     try{
-      const audioRequest = axios.create({baseURL: "http://localhost:8000", responseType: "arraybuffer"});
+      const url = `http://${window.location.host.substring(0,window.location.host.length-4)}8000`
+      const audioRequest = axios.create({baseURL: url, responseType: "arraybuffer"});
       const res:AxiosResponse<Buffer> = await audioRequest.post("/audio", {text})
       console.log(res)
       return res.data

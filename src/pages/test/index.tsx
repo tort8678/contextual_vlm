@@ -1,56 +1,13 @@
-import { Camera, CameraType } from 'react-camera-pro';
-import { useRef, useState, useEffect } from 'react';
-import { Box, Button, TextField, Stack, Typography, Switch, FormControlLabel } from '@mui/material';
-import { useGeolocated } from 'react-geolocated';
+import {Camera, CameraType} from 'react-camera-pro';
+import {useRef, useState, useEffect} from 'react';
+import {Box, Stack, Switch, FormControlLabel} from '@mui/material';
+import {useGeolocated} from 'react-geolocated';
 import {sendAudioRequest} from "../../api/openAi.ts";
-import { styled } from '@mui/material/styles';
 import axios from 'axios';
+// import {FirebaseStart} from "../../api/firebase.ts";
+import {RequestData} from "./types.ts";
+import {AccessibleButton, AccessibleTypography, AccessibleTextField} from "./style.ts";
 
-
-const AccessibleButton = styled(Button)({
-  backgroundColor: '#000000',
-  color: '#FFFFFF',
-  fontSize: '1.2rem',
-  padding: '12px 24px',
-  margin: '10px 0',
-  borderRadius: '8px',
-  '&:hover': {
-    backgroundColor: '#303030',
-  },
-  '&:focus': {
-    outline: '3px solid #FFA500',
-    outlineOffset: '2px',
-  },
-});
-
-const AccessibleTextField = styled(TextField)({
-  '& .MuiInputBase-input': {
-    fontSize: '1.2rem',
-  },
-  '& .MuiInputLabel-root': {
-    fontSize: '1.2rem',
-  },
-});
-
-const AccessibleTypography = styled(Typography)({
-  fontSize: '1.6rem',
-  lineHeight: 1.6,
-  color: '#000000',
-  fontWeight: 500,
-});
-
-interface GeolocationCoords {
-  latitude: number;
-  longitude: number;
-  accuracy?: number;
-  heading?: number;
-}
-
-interface RequestData {
-  text: string;
-  image: string | null;
-  coords: GeolocationCoords | null;
-}
 
 export default function Test() {
   const camera = useRef<CameraType>(null);
@@ -60,24 +17,29 @@ export default function Test() {
   const [openAIResponse, setOpenAIResponse] = useState<string>('');
   const [userInput, setUserInput] = useState<string>('Describe the image');
   const [audioUrl, setAudioUrl] = useState("")
-  const { coords, isGeolocationEnabled } = useGeolocated({
+  const {coords, isGeolocationEnabled, getPosition} = useGeolocated({
     positionOptions: {
       enableHighAccuracy: true,
     },
     userDecisionTimeout: 5000,
+    watchLocationPermissionChange: true
   });
   const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('photo');
   const [isRecording, setIsRecording] = useState(false);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
 
+  // useEffect(() => {
+  //   // FirebaseStart()
+  //   getPosition()
+  // }, []);
 //! Switch to video mode
   useEffect(() => {
     if (cameraMode === 'video' && videoRef.current) {
       navigator.mediaDevices
-        .getUserMedia({ video: true })
+        .getUserMedia({video: true})
         .then((stream) => {
           videoRef.current!.srcObject = stream;
-          const newRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+          const newRecorder = new MediaRecorder(stream, {mimeType: 'video/webm'});
           newRecorder.ondataavailable = (event: BlobEvent) => {
             if (event.data.size > 0) {
               setVideoBlob(event.data);
@@ -112,6 +74,7 @@ export default function Test() {
     setImage(null);
     URL.revokeObjectURL(audioUrl)
     setAudioUrl("")
+    setOpenAIResponse("")
   };
 
   const extractFrames = async (videoBlob: Blob): Promise<string[]> => {
@@ -148,22 +111,26 @@ export default function Test() {
       if (videoBlob) {
         frames = await extractFrames(videoBlob);
       }
-  
+
       const data: RequestData = {
         text: `You are a blind assistant, be quick and to the point, use the coordinates to add to the depth of your description of what is happening in the photo/video frames. Always List 1 nearby specific location with corresponding details in addition to description. Have normal basic sentence formatting: ${userInput}`,
         image: frames.length > 0 ? frames[0] : image,
-        coords: coords ? { latitude: coords.latitude, longitude: coords.longitude } : null,
+        coords: coords ? {latitude: coords.latitude, longitude: coords.longitude} : null,
       };
-  
+
       if (!data.image) {
         throw new Error('No image data available.');
       }
-  
+
       console.log('Sending request data to backend:', data);
-  
-      const res = await axios.post('http://localhost:8000/testing', data);
+      const url = `http://${window.location.host.substring(0,window.location.host.length-4)}8000/testing`
+      console.log(url)
+      const res = await axios.post(url, data);
+
+      // const res = await axios.post('http://localhost:8000/testing', data);
       console.log('Received response from backend:', res.data);
-  
+
+
       if (res.data && res.data.data) {
         const content = res.data.data.content;
         setOpenAIResponse(content);
@@ -186,6 +153,40 @@ export default function Test() {
     }
   }
 
+  const handleCapture = (target: EventTarget & HTMLInputElement) => {
+    if (target.files) {
+      if (target.files.length !== 0) {
+        const file = target.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+          const img = new Image();
+          img.src = reader.result as string;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxWidth = 640; // Max width for the image
+            const scaleSize = maxWidth / img.width;
+            canvas.width = maxWidth;
+            canvas.height = img.height * scaleSize;
+
+            const ctx = canvas.getContext('2d');
+            ctx!.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // Convert the resized image to Base64
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); // 0.7 = 70% quality
+            console.log(compressedBase64); // Use the compressed base64 string
+            setImage(compressedBase64);
+          };
+        };
+        if (file) {
+          reader.readAsDataURL(file);
+        }
+        // const newUrl = URL.createObjectURL(file);
+        // console.log(newUrl);
+      }
+    }
+  }
+
   return (
     <Stack
       maxWidth={'100vw'}
@@ -198,19 +199,23 @@ export default function Test() {
       }}
     >
       <FormControlLabel
-        control={<Switch checked={cameraMode === 'video'} onChange={() => setCameraMode(cameraMode === 'photo' ? 'video' : 'photo')} />}
+        control={<Switch checked={cameraMode === 'video'}
+                         onChange={() => setCameraMode(cameraMode === 'photo' ? 'video' : 'photo')}/>}
         label={cameraMode === 'photo' ? 'Switch to Video' : 'Switch to Photo'}
         aria-label="Toggle camera mode"
       />
-  
+
       {!image && !videoBlob ? (
         <>
           <Box>
             {cameraMode === 'photo' ? (
-              <Camera aspectRatio={4 / 3} facingMode={'environment'} ref={camera} errorMessages={{}} aria-label="Camera viewfinder" />
+              <Camera aspectRatio={4 / 3} facingMode={'environment'} ref={camera} errorMessages={{}}
+                      aria-label="Camera viewfinder"/>
             ) : (
-              <video ref={videoRef} autoPlay muted aria-label="Camera video feed" style={{ width: '100%' }} />
+              <video ref={videoRef} autoPlay muted aria-label="Camera video feed" style={{width: '100%'}}/>
             )}
+            <input accept="image/*" type="file" capture="environment" onChange={(e) => handleCapture(e.target)}/>
+
           </Box>
           {cameraMode === 'photo' ? (
             <AccessibleButton
@@ -228,7 +233,8 @@ export default function Test() {
               Take photo
             </AccessibleButton>
           ) : (
-            <AccessibleButton onClick={handleVideoRecording} aria-label={isRecording ? 'Stop recording' : 'Start recording'}>
+            <AccessibleButton onClick={handleVideoRecording}
+                              aria-label={isRecording ? 'Stop recording' : 'Start recording'}>
               {isRecording ? 'Stop Recording' : 'Start Recording'}
             </AccessibleButton>
           )}
@@ -236,21 +242,21 @@ export default function Test() {
       ) : (
         <>
           {videoBlob ? (
-            <video src={URL.createObjectURL(videoBlob)} controls aria-label="Recorded video" />
+            <video src={URL.createObjectURL(videoBlob)} controls aria-label="Recorded video"/>
           ) : (
-            <img src={image as string} alt="Taken photo" aria-hidden="true" />
+            <img src={image as string} alt="Taken photo" aria-hidden="true"/>
           )}
           <AccessibleButton onClick={handleRetake} aria-label="Retake photo or video">
             Retake
           </AccessibleButton>
         </>
       )}
-  
+
       <Box aria-live="polite">
         {!isGeolocationEnabled ? (
           <AccessibleTypography>Your browser does not support geolocation</AccessibleTypography>
         ) : coords ? (
-          <Box component="ul" sx={{ listStyleType: 'none', padding: 0 }}>
+          <Box component="ul" sx={{listStyleType: 'none', padding: 0}}>
             <AccessibleTypography>Latitude: {coords.latitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
             <AccessibleTypography>Longitude: {coords.longitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
             <AccessibleTypography>Accuracy: {coords.accuracy ? `${Math.round(coords.accuracy)} meters` : 'N/A'}</AccessibleTypography>
@@ -260,13 +266,13 @@ export default function Test() {
           <AccessibleTypography>Getting the location data... </AccessibleTypography>
         )}
       </Box>
-  
+
       {(image || videoBlob) && (
         <>
           <AccessibleTextField
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
-            sx={{ bgcolor: 'white', marginY: 2 }}
+            sx={{bgcolor: 'white', marginY: 2}}
             label="User input"
             aria-label="User input"
             fullWidth
@@ -274,10 +280,10 @@ export default function Test() {
           <AccessibleButton onClick={() => sendRequestOpenAI()} aria-label="Get description">
             Get Description
           </AccessibleButton>
-          <Box aria-live="polite" role="status" sx={{ marginTop: 2 }}>
+          <Box aria-live="polite" role="status" sx={{marginTop: 2}}>
             <AccessibleTypography>{openAIResponse}</AccessibleTypography>
           </Box>
-          {audioUrl !== "" && <audio controls src={audioUrl}></audio>}
+          {audioUrl !== "" && <audio controls src={audioUrl} autoPlay></audio>}
         </>
       )}
     </Stack>

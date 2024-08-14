@@ -8,6 +8,7 @@ dotenv.config();
 
 const key = process.env.OPENAI_API_KEY;
 const googleApiKey = process.env.GOOGLE_API_KEY;
+console.log(googleApiKey)
 
 const client = new OpenAI({
   apiKey: key,
