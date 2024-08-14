@@ -126,7 +126,7 @@ export default function Test() {
       }
 
       console.log('Sending request data to backend:', data);
-      const url = `http://${window.location.host.substring(0,window.location.host.length-4)}8000/testing`
+      const url = `http://${window.location.host.substring(0,window.location.host.length-4)}8000/text`
       console.log(url)
       const res = await axios.post(url, data);
 

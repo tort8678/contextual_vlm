@@ -3,12 +3,18 @@ import reactLogo from '../../assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import {useNavigate} from "react-router-dom";
+import axios from 'axios'
 
 
 
 function App() {
   const [count, setCount] = useState(0)
   const navigate = useNavigate()
+
+  async function handleTest(){
+    const res = await axios.get("api/test")
+    console.log(res)
+  }
   return (
     <>
       <div>
@@ -33,6 +39,9 @@ function App() {
       </p>
       <button onClick={() => navigate("/test")}>
         Go to test page
+      </button>
+      <button onClick={() =>  handleTest()}>
+        Test Request
       </button>
     </>
   )

@@ -8,7 +8,6 @@ dotenv.config();
 
 const key = process.env.OPENAI_API_KEY;
 const googleApiKey = process.env.GOOGLE_API_KEY;
-console.log(googleApiKey)
 
 const client = new OpenAI({
   apiKey: key,
@@ -18,6 +17,8 @@ export interface AppContext {
   req: Request;
   res: Response;
 }
+
+
 
 //* Google API
 async function fetchNearbyPlaces(latitude: number, longitude: number) {
@@ -102,12 +103,13 @@ const app: Application = express();
 const port = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
+app.use(express.static("../dist"));
 
 app.get('/', (_req: Request, res: Response) => {
   res.send('Welcome to Express & TypeScript Server');
 });
 
-app.post('/testing', (req: Request, res: Response) => {
+app.post('/text', (req: Request, res: Response) => {
   const { text, image, coords } = req.body;
 
   if (text !== '') {
