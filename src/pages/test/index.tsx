@@ -25,16 +25,49 @@ export default function Test() {
     userDecisionTimeout: 5000,
     watchLocationPermissionChange: true
   });
+  const [orientation, setOrientation] = useState<{ alpha: number | null, beta: number | null, gamma: number | null }>({ alpha: null, beta: null, gamma: null });
   const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('photo');
   const [isRecording, setIsRecording] = useState(false);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
 
   useEffect(() => {
-    // FirebaseStart()
-    // getPosition()
     navigator.geolocation.getCurrentPosition((pos) => {console.log(pos.coords)}, (error)=> {console.log(error.message); setOpenAIResponse(error.message)});
+
+    const handleOrientation = (event: DeviceOrientationEvent) => {
+      setOrientation({
+        alpha: event.alpha,  // Rotation around z-axis
+        beta: event.beta,    // Rotation around x-axis
+        gamma: event.gamma   // Rotation around y-axis
+      });
+    };
+  
+    window.addEventListener('deviceorientation', handleOrientation, true);
+  
+    return () => {
+      window.removeEventListener('deviceorientation', handleOrientation);
+    };
   }, []);
 
+  interface CustomCoords {
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+    altitude?: number | null;
+    altitudeAccuracy?: number | null;
+    heading?: number | null;
+    speed?: number | null;
+    orientation?: {
+      alpha: number | null;
+      beta: number | null;
+      gamma: number | null;
+    } | null;
+  }
+
+  interface RequestData {
+    text: string;
+    image: string | null;
+    coords: CustomCoords | null;
+  }
 
 //! Switch to video mode
   useEffect(() => {
@@ -56,6 +89,7 @@ export default function Test() {
         });
     }
   }, [cameraMode]);
+
 
   const handleVideoRecording = () => {
     if (isRecording && recorder) {
@@ -110,53 +144,61 @@ export default function Test() {
 
   //! Still error with Video Mode, need to fix sending to API
   async function sendRequestOpenAI() {
-    try {
-      let frames: string[] = [];
-      if (videoBlob) {
-        frames = await extractFrames(videoBlob);
-      }
-
-      const data: RequestData = {
-        text: `You are a blind assistant, be quick and to the point, use the coordinates to add to the depth of your description of what is happening in the photo/video frames. Always List nearby specific location with corresponding details in addition to description. Make sure all info is useful to an average blind user. DONT TELL USER COORDINATES, TELL THEM THEIR LOCATION. User input: ${userInput}`,
-        image: frames.length > 0 ? frames[0] : image,
-        coords: coords ? {latitude: coords.latitude, longitude: coords.longitude} : null,
-      };
-
-      if (!data.image) {
-        throw new Error('No image data available.');
-      }
-
-      console.log('Sending request data to backend:', data);
-      // const url = `http://${window.location.host.substring(0,window.location.host.length-4)}8000/text`
-      // console.log(url)
-      console.log(window.location.origin)
-      const res = await axios.post("/text", data);
-
-      // const res = await axios.post('http://localhost:8000/testing', data);
-      console.log('Received response from backend:', res.data);
-
-
-      if (res.data && res.data.data) {
-        const content = res.data.data.content;
-        setOpenAIResponse(content);
-        const res2 = await sendAudioRequest(content)
-        if (res2) {
-
-          const blob = new Blob([res2], {type: "audio/mpeg"})
-          console.log(blob)
-          const url = URL.createObjectURL(blob);
-          setAudioUrl(url)
-          console.log(res2)
-          console.log(url)
-        }
-      } else {
-        throw new Error('Invalid response from API.');
-      }
-    } catch (e) {
-      console.error('Error sending request to OpenAI:', e);
-      setOpenAIResponse('An error occurred while processing your request. Please try again.');
+  try {
+    let frames: string[] = [];
+    if (videoBlob) {
+      frames = await extractFrames(videoBlob);
     }
+
+    // Create the CustomCoords object
+    const customCoords: CustomCoords | null = coords ? {
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      accuracy: coords.accuracy,
+      altitude: coords.altitude,
+      altitudeAccuracy: coords.altitudeAccuracy,
+      heading: coords.heading !== undefined ? coords.heading : null,
+      speed: coords.speed,
+      orientation: orientation ? {
+        alpha: orientation.alpha !== null ? orientation.alpha : null,
+        beta: orientation.beta !== null ? orientation.beta : null,
+        gamma: orientation.gamma !== null ? orientation.gamma : null,
+      } : null,
+    } : null;
+
+    const data: RequestData = {
+      text: `You are a blind assistant, be quick and to the point, use the coordinates to add to the depth of your description of what is happening in the photo/video frames. Always list nearby specific locations with corresponding details in addition to the description. Make sure all info is useful to an average blind user. DONT TELL USER COORDINATES, TELL THEM THEIR LOCATION. User input: ${userInput}`,
+      image: frames.length > 0 ? frames[0] : image,
+      coords: customCoords,  // Use the CustomCoords object here
+    };
+
+    if (!data.image) {
+      throw new Error('No image data available.');
+    }
+
+    console.log('Sending request data to backend:', data);
+    const res = await axios.post("/text", data);
+
+    if (res.data && res.data.data) {
+      const content = res.data.data.content;
+      setOpenAIResponse(content);
+      const res2 = await sendAudioRequest(content);
+      if (res2) {
+        const blob = new Blob([res2], { type: "audio/mpeg" });
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+      }
+    } else {
+      throw new Error('Invalid response from API.');
+    }
+  } catch (e) {
+    console.error('Error sending request to OpenAI:', e);
+    setOpenAIResponse('An error occurred while processing your request. Please try again.');
   }
+}
+  
+  
+  
 
   const handleCapture = (target: EventTarget & HTMLInputElement) => {
     if (target.files) {
@@ -331,7 +373,7 @@ export default function Test() {
             display: 'block',
             marginTop: '16px',
             textAlign: 'center',
-            maxWidth: '600px',
+            maxWidth: '60px',
           }}
         >
           {!isGeolocationEnabled ? (
@@ -363,7 +405,7 @@ export default function Test() {
       <AccessibleButton
         onClick={() => sendRequestOpenAI()}
         aria-label="Get description"
-        sx={{ width: '100%', maxWidth: '600px', marginTop: '16px' }}
+        sx={{ width: '100%', maxWidth: '600px', marginTop: '18px' }}
       >
         Get Description
       </AccessibleButton>

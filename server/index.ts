@@ -41,13 +41,22 @@ async function fetchNearbyPlaces(latitude: number, longitude: number) {
 }
 
 //* OpenAI API
-async function openAIReq(ctx: AppContext, content: { text: string; image: string; coords: { latitude: number; longitude: number } | null }) {
+async function openAIReq(ctx: AppContext, content: { text: string; image: string; coords: { latitude: number; longitude: number, heading?: number | null, orientation?: { alpha: number | null, beta: number | null, gamma: number | null } } | null }) {
   const { res } = ctx;
   let userContent = content.text;
   let nearbyPlaces = '';
 
   if (content.coords) {
     userContent += ` Coordinates: Latitude ${content.coords.latitude}, Longitude ${content.coords.longitude}`;
+
+    if (content.coords.heading !== undefined) {
+      userContent += `, Heading: ${content.coords.heading}`;
+    }
+
+    if (content.coords.orientation) {
+      userContent += `, Orientation - Alpha: ${content.coords.orientation.alpha}, Beta: ${content.coords.orientation.beta}, Gamma: ${content.coords.orientation.gamma}`;
+    }
+
     try {
       const places = await fetchNearbyPlaces(content.coords.latitude, content.coords.longitude);
       nearbyPlaces = places.map((place: {name:string}) => place.name).join(', ');
