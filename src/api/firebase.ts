@@ -3,14 +3,16 @@ import { getFirestore, collection, addDoc } from "firebase/firestore";
 
 export function FirebaseStart(){
   const firebaseConfig = {
-    apiKey: '',
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: "",
-    measurementId: ""
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASURE_ID,
   };
+
+  console.log(import.meta.env.VITE_FIREBASE_API_KEY)
 // Initialize Firebase
   const app = initializeApp(firebaseConfig);
 
@@ -32,5 +34,5 @@ export function FirebaseStart(){
       console.error("Error adding document: ", e);
     }
   }
-uploadFirebase()
+ //uploadFirebase()
 }

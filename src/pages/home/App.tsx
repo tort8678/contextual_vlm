@@ -4,6 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import {useNavigate} from "react-router-dom";
 import axios from 'axios'
+import {FirebaseStart} from "../../api/firebase.ts";
 
 
 
@@ -40,7 +41,7 @@ function App() {
       <button onClick={() => navigate("/test")}>
         Go to test page
       </button>
-      <button onClick={() =>  handleTest()}>
+      <button onClick={() =>  FirebaseStart()}>
         Test Request
       </button>
     </>

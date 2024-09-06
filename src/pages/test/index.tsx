@@ -2,8 +2,7 @@ import {Camera, CameraType} from 'react-camera-pro';
 import {useRef, useState, useEffect} from 'react';
 import {Box, Stack, Switch, FormControlLabel, useMediaQuery} from '@mui/material';
 import {useGeolocated} from 'react-geolocated';
-import {sendAudioRequest} from "../../api/openAi.ts";
-import axios from 'axios';
+import {sendAudioRequest, sendTextRequest} from "../../api/openAi.ts";
 // import {FirebaseStart} from "../../api/firebase.ts";
 import {RequestData} from "./types.ts";
 import {AccessibleButton, AccessibleTypography, AccessibleTextField} from "./style.ts";
@@ -63,11 +62,7 @@ export default function Test() {
     } | null;
   }
 
-  interface RequestData {
-    text: string;
-    image: string | null;
-    coords: CustomCoords | null;
-  }
+
 
 //! Switch to video mode
   useEffect(() => {
@@ -177,12 +172,12 @@ export default function Test() {
     }
 
     console.log('Sending request data to backend:', data);
-    const res = await axios.post("/text", data);
+    const res = await sendTextRequest(data)
 
-    if (res.data && res.data.data) {
-      const content = res.data.data.content;
-      setOpenAIResponse(content);
-      const res2 = await sendAudioRequest(content);
+    if (res) {
+
+      setOpenAIResponse(res);
+      const res2 = await sendAudioRequest(res);
       if (res2) {
         const blob = new Blob([res2], { type: "audio/mpeg" });
         const url = URL.createObjectURL(blob);
