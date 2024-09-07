@@ -20,9 +20,6 @@ export const config = {
 export const TEST_CONTEXT =
   process.env.NODE_ENV === "production" ? "Production Mode" : process.env.TEST;
 
-// Secret
-export const SECRET =
-  process.env.NODE_ENV === "production" ? process.env.SECRET : "secret";
 
 export const ENV_CHECK =
   process.env.NODE_ENV === "production"

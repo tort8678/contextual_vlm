@@ -8,6 +8,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {AppContext} from "./types";
 import openAIRoute from "./routes/openAI"
+import chatLogRoute from "./routes/chatLog"
+import mongoose from "mongoose";
+import {databaseLink, config} from "./database";
 
 
 dotenv.config();
@@ -108,26 +111,36 @@ dotenv.config();
 //   }
 // }
 
-
-const app: Application = express();
-const port = process.env.PORT || 8000;
+(async function(){
+  try {
+    await mongoose.connect(config.link!, config.options);
+    console.log("Connect to the MongoDB successfully!");
+    console.log("DB LINK -> ", databaseLink);
+  } catch (error) {
+    console.log(new Error(`${error}`));
+  }
+  const app: Application = express();
+  const port = process.env.PORT || 8000;
 // nunjucks.configure("dist", {
 //   autoescape: true,
 //   express: app,
 // });
 
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
-app.use(express.static(path.join(__dirname, '../dist')));
-console.log(path.join(__dirname, '../dist'))
+  app.use(cors());
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
+  app.use(express.static(path.join(__dirname, '../dist')));
+  console.log(path.join(__dirname, '../dist'))
 
 
-app.get('/', (_req: Request, res: Response) => {
-  res.send(path.join(__dirname, '../dist'));
-});
 
-app.use("/", openAIRoute)
+
+  app.get('/', (_req: Request, res: Response) => {
+    res.send(path.join(__dirname, '../dist'));
+  });
+
+  app.use("/", openAIRoute)
+  app.use("/db", chatLogRoute)
 
 
 // app.post('/text', (req: Request, res: Response) => {
@@ -146,10 +159,12 @@ app.use("/", openAIRoute)
 //   }
 // })
 
-app.listen(port, () => {
-  console.log(`Server is live at http://localhost:${port}`);
-});
+  app.listen(port, () => {
+    console.log(`Server is live at http://localhost:${port}`);
+  });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
-});
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist', 'index.html'));
+  });
+
+})()

@@ -6,6 +6,7 @@ import {sendAudioRequest, sendTextRequest} from "../../api/openAi.ts";
 // import {FirebaseStart} from "../../api/firebase.ts";
 import {RequestData} from "./types.ts";
 import {AccessibleButton, AccessibleTypography, AccessibleTextField} from "./style.ts";
+import {createChatLog, addChatToChatLog} from "../../api/chatLog.ts";
 
 
 export default function Test() {
@@ -17,6 +18,7 @@ export default function Test() {
   const [openAIResponse, setOpenAIResponse] = useState<string>('');
   const [userInput, setUserInput] = useState<string>('Describe the image');
   const [audioUrl, setAudioUrl] = useState("");
+  const [currentChatId, setCurrentChatId] = useState("")
   const {coords, isGeolocationEnabled} = useGeolocated({
     positionOptions: {
       enableHighAccuracy: true,
@@ -24,13 +26,22 @@ export default function Test() {
     userDecisionTimeout: 5000,
     watchLocationPermissionChange: true
   });
-  const [orientation, setOrientation] = useState<{ alpha: number | null, beta: number | null, gamma: number | null }>({ alpha: null, beta: null, gamma: null });
+  const [orientation, setOrientation] = useState<{
+    alpha: number | null,
+    beta: number | null,
+    gamma: number | null
+  }>({alpha: null, beta: null, gamma: null});
   const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('photo');
   const [isRecording, setIsRecording] = useState(false);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition((pos) => {console.log(pos.coords)}, (error)=> {console.log(error.message); setOpenAIResponse(error.message)});
+    navigator.geolocation.getCurrentPosition((pos) => {
+      console.log(pos.coords)
+    }, (error) => {
+      console.log(error.message);
+      setOpenAIResponse(error.message)
+    });
 
     const handleOrientation = (event: DeviceOrientationEvent) => {
       setOrientation({
@@ -39,9 +50,9 @@ export default function Test() {
         gamma: event.gamma   // Rotation around y-axis
       });
     };
-  
+
     window.addEventListener('deviceorientation', handleOrientation, true);
-  
+
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
     };
@@ -61,7 +72,6 @@ export default function Test() {
       gamma: number | null;
     } | null;
   }
-
 
 
 //! Switch to video mode
@@ -84,6 +94,26 @@ export default function Test() {
         });
     }
   }, [cameraMode]);
+
+  useEffect(() => {
+    (async function () {
+      if(openAIResponse !== "") {
+        if (currentChatId === "") {
+          console.log(openAIResponse)
+          const res3 = await createChatLog({input: userInput, output: openAIResponse, imageURL: image as string})
+          console.log('chatLog', res3)
+          setCurrentChatId(res3.data._id)
+        } else {
+          const res3 = await addChatToChatLog({
+            id: currentChatId,
+            chat: {input: userInput, output: openAIResponse, imageURL: image as string}
+          })
+          console.log('chatLog', res3)
+        }
+      }
+    })()
+
+  }, [openAIResponse])
 
 
   const handleVideoRecording = () => {
@@ -139,61 +169,58 @@ export default function Test() {
 
   //! Still error with Video Mode, need to fix sending to API
   async function sendRequestOpenAI() {
-  try {
-    let frames: string[] = [];
-    if (videoBlob) {
-      frames = await extractFrames(videoBlob);
-    }
-
-    // Create the CustomCoords object
-    const customCoords: CustomCoords | null = coords ? {
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-      accuracy: coords.accuracy,
-      altitude: coords.altitude,
-      altitudeAccuracy: coords.altitudeAccuracy,
-      heading: coords.heading !== undefined ? coords.heading : null,
-      speed: coords.speed,
-      orientation: orientation ? {
-        alpha: orientation.alpha !== null ? orientation.alpha : null,
-        beta: orientation.beta !== null ? orientation.beta : null,
-        gamma: orientation.gamma !== null ? orientation.gamma : null,
-      } : null,
-    } : null;
-
-    const data: RequestData = {
-      text: `You are a blind assistant, be quick and to the point, use the coordinates to add to the depth of your description of what is happening in the photo/video frames. Always list nearby specific locations with corresponding details in addition to the description. Make sure all info is useful to an average blind user. DONT TELL USER COORDINATES, TELL THEM THEIR LOCATION. User input: ${userInput}`,
-      image: frames.length > 0 ? frames[0] : image,
-      coords: customCoords,  // Use the CustomCoords object here
-    };
-
-    if (!data.image) {
-      throw new Error('No image data available.');
-    }
-
-    console.log('Sending request data to backend:', data);
-    const res = await sendTextRequest(data)
-
-    if (res) {
-
-      setOpenAIResponse(res);
-      const res2 = await sendAudioRequest(res);
-      if (res2) {
-        const blob = new Blob([res2], { type: "audio/mpeg" });
-        const url = URL.createObjectURL(blob);
-        setAudioUrl(url);
+    try {
+      let frames: string[] = [];
+      if (videoBlob) {
+        frames = await extractFrames(videoBlob);
       }
-    } else {
-      throw new Error('Invalid response from API.');
+
+      // Create the CustomCoords object
+      const customCoords: CustomCoords | null = coords ? {
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        accuracy: coords.accuracy,
+        altitude: coords.altitude,
+        altitudeAccuracy: coords.altitudeAccuracy,
+        heading: coords.heading !== undefined ? coords.heading : null,
+        speed: coords.speed,
+        orientation: orientation ? {
+          alpha: orientation.alpha !== null ? orientation.alpha : null,
+          beta: orientation.beta !== null ? orientation.beta : null,
+          gamma: orientation.gamma !== null ? orientation.gamma : null,
+        } : null,
+      } : null;
+
+      const data: RequestData = {
+        text: `You are a blind assistant, be quick and to the point, use the coordinates to add to the depth of your description of what is happening in the photo/video frames. Always list nearby specific locations with corresponding details in addition to the description. Make sure all info is useful to an average blind user. DONT TELL USER COORDINATES, TELL THEM THEIR LOCATION. User input: ${userInput}`,
+        image: frames.length > 0 ? frames[0] : image,
+        coords: customCoords,  // Use the CustomCoords object here
+      };
+
+      if (!data.image) {
+        throw new Error('No image data available.');
+      }
+
+      console.log('Sending request data to backend:', data);
+      const res = await sendTextRequest(data)
+
+      if (res) {
+        setOpenAIResponse(res);
+        const res2 = await sendAudioRequest(res);
+        if (res2) {
+          const blob = new Blob([res2], {type: "audio/mpeg"});
+          const url = URL.createObjectURL(blob);
+          setAudioUrl(url);
+        }
+      } else {
+        throw new Error('Invalid response from API.');
+      }
+    } catch (e) {
+      console.error('Error sending request to OpenAI:', e);
+      setOpenAIResponse('An error occurred while processing your request. Please try again.');
     }
-  } catch (e) {
-    console.error('Error sending request to OpenAI:', e);
-    setOpenAIResponse('An error occurred while processing your request. Please try again.');
   }
-}
-  
-  
-  
+
 
   const handleCapture = (target: EventTarget & HTMLInputElement) => {
     if (target.files) {
@@ -246,10 +273,10 @@ export default function Test() {
       {/* Condition for displaying either camera or video view depending on whether the image or videoBlob exists */}
       {!image && !videoBlob ? (
         <>
-          <Box sx={{ width: '100%', maxWidth: '600px', textAlign: 'center' }}>
+          <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center'}}>
             {/* Display the Camera component on desktop only */}
             {cameraMode === 'photo' && !isMobile ? (
-              <Box sx={{ width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden' }}>
+              <Box sx={{width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden'}}>
                 <Camera
                   aspectRatio={4 / 3}
                   facingMode={'environment'}
@@ -264,11 +291,11 @@ export default function Test() {
                 autoPlay
                 muted
                 aria-label="Camera video feed"
-                style={{ width: '100%', borderRadius: '12px', overflow: 'hidden' }} 
+                style={{width: '100%', borderRadius: '12px', overflow: 'hidden'}}
               />
             )}
           </Box>
-  
+
           {/* Upload file input visible on both mobile and desktop */}
           <Box
             component="label"
@@ -303,10 +330,10 @@ export default function Test() {
               type="file"
               capture="environment"
               onChange={(e) => handleCapture(e.target)}
-              style={{ display: 'none' }}
+              style={{display: 'none'}}
             />
           </Box>
-  
+
           {/* Take photo button should only be visible on desktop */}
           {!isMobile && cameraMode === 'photo' && (
             <AccessibleButton
@@ -320,7 +347,7 @@ export default function Test() {
                 }
               }}
               aria-label="Take photo"
-              sx={{ width: '100%', maxWidth: '600px', marginTop: '16px', marginBottom: '16px' }}
+              sx={{width: '100%', maxWidth: '600px', marginTop: '16px', marginBottom: '16px'}}
             >
               Take photo
             </AccessibleButton>
@@ -328,7 +355,7 @@ export default function Test() {
         </>
       ) : (
         <>
-          <Box sx={{ width: '100%', maxWidth: '600px', textAlign: 'center' }}>
+          <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center'}}>
             {videoBlob ? (
               <video
                 src={URL.createObjectURL(videoBlob)}
@@ -346,20 +373,20 @@ export default function Test() {
                 src={image as string}
                 alt="Taken photo"
                 aria-hidden="true"
-                style={{ width: '100%', borderRadius: '12px' }}
+                style={{width: '100%', borderRadius: '12px'}}
               />
             )}
             <AccessibleButton
               onClick={handleRetake}
               aria-label="Retake photo or video"
-              sx={{ width: '100%', maxWidth: '600px', marginTop: '16px', marginBottom: '16px' }}
+              sx={{width: '100%', maxWidth: '600px', marginTop: '16px', marginBottom: '16px'}}
             >
               Retake
             </AccessibleButton>
           </Box>
         </>
       )}
-  
+
       {/* Geolocation data display for desktop */}
       {!isMobile && (
         <Box
@@ -374,7 +401,7 @@ export default function Test() {
           {!isGeolocationEnabled ? (
             <AccessibleTypography>Your browser does not support geolocation</AccessibleTypography>
           ) : coords ? (
-            <Box component="ul" sx={{ listStyleType: 'none', padding: 0 }}>
+            <Box component="ul" sx={{listStyleType: 'none', padding: 0}}>
               <AccessibleTypography>Latitude: {coords.latitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
               <AccessibleTypography>Longitude: {coords.longitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
               <AccessibleTypography>Accuracy: {coords.accuracy ? `${Math.round(coords.accuracy)} meters` : 'N/A'}</AccessibleTypography>
@@ -385,30 +412,30 @@ export default function Test() {
           )}
         </Box>
       )}
-  
+
       {/* Question input field */}
       <AccessibleTextField
         value={userInput}
         onChange={(e) => setUserInput(e.target.value)}
-        sx={{ bgcolor: 'white', marginY: 2, maxWidth: '600px' }}
+        sx={{bgcolor: 'white', marginY: 2, maxWidth: '600px'}}
         label="Question"
         aria-label="User input"
         fullWidth
       />
-  
+
       {/* Get Description button */}
       <AccessibleButton
         onClick={() => sendRequestOpenAI()}
         aria-label="Get description"
-        sx={{ width: '100%', maxWidth: '600px', marginTop: '18px' }}
+        sx={{width: '100%', maxWidth: '600px', marginTop: '18px'}}
       >
         Get Description
       </AccessibleButton>
-      <Box aria-live="polite" role="status" sx={{ marginTop: 2, maxWidth: '600px' }}>
+      <Box aria-live="polite" role="status" sx={{marginTop: 2, maxWidth: '600px'}}>
         <AccessibleTypography>{openAIResponse}</AccessibleTypography>
       </Box>
-      {audioUrl && <audio controls src={audioUrl} autoPlay style={{ maxWidth: '600px', marginTop: '16px' }} />}
-  
+      {audioUrl && <audio controls src={audioUrl} autoPlay style={{maxWidth: '600px', marginTop: '16px'}}/>}
+
       {/* Toggle switch for camera mode visible on desktop */}
       {!isMobile && (
         <FormControlLabel
@@ -420,7 +447,7 @@ export default function Test() {
           }
           label={cameraMode === 'photo' ? 'Switch to Video' : 'Switch to Photo'}
           aria-label="Toggle camera mode"
-          sx={{ width: '100%', maxWidth: '600px', marginTop: '16px' }}
+          sx={{width: '100%', maxWidth: '600px', marginTop: '16px'}}
         />
       )}
     </Stack>
