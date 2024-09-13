@@ -192,7 +192,7 @@ export default function Test() {
       } : null;
 
       const data: RequestData = {
-        text: `You are a blind assistant, be quick and to the point, use the coordinates to add to the depth of your description of what is happening in the photo/video frames. Always list nearby specific locations with corresponding details in addition to the description. Make sure all info is useful to an average blind user. DONT TELL USER COORDINATES, TELL THEM THEIR LOCATION. User input: ${userInput}`,
+        text: userInput,
         image: frames.length > 0 ? frames[0] : image,
         coords: customCoords,  // Use the CustomCoords object here
       };
@@ -406,6 +406,8 @@ export default function Test() {
               <AccessibleTypography>Longitude: {coords.longitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
               <AccessibleTypography>Accuracy: {coords.accuracy ? `${Math.round(coords.accuracy)} meters` : 'N/A'}</AccessibleTypography>
               <AccessibleTypography>Heading: {coords.heading ? `${Math.round(coords.heading)} degrees` : 'N/A'}</AccessibleTypography>
+              <AccessibleTypography>Alpha Orientation: {orientation.alpha}</AccessibleTypography>
+
             </Box>
           ) : (
             <AccessibleTypography>Getting the location data...</AccessibleTypography>

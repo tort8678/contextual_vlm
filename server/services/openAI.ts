@@ -3,12 +3,13 @@ import axios from "axios";
 import OpenAI from "openai";
 import {textRequestBody} from "../types";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 
 async function fetchNearbyPlaces(latitude: number, longitude: number) {
   // can add "Types" and "keywords" to the google query
-  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1500&type=convenience_store&key=${process.env.GOOGLE_API_KEY}`;
+  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1500&key=${process.env.GOOGLE_API_KEY}`;
   console.log(`Fetching nearby places with URL: ${url}`);
 
   try {
@@ -16,7 +17,19 @@ async function fetchNearbyPlaces(latitude: number, longitude: number) {
     console.log('Google Places API response:', response.data);
     return response.data.results;
   } catch (error) {
-    console.error('Error fetching nearby places:',error);
+    console.error('Error fetching nearby places:', error);
+    throw error;
+  }
+}
+
+async function geocodeCoordinates(latitude: number, longitude: number) {
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`;
+  try {
+    const response = await axios.get(url);
+    console.log('Google Geocoding API response:', response.data);
+    return response.data.results;
+  } catch (error) {
+    console.error('Error fetching nearby places:', error);
     throw error;
   }
 }
@@ -28,34 +41,37 @@ export class OpenAIService {
 
   async textRequest(ctx: AppContext, content: textRequestBody) {
     const {res} = ctx;
-    let userContent = content.text;
+
+    let systemContent = `You are a assistant to a Blind or Low Vision person, be quick and to the point answering what the user asks.
+                                Additional information is provided here. Use it only if needed. `
     let nearbyPlaces = '';
 
     if (content.coords) {
-      userContent += ` Coordinates: Latitude ${content.coords.latitude}, Longitude ${content.coords.longitude}`;
+      const geocodedCoords = await geocodeCoordinates(content.coords.latitude, content.coords.longitude)
+      systemContent += `Address:${geocodedCoords[0].formatted_address} `;
 
       if (content.coords.heading !== undefined) {
-        userContent += `, Heading: ${content.coords.heading}`;
+        systemContent += `, Heading: ${content.coords.heading}`;
       }
 
       if (content.coords.orientation) {
-        userContent += `, Orientation - Alpha: ${content.coords.orientation.alpha}, Beta: ${content.coords.orientation.beta}, Gamma: ${content.coords.orientation.gamma}`;
+        systemContent += `, Orientation - Alpha: ${content.coords.orientation.alpha}, Beta: ${content.coords.orientation.beta}, Gamma: ${content.coords.orientation.gamma}`;
       }
 
       try {
         const places = await fetchNearbyPlaces(content.coords.latitude, content.coords.longitude);
         nearbyPlaces = places.map((place: { name: string }) => place.name).join(', ');
-        userContent += ` Nearby Places: ${nearbyPlaces}`;
+        systemContent += ` Nearby Places: ${nearbyPlaces}`;
       } catch (error) {
         console.error('Error including nearby places in OpenAI request:', error);
       }
     }
-
+    console.log(systemContent)
     try {
       const chatCompletion = await this.client.chat.completions.create({
         messages: [{
           role: 'user', content: [
-            {type: 'text', text: userContent},
+            {type: 'text', text: content.text},
             {
               type: 'image_url', image_url: {
                 url: content.image,
@@ -63,7 +79,8 @@ export class OpenAIService {
               },
             },
           ],
-        }],
+        },
+          {role: 'system', content: systemContent}],
         model: 'gpt-4o-mini-2024-07-18',
       });
       console.log('OpenAI API response:', chatCompletion);
