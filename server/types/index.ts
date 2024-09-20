@@ -7,12 +7,18 @@ export interface AppContext {
 
 export interface textRequestBody {
   text: string;
-  image: string;
+  image?: string;
   coords: {
     latitude: number;
     longitude: number,
     heading?: number | null,
     orientation?: { alpha: number | null, beta: number | null, gamma: number | null }
   } | null
+}
+
+export interface parseRequestBody{
+  text:string,
+  lat: number,
+  lng: number
 }
 

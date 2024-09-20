@@ -1,7 +1,7 @@
 import axios, {AxiosResponse} from "axios";
 import {RequestData} from "../pages/test/types.ts";
 
-const baseRequest = axios.create({baseURL: "/"});
+const baseRequest = axios.create({baseURL: "/api"});
 
 
 
@@ -20,7 +20,7 @@ export async function sendTextRequest(data: RequestData){
 export async function sendAudioRequest(text:string){
   if(text !== ""){
     try{
-      const audioRequest = axios.create({baseURL:"/", responseType: "arraybuffer"});
+      const audioRequest = axios.create({baseURL:"/api", responseType: "arraybuffer"});
       const res:AxiosResponse<Buffer> = await audioRequest.post(`/audio`, {text})
       console.log(res)
       return res.data

@@ -129,18 +129,19 @@ dotenv.config();
   app.use(cors());
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
-  app.use(express.static(path.join(__dirname, '../dist')));
-  console.log(path.join(__dirname, '../dist'))
+  // if(process.env.NODE_ENV !== 'development') {
+    app.use(express.static(path.join(__dirname, '../dist')));
+  // }
 
 
 
 
-  app.get('/', (_req: Request, res: Response) => {
-    res.send(path.join(__dirname, '../dist'));
-  });
+  // app.get('/', (_req: Request, res: Response) => {
+  //   res.send(path.join(__dirname, '../dist'));
+  // });
 
-  app.use("/", openAIRoute)
-  app.use("/db", chatLogRoute)
+  app.use("/api", openAIRoute)
+  app.use("/api/db", chatLogRoute)
 
 
 // app.post('/text', (req: Request, res: Response) => {
@@ -163,8 +164,8 @@ dotenv.config();
     console.log(`Server is live at http://localhost:${port}`);
   });
 
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist', 'index.html'));
-  });
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(__dirname, '../dist', 'index.html'));
+    });
 
 })()

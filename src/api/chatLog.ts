@@ -8,7 +8,7 @@ export interface messageInterface {
 }
 export async function createChatLog(body:messageInterface){
   try{
-    const result = await baseRequest.post("/db/createChatLog", body);
+    const result = await baseRequest.post("api/db/createChatLog", body);
     console.log(result)
     if(result)
       return result.data
@@ -18,7 +18,7 @@ export async function createChatLog(body:messageInterface){
 }
 export async function addChatToChatLog(body:{id:string, chat:messageInterface}){
   try{
-    const result = await baseRequest.post("/db/newChat", body);
+    const result = await baseRequest.post("api/db/newChat", body);
     console.log(result)
     if(result)
       return result.data

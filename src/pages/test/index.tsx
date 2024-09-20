@@ -197,21 +197,22 @@ export default function Test() {
         coords: customCoords,  // Use the CustomCoords object here
       };
 
-      if (!data.image) {
-        throw new Error('No image data available.');
-      }
+      // if (!data.image) {
+      //   throw new Error('No image data available.');
+      // }
 
       console.log('Sending request data to backend:', data);
       const res = await sendTextRequest(data)
 
       if (res) {
         setOpenAIResponse(res);
-        const res2 = await sendAudioRequest(res);
-        if (res2) {
-          const blob = new Blob([res2], {type: "audio/mpeg"});
-          const url = URL.createObjectURL(blob);
-          setAudioUrl(url);
-        }
+        // TODO: Commented out audio response cause it takes a lot of tokens but make sure to reenable if building for production
+        // const res2 = await sendAudioRequest(res);
+        // if (res2) {
+        //   const blob = new Blob([res2], {type: "audio/mpeg"});
+        //   const url = URL.createObjectURL(blob);
+        //   setAudioUrl(url);
+        // }
       } else {
         throw new Error('Invalid response from API.');
       }
