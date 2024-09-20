@@ -39,6 +39,11 @@ export class OpenAIService {
     apiKey: process.env.OPENAI_API_KEY,
   });
 
+  async parseUserRequest(ctx:AppContext, text: string) {
+    const {res} = ctx
+    //try function?
+  }
+
   async textRequest(ctx: AppContext, content: textRequestBody) {
     const {res} = ctx;
 
@@ -48,7 +53,7 @@ export class OpenAIService {
 
     if (content.coords) {
       const geocodedCoords = await geocodeCoordinates(content.coords.latitude, content.coords.longitude)
-      systemContent += `Address:${geocodedCoords[0].formatted_address} `;
+      systemContent += `Current Address: ${geocodedCoords[0].formatted_address} `;
 
       if (content.coords.heading !== undefined) {
         systemContent += `, Heading: ${content.coords.heading}`;
