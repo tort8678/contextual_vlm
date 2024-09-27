@@ -40,8 +40,8 @@ const tools = [
   {
     type: "function" as "function",
     function: {
-      name: "generateGooglePlacesApiLink",
-      description: "Generates a Google Places API link based on user location. Format: https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&rankby=distance&type=${type}",
+      name: "generateGoogleAPILinkNonSpecificLocation",
+      description: "Generates a Google Nearby Places API link based on user location. Use when user wants to find areas based on type, not specific name. Format: https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&rankby=distance&type=${type}",
       parameters: {
         type: "object",
         properties: {
@@ -54,6 +54,25 @@ const tools = [
       }
     }
   },
+  {
+    type: "function" as "function",
+    function: {
+      name: "generateGooglePlacesApiLinkSpecificLocation",
+      description: "Generates a Google Place From Text API link based on user location. Use when a user names a specific place. If there are spaces in user request, replace with {%20}"+
+        "Link Format: https://maps.googleapis.com/maps/api/place/findplacefromtext/json?fields=formatted_address%2Cname&inputtype=textquery&input={USER_REQUEST}",
+      parameters: {
+        type: "object",
+        properties: {
+          link: {
+            type: "string",
+            description: "The completed Google Places From Text API link."
+          }
+        },
+        required: ["link"]
+      }
+    }
+  },
+
 
   ]
 
@@ -75,104 +94,6 @@ export class OpenAIService {
             role: "system",
             content: `decide the appropriate link to return from function options. If none fit the user query, return 'none'. The latitude is ${lat} and the longitude is ${lng}.  If no type is specified, leave this part out: &type=type`
           },
-          // {
-          //   role: "system", content: "possible types in places request: accounting\n" +
-          //     "airport\n" +
-          //     "amusement_park\n" +
-          //     "aquarium\n" +
-          //     "art_gallery\n" +
-          //     "atm\n" +
-          //     "bakery\n" +
-          //     "bank\n" +
-          //     "bar\n" +
-          //     "beauty_salon\n" +
-          //     "bicycle_store\n" +
-          //     "book_store\n" +
-          //     "bowling_alley\n" +
-          //     "bus_station\n" +
-          //     "cafe\n" +
-          //     "campground\n" +
-          //     "car_dealer\n" +
-          //     "car_rental\n" +
-          //     "car_repair\n" +
-          //     "car_wash\n" +
-          //     "casino\n" +
-          //     "cemetery\n" +
-          //     "church\n" +
-          //     "city_hall\n" +
-          //     "clothing_store\n" +
-          //     "convenience_store\n" +
-          //     "courthouse\n" +
-          //     "dentist\n" +
-          //     "department_store\n" +
-          //     "doctor\n" +
-          //     "drugstore\n" +
-          //     "electrician\n" +
-          //     "electronics_store\n" +
-          //     "embassy\n" +
-          //     "fire_station\n" +
-          //     "florist\n" +
-          //     "funeral_home\n" +
-          //     "furniture_store\n" +
-          //     "gas_station\n" +
-          //     "gym\n" +
-          //     "hair_care\n" +
-          //     "hardware_store\n" +
-          //     "hindu_temple\n" +
-          //     "home_goods_store\n" +
-          //     "hospital\n" +
-          //     "insurance_agency\n" +
-          //     "jewelry_store\n" +
-          //     "laundry\n" +
-          //     "lawyer\n" +
-          //     "library\n" +
-          //     "light_rail_station\n" +
-          //     "liquor_store\n" +
-          //     "local_government_office\n" +
-          //     "locksmith\n" +
-          //     "lodging\n" +
-          //     "meal_delivery\n" +
-          //     "meal_takeaway\n" +
-          //     "mosque\n" +
-          //     "movie_rental\n" +
-          //     "movie_theater\n" +
-          //     "moving_company\n" +
-          //     "museum\n" +
-          //     "night_club\n" +
-          //     "painter\n" +
-          //     "park\n" +
-          //     "parking\n" +
-          //     "pet_store\n" +
-          //     "pharmacy\n" +
-          //     "physiotherapist\n" +
-          //     "plumber\n" +
-          //     "police\n" +
-          //     "post_office\n" +
-          //     "primary_school\n" +
-          //     "real_estate_agency\n" +
-          //     "restaurant\n" +
-          //     "roofing_contractor\n" +
-          //     "rv_park\n" +
-          //     "school\n" +
-          //     "secondary_school\n" +
-          //     "shoe_store\n" +
-          //     "shopping_mall\n" +
-          //     "spa\n" +
-          //     "stadium\n" +
-          //     "storage\n" +
-          //     "store\n" +
-          //     "subway_station\n" +
-          //     "supermarket\n" +
-          //     "synagogue\n" +
-          //     "taxi_stand\n" +
-          //     "tourist_attraction\n" +
-          //     "train_station\n" +
-          //     "transit_station\n" +
-          //     "travel_agency\n" +
-          //     "university\n" +
-          //     "veterinary_care\n" +
-          //     "zoo"
-          // }
         ],
         tools: tools,
         tool_choice: "auto"
@@ -219,23 +140,36 @@ export class OpenAIService {
       try {
         const places = await this.parseUserRequest(ctx, content.text, content.coords.latitude, content.coords.longitude)
         console.log(places)
+        //determine if chat gpt is returning an api link
         if(places && places.choices.length > 0 && places.choices[0].message.tool_calls!.length > 0) {
+          console.log(places.choices[0].message.tool_calls![0].function)
           const parsedArgs = JSON.parse(places.choices[0].message.tool_calls![0].function.arguments)
+          //get link
           const {link} = parsedArgs;
           console.log(link + `&key=${process.env.GOOGLE_API_KEY}`)
-          if(link){
+          if(link !== undefined){
+            //use link
             const places:any =  await axios.get(link + `&key=${process.env.GOOGLE_API_KEY}`);
-            console.log(places.data.results)
-            nearbyPlaces = places.data.results.map((place: { name: string }) => place.name).join(', ');
-            console.log(nearbyPlaces)
-            systemContent += ` Nearby Places: ${nearbyPlaces}`;
+
+            if(places.data.results) {
+              // console.log(places.data.results)
+              nearbyPlaces = places.data.results.map((place: { name: string }) => place.name).join(', ');
+              console.log(nearbyPlaces)
+              systemContent += ` Nearby Places: ${nearbyPlaces}`;
+            }
+            else if(places.data.candidates){
+              console.log(places.data.candidates[0])
+              const placeInfo = `name: ${places.data.candidates[0].name}, address: ${places.data.candidates[0].formatted_address}`
+              console.log(placeInfo)
+              systemContent += `Relevant Place Information: ${placeInfo}`
+            }
           }
         }
         // const places = await fetchNearbyPlaces(content.coords.latitude, content.coords.longitude);
         // nearbyPlaces = places.map((place: { name: string }) => place.name).join(', ');
         // systemContent += ` Nearby Places: ${nearbyPlaces}`;
       } catch (error) {
-        console.error('Error including nearby places in OpenAI request:', error);
+        console.error('Error including api information in OpenAI request:', error);
       }
     }
     // console.log(systemContent)

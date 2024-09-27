@@ -10,13 +10,13 @@ export class OpenAIController {
     const {text, lat, lng} = req.body
     await openAIService.parseUserRequest({req,res}, text, lat, lng)
   }
+
   async textRequest(req: Request,
                     res: Response): Promise<void> {
     const body: textRequestBody = req.body
     await openAIService.textRequest({req,res}, body)
 
   }
-
 
   async audioRequest(req: Request,
                      res: Response): Promise<void> {
