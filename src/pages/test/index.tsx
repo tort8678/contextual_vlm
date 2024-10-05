@@ -389,32 +389,32 @@ export default function Test() {
       )}
 
       {/* Geolocation data display for desktop */}
-      {!isMobile && (
-        <Box
-          aria-live="polite"
-          sx={{
-            display: 'block',
-            marginTop: '16px',
-            textAlign: 'center',
-            maxWidth: '60px',
-          }}
-        >
-          {!isGeolocationEnabled ? (
-            <AccessibleTypography>Your browser does not support geolocation</AccessibleTypography>
-          ) : coords ? (
-            <Box component="ul" sx={{listStyleType: 'none', padding: 0}}>
-              <AccessibleTypography>Latitude: {coords.latitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
-              <AccessibleTypography>Longitude: {coords.longitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>
-              <AccessibleTypography>Accuracy: {coords.accuracy ? `${Math.round(coords.accuracy)} meters` : 'N/A'}</AccessibleTypography>
-              <AccessibleTypography>Heading: {coords.heading ? `${Math.round(coords.heading)} degrees` : 'N/A'}</AccessibleTypography>
-              <AccessibleTypography>Alpha Orientation: {orientation.alpha}</AccessibleTypography>
+      {/*{!isMobile && (*/}
+      {/*  <Box*/}
+      {/*    aria-live="polite"*/}
+      {/*    sx={{*/}
+      {/*      display: 'block',*/}
+      {/*      marginTop: '16px',*/}
+      {/*      textAlign: 'center',*/}
+      {/*      maxWidth: '60px',*/}
+      {/*    }}*/}
+      {/*  >*/}
+      {/*    {!isGeolocationEnabled ? (*/}
+      {/*      <AccessibleTypography>Your browser does not support geolocation</AccessibleTypography>*/}
+      {/*    ) : coords ? (*/}
+      {/*      <Box component="ul" sx={{listStyleType: 'none', padding: 0}}>*/}
+      {/*        <AccessibleTypography>Latitude: {coords.latitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>*/}
+      {/*        <AccessibleTypography>Longitude: {coords.longitude?.toFixed(4) ?? 'N/A'}</AccessibleTypography>*/}
+      {/*        <AccessibleTypography>Accuracy: {coords.accuracy ? `${Math.round(coords.accuracy)} meters` : 'N/A'}</AccessibleTypography>*/}
+      {/*        <AccessibleTypography>Heading: {coords.heading ? `${Math.round(coords.heading)} degrees` : 'N/A'}</AccessibleTypography>*/}
+      {/*        <AccessibleTypography>Alpha Orientation: {orientation.alpha}</AccessibleTypography>*/}
 
-            </Box>
-          ) : (
-            <AccessibleTypography>Getting the location data...</AccessibleTypography>
-          )}
-        </Box>
-      )}
+      {/*      </Box>*/}
+      {/*    ) : (*/}
+      {/*      <AccessibleTypography>Getting the location data...</AccessibleTypography>*/}
+      {/*    )}*/}
+      {/*  </Box>*/}
+      {/*)}*/}
 
       {/* Question input field */}
       <AccessibleTextField
