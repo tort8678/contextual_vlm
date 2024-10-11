@@ -149,7 +149,10 @@ export class OpenAIService {
     let systemContent = `You are a assistant to a Blind or Low Vision person, be quick and to the point answering what the user asks.
                                 Additional geolocation data is here to orient your systems. If provided data is lacking to give a sufficient answer, respond with "I do not have enough data".
                                 Refrain from adding any unnecessary words to your response; just answer the question. If giving directions, list them out. If an image is attached, always try to
-                                utilize its content in your response if it is relevant. Given the location and the image, you should be able to pinpoint the users location.`
+                                utilize its content in your response if it is relevant. Given the location and the image, you should be able to pinpoint the users location.
+                                If a user requests transportation, prioritize identifying the nearest train stations or relevant transport services.`
+                
+    systemContent += ` Always strive to give consistent answers for the same questions, unless the user asks for a different answer, particularly regarding transport services.`;
     let nearbyPlaces = '';
     const userContent: [ChatCompletionContentPartText | ChatCompletionContentPartImage] = [
       {type: 'text', text: content.text}
