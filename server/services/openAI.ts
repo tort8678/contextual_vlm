@@ -40,7 +40,7 @@ const tools = [
     type: "function" as "function",
     function: {
       name: "generateGoogleAPILinkNonSpecificLocation",
-      description: "Generates a Google Nearby Places API link based on user location. Use when user wants to find areas based on type, not specific name. Format: https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&rankby=distance&type=${type}",
+      description: "Generates a Google Nearby Places API link based on user location. Use when user wants to find areas based on type, not specific name. Also use if user asks about where they are so you can geolocate them better. Format: https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&rankby=distance&type=${type}",
       parameters: {
         type: "object",
         properties: {
@@ -147,7 +147,8 @@ export class OpenAIService {
     const {res} = ctx;
     // console.log("hello world!!!")
     let systemContent = `You are a assistant to a Blind or Low Vision person, be quick and to the point answering what the user asks.
-                                Additional geolocation data is here to orient your systems. If provided data is lacking to give a sufficient answer, respond with "I do not have enough data".
+                                Additional geolocation data is here to orient your systems. Try your best to give a coherent response using a synthesis of image data and location data.
+                                If provided data is lacking to give a sufficient answer, respond with "I do not have enough data".
                                 Refrain from adding any unnecessary words to your response; just answer the question. If giving directions, list them out. If an image is attached, always try to
                                 utilize its content in your response if it is relevant. Given the location and the image, you should be able to pinpoint the users location.
                                 If a user requests transportation, prioritize identifying the nearest train stations or relevant transport services.`

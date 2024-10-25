@@ -207,12 +207,12 @@ export default function Test() {
       if (res) {
         setOpenAIResponse(res);
         // TODO: Commented out audio response cause it takes a lot of tokens but make sure to reenable if building for production
-        // const res2 = await sendAudioRequest(res);
-        // if (res2) {
-        //   const blob = new Blob([res2], {type: "audio/mpeg"});
-        //   const url = URL.createObjectURL(blob);
-        //   setAudioUrl(url);
-        // }
+        const res2 = await sendAudioRequest(res);
+        if (res2) {
+          const blob = new Blob([res2], {type: "audio/mpeg"});
+          const url = URL.createObjectURL(blob);
+          setAudioUrl(url);
+        }
       } else {
         throw new Error('Invalid response from API.');
       }
