@@ -325,7 +325,7 @@ export default function Test() {
             }}
             aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
           >
-            Upload File
+            TAKE A PICTURE
             <input
               accept="image/*"
               type="file"
