@@ -438,6 +438,64 @@ export default function Test() {
         <AccessibleTypography>{openAIResponse}</AccessibleTypography>
       </Box>
       {audioUrl && <audio controls src={audioUrl} autoPlay style={{maxWidth: '600px', marginTop: '16px'}}/>}
+{/* --------------------------------------------------------------------------------------------- */}
+
+    {/*TTS Button with Play/Pause and Seek dragger*/}
+    {audioUrl && (
+      <div style={{
+        width: '100%',
+        maxWidth: '600px',
+        marginTop: '16px',
+        marginBottom: '16px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}>
+        <AccessibleButton
+          onClick={() => {
+            const audioElement = document.getElementById('ttsAudio');
+            if (audioElement) {
+              if (audioElement.paused) {
+                audioElement.play();
+              } else {
+                audioElement.pause();
+              }
+            }
+          }}
+          aria-label="Play or Pause text-to-speech"
+          sx={{
+            backgroundColor: '#4CAF50',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            borderRadius: '8px',
+            fontSize: '18px',
+            color: '#fff',
+          }}
+        >
+          <span role="img" aria-label="Speaker" style={{ marginRight: '8px' }}>
+            🔊
+          </span>
+          Play/Pause Description
+        </AccessibleButton>
+
+        {/*audio Element for Seek without extra controls */}
+        <audio
+          id="ttsAudio"
+          src={audioUrl}
+          controlsList="nodownload noplaybackrate"  //removes download and playback speed options
+          style={{
+            width: '100%',
+            marginTop: '8px',
+          }}
+          controls
+        >
+          Your browser does not support the audio element.
+        </audio>
+      </div>
+    )}
 
       {/* Toggle switch for camera mode visible on desktop */}
       {!isMobile && (
@@ -453,6 +511,8 @@ export default function Test() {
           sx={{width: '100%', maxWidth: '600px', marginTop: '16px'}}
         />
       )}
+
+
     </Stack>
   );
 }
