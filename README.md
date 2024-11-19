@@ -1,30 +1,41 @@
-# React + TypeScript + Vite
+# Buddy Walk
+Hello all and welcome to Buddy Walk!
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Buddy Walk is a web-based application created for mobile devices that is designed to help blind and low vision individuals travel independently. 
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## How does it work
+Buddy Walk allows a user to take a photo of their surroundings and type a question related to the photo or related to their location. The user then submits the question and image combination, where then the software generates a response. 
 
-## Expanding the ESLint configuration
+The response is generated using a combination of Open AI (chat gpt) and Google Maps data to deliver a relevant and helpful response. Where before you might have had to use multiple apps to understand what is visually in front of you as well as what places are nearby, you can now accomplish this with a single app!
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+By combining your geolocation (latitude and longitude), captured image data, and Google Maps data on what is around you, we can effectively localize your position and give more accurate directions than using a navigation app by itself.
 
-- Configure the top-level `parserOptions` property like this:
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json', './tsconfig.app.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+## What kind of questions can I ask?
+1. Where am I?
+2. What {place type} is nearby?
+3. Is there a {specific store name} near me?
+4. How can I get to {specific place/ address}?
+5. How far am I from {specific place/ address}?
+6. Please describe the image
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+## Future Work
+Buddy Walk is in the early stages of development, and we plan to add many more features to make the application easier to use while giving better responses.
+
+Some features to look forward to include:
+
+1. Compound requests such as: Give me directions to the nearest {non-specific location/ chain establishment}
+2. How far am I from the nearest {non-specific location/ chain establishment}
+3. Orientation specfic responses such as: "You are facing ____ st in the northwest direction, continue down the street and take a left to arrive at your destination"
+
+
+## Tech stack and how to set up
+Buddy Walk runs on Vite + React+ Typescript as a web application. The backend is Node.js with a MongoDB database. We collect your inputs and the application's outputs to further tune the application to give better responses.
+
+You can visit the live website here:https://contextual-vlm-dsk5e3vfca-uc.a.runapp/test
+
+If you'd like to download the source code and run the app off your own machine, run the following code: 
+
+  `npm run dev`
+### Stayed tuned for further updates!
