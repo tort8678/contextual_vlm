@@ -432,7 +432,7 @@ export default function Test() {
         aria-label="Get description"
         sx={{width: '100%', maxWidth: '600px', marginTop: '18px'}}
       >
-        Get Description
+        Get Response
       </AccessibleButton>
       <Box aria-live="polite" role="status" sx={{marginTop: 2, maxWidth: '600px'}}>
         <AccessibleTypography>{openAIResponse}</AccessibleTypography>
@@ -440,7 +440,7 @@ export default function Test() {
       {audioUrl && <audio controls src={audioUrl} autoPlay style={{maxWidth: '600px', marginTop: '16px'}}/>}
 {/* --------------------------------------------------------------------------------------------- */}
 
-    {/*TTS Button with Play/Pause and Seek dragger*/}
+    {/*TTS Button with Play/Pause option*/}
     {audioUrl && (
       <div style={{
         width: '100%',
@@ -478,17 +478,17 @@ export default function Test() {
           <span role="img" aria-label="Speaker" style={{ marginRight: '8px' }}>
             🔊
           </span>
-          Play/Pause Description
+          Play/Pause Response
         </AccessibleButton>
 
         {/*audio Element for Seek without extra controls */}
         <audio
           id="ttsAudio"
           src={audioUrl}
-          controlsList="nodownload noplaybackrate"  //removes download and playback speed options
           style={{
             width: '100%',
             marginTop: '8px',
+            display: 'none',
           }}
           controls
         >
