@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import {FirebaseStart} from "../../api/firebase.ts";
-// import './App.css'
-// import axios from 'axios'
-
-
+import { Box, Button, Typography, Container } from '@mui/material';
 
 const App: React.FC = () => {
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const navigate = useNavigate();
 
-  // async function handleTest(){
-  //   const res = await axios.get("api/test")
-  //   console.log(res)
-  // }
-
-  //Enabling location: Using geolocation API
+  // Enable location using the Geolocation API
   const enableLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -28,7 +19,7 @@ const App: React.FC = () => {
     }
   };
 
-  //Enabling camera: Using MediaDevices API
+  // Enable camera using the MediaDevices API
   const enableCamera = async () => {
     try {
       await navigator.mediaDevices.getUserMedia({ video: true });
@@ -38,7 +29,7 @@ const App: React.FC = () => {
     }
   };
 
-  //Navigate to the main project file (test/index.tsx)
+  // Navigate to the main project route
   const handleContinue = () => {
     if (locationEnabled && cameraEnabled) {
       navigate('/test');
@@ -46,72 +37,58 @@ const App: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
+    <Container
+      maxWidth="sm"
+      sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         height: '100vh',
-        backgroundColor: '#f8f8f8',
+        backgroundColor: 'black',
+        color: 'white',
         textAlign: 'center',
-        padding: '16px',
+        padding: 2,
       }}
     >
-      <h3>Please enable location and camera access to continue :)</h3>
+      <Typography variant="h5" gutterBottom>
+        Please enable location and camera access to continue :)
+      </Typography>
 
-      <button
+      <Button
+        variant="contained"
+        color={locationEnabled ? 'success' : 'error'}
         onClick={enableLocation}
-        style={{
-          backgroundColor: locationEnabled ? 'green' : 'red',
-          color: '#fff',
-          padding: '12px 24px',
-          margin: '8px 0',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          cursor: 'pointer',
-        }}
+        sx={{ marginY: 1, width: '100%' }}
       >
         {locationEnabled ? 'Location Enabled' : 'Enable Location'}
-      </button>
+      </Button>
 
-      <button
+      <Button
+        variant="contained"
+        color={cameraEnabled ? 'success' : 'error'}
         onClick={enableCamera}
-        style={{
-          backgroundColor: cameraEnabled ? 'green' : 'red',
-          color: '#fff',
-          padding: '12px 24px',
-          margin: '8px 0',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          cursor: 'pointer',
-        }}
+        sx={{ marginY: 1, width: '100%' }}
       >
         {cameraEnabled ? 'Camera Enabled' : 'Enable Camera'}
-      </button>
+      </Button>
 
       {locationEnabled && cameraEnabled && (
-        <button
+        <Button
+          variant="contained"
+          color="success"
           onClick={handleContinue}
-          style={{
-            backgroundColor: 'green',
-            color: '#fff',
-            padding: '16px',
-            marginTop: '16px',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '18px',
-            cursor: 'pointer',
+          sx={{
+            marginTop: 2,
+            padding: 2,
             width: '100%',
-            height: '85px',
+            fontSize: '1rem',
           }}
         >
           Continue
-        </button>
+        </Button>
       )}
-    </div>
+    </Container>
   );
 };
 

@@ -263,12 +263,14 @@ export default function Test() {
       component="main"
       role="main"
       sx={{
+        display: 'flex', // Make it a flex container
+        justifyContent: 'center', // Center horizontally
+        alignItems: 'center', // Center vertically
         paddingLeft: isMobile ? '8px' : '32px',
         paddingRight: isMobile ? '8px' : '32px',
         backgroundColor: '#FFFFFF',
-        height: '100vh',
+        height: '100vh', // Full viewport height
         overflowY: 'auto',
-        alignItems: 'center',
       }}
     >
       {/* Condition for displaying either camera or video view depending on whether the image or videoBlob exists */}
