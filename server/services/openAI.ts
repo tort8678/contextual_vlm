@@ -197,7 +197,8 @@ export class OpenAIService {
               // console.log(places.data.results)
               nearbyPlaces = places.data.results.map((place: { name: string }) => place.name).join(', ');
               console.log(nearbyPlaces)
-              systemContent += ` Nearby Places: ${nearbyPlaces}`;
+              systemContent += ` Nearby Places in order of nearest distance: ${nearbyPlaces}`;
+              console.log(systemContent)
             }
             //if its giving back a specific place link
             else if (places.data.candidates) {
