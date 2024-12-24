@@ -337,7 +337,7 @@ export default function Test() {
             />
           </Box>
 
-          {/* Take photo button should only be visible on desktop */}
+          {/* Take photo button should only be visible on desktop  */}
           {!isMobile && cameraMode === 'photo' && (
             <AccessibleButton
               onClick={() => {
