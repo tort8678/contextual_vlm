@@ -5,7 +5,7 @@ import {useGeolocated} from 'react-geolocated';
 import {sendAudioRequest, sendTextRequest} from "../../api/openAi.ts";
 // import {FirebaseStart} from "../../api/firebase.ts";
 import {RequestData} from "./types.ts";
-import {AccessibleButton, AccessibleTypography, AccessibleTextField} from "./style.ts";
+import {AccessibleButton, AccessibleTypography, AccessibleTextField, BlueSection, GraySection, GreenSection} from "./style.ts";
 import {createChatLog, addChatToChatLog} from "../../api/chatLog.ts";
 
 
@@ -264,6 +264,7 @@ export default function Test() {
       role="main"
       sx={{
         display: 'flex', // Make it a flex container
+        flexDirection: 'column',
         justifyContent: 'center', // Center horizontally
         alignItems: 'center', // Center vertically
         paddingLeft: isMobile ? '8px' : '32px',
@@ -273,6 +274,8 @@ export default function Test() {
         overflowY: 'auto',
       }}
     >
+      {/* Blue Section: Take Photo */}
+      <BlueSection>
       {/* Condition for displaying either camera or video view depending on whether the image or videoBlob exists */}
       {!image && !videoBlob ? (
         <>
@@ -389,6 +392,8 @@ export default function Test() {
           </Box>
         </>
       )}
+      </BlueSection>
+      
 
       {/* Geolocation data display for desktop */}
       {/*{!isMobile && (*/}
@@ -418,6 +423,8 @@ export default function Test() {
       {/*  </Box>*/}
       {/*)}*/}
 
+      {/* Gray Section: Asking the Question */}
+      <GraySection>
       {/* Question input field */}
       <AccessibleTextField
         value={userInput}
@@ -427,7 +434,10 @@ export default function Test() {
         aria-label="User input"
         fullWidth
       />
+      </GraySection>
 
+      {/* Green Section: Displaying Response */}
+      <GreenSection>
       {/* Get Description button */}
       <AccessibleButton
         onClick={() => sendRequestOpenAI()}
@@ -439,7 +449,8 @@ export default function Test() {
       <Box aria-live="polite" role="status" sx={{marginTop: 2, maxWidth: '600px'}}>
         <AccessibleTypography>{openAIResponse}</AccessibleTypography>
       </Box>
-      {audioUrl && <audio controls src={audioUrl} autoPlay style={{maxWidth: '600px', marginTop: '16px'}}/>}
+      {/* code below adds the drag/seek audio bar */}
+      {audioUrl && <audio controls src={audioUrl} autoPlay style={{maxWidth: '600px', marginTop: '16px'}}/>} 
 {/* --------------------------------------------------------------------------------------------- */}
 
     {/*TTS Button with Play/Pause option*/}
@@ -490,7 +501,7 @@ export default function Test() {
           style={{
             width: '100%',
             marginTop: '8px',
-            display: 'none',
+            display: 'none', // Hide controls and seek bar
           }}
           controls
         >
@@ -499,6 +510,7 @@ export default function Test() {
       </div>
     )}
 
+  </GreenSection>
       {/* Toggle switch for camera mode visible on desktop */}
       {!isMobile && (
         <FormControlLabel
