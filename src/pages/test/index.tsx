@@ -258,6 +258,7 @@ export default function Test() {
   }
 
   return (
+    <center>
     <Stack
       maxWidth={'100vw'}
       component="main"
@@ -269,7 +270,7 @@ export default function Test() {
         alignItems: 'center', // Center vertically
         paddingLeft: isMobile ? '8px' : '32px',
         paddingRight: isMobile ? '8px' : '32px',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#F5F5F5',
         height: '100vh', // Full viewport height
         overflowY: 'auto',
       }}
@@ -282,7 +283,7 @@ export default function Test() {
           <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center'}}>
             {/* Display the Camera component on desktop only */}
             {cameraMode === 'photo' && !isMobile ? (
-              <Box sx={{width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden'}}>
+              <Box sx={{width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden',textAlign: 'center'}}>
                 <Camera
                   aspectRatio={4 / 3}
                   facingMode={'environment'}
@@ -315,11 +316,13 @@ export default function Test() {
               fontSize: isMobile ? '2rem' : '1.5rem',
               marginTop: '16px',
               marginBottom: '16px',  // Added padding below the button
-              backgroundColor: '#000',
+              // backgroundColor: '#000',
+              background: 'linear-gradient(145deg, #1a1a1a, #121212)',  // Almost black gradient background
               color: '#fff',
               borderRadius: '12px',
               textAlign: 'center',
               cursor: 'pointer',
+              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2), -2px -2px 10px rgba(255, 255, 255, 0.2)', // Shadow effect
               '&:hover': {
                 backgroundColor: '#303030',
               },
@@ -353,7 +356,14 @@ export default function Test() {
                 }
               }}
               aria-label="Take photo"
-              sx={{width: '100%', maxWidth: '600px', marginTop: '16px', marginBottom: '16px'}}
+              sx={{width: '100%', 
+                maxWidth: '600px', 
+                marginTop: '16px', 
+                marginBottom: '16px',
+                '&:hover': {backgroundColor: '#303030',},
+                '&:focus': {outline: '3px solid #FFA500',
+                            outlineOffset: '2px',},
+                }}
             >
               Take photo
             </AccessibleButton>
@@ -385,7 +395,14 @@ export default function Test() {
             <AccessibleButton
               onClick={handleRetake}
               aria-label="Retake photo or video"
-              sx={{width: '100%', maxWidth: '600px', marginTop: '16px', marginBottom: '16px'}}
+              sx={{width: '100%', 
+                maxWidth: '600px', 
+                marginTop: '16px', 
+                marginBottom: '16px',
+                '&:hover': {backgroundColor: '#303030',},
+                '&:focus': {outline: '3px solid #FFA500',
+                            outlineOffset: '2px',},
+                }}
             >
               Retake
             </AccessibleButton>
@@ -430,7 +447,7 @@ export default function Test() {
         value={userInput}
         onChange={(e) => setUserInput(e.target.value)}
         sx={{bgcolor: 'white', marginY: 2, maxWidth: '600px'}}
-        label="Question"
+        label="Enter a question below:"
         aria-label="User input"
         fullWidth
       />
@@ -442,9 +459,12 @@ export default function Test() {
       <AccessibleButton
         onClick={() => sendRequestOpenAI()}
         aria-label="Get description"
-        sx={{width: '100%', maxWidth: '600px', marginTop: '18px'}}
+        sx={{width: '100%', 
+          maxWidth: '600px', 
+          marginTop: '18px',
+        }}
       >
-        Get Response
+        Submit
       </AccessibleButton>
       <Box aria-live="polite" role="status" sx={{marginTop: 2, maxWidth: '600px'}}>
         <AccessibleTypography>{openAIResponse}</AccessibleTypography>
@@ -477,7 +497,7 @@ export default function Test() {
           }}
           aria-label="Play or Pause text-to-speech"
           sx={{
-            backgroundColor: '#4CAF50',
+            backgroundColor: '#000000', // button color
             width: '100%',
             display: 'flex',
             alignItems: 'center',
@@ -485,7 +505,9 @@ export default function Test() {
             padding: '16px',
             borderRadius: '8px',
             fontSize: '18px',
-            color: '#fff',
+            color: '#FFFFFF', // text color
+            background: 'linear-gradient(145deg, #1a1a1a, #121212)',  // Almost black gradient background
+            boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2), -2px -2px 10px rgba(255, 255, 255, 0.2)', // Shadow effect
           }}
         >
           <span role="img" aria-label="Speaker" style={{ marginRight: '8px' }}>
@@ -528,5 +550,6 @@ export default function Test() {
 
 
     </Stack>
+    </center>
   );
 }
