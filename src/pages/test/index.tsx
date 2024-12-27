@@ -323,13 +323,9 @@ export default function Test() {
               textAlign: 'center',
               cursor: 'pointer',
               boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2), -2px -2px 10px rgba(255, 255, 255, 0.2)', // Shadow effect
-              '&:hover': {
-                backgroundColor: '#303030',
-              },
-              '&:focus': {
-                outline: '3px solid #FFA500',
-                outlineOffset: '2px',
-              },
+              '&:hover': {backgroundColor: '#303030',},
+              '&:focus': {outline: '3px solid #FFA500',
+                          outlineOffset: '2px',},
             }}
             aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
           >
