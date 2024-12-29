@@ -7,6 +7,7 @@ import {sendAudioRequest, sendTextRequest} from "../../api/openAi.ts";
 import {RequestData} from "./types.ts";
 import {AccessibleButton, AccessibleTypography, AccessibleTextField, BlueSection, GraySection, GreenSection} from "./style.ts";
 import {createChatLog, addChatToChatLog} from "../../api/chatLog.ts";
+import CircularProgress from '@mui/material/CircularProgress';
 
 
 export default function Test() {
@@ -16,6 +17,8 @@ export default function Test() {
   const [image, setImage] = useState<string | null>(null);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [openAIResponse, setOpenAIResponse] = useState<string>('');
+  const [loading, setLoading] = useState(false); //for the loading bar
+  const responseRef = useRef<HTMLDivElement>(null); //to make the page scroll down when submit is clicked
   const [userInput, setUserInput] = useState<string>('Describe the image');
   const [audioUrl, setAudioUrl] = useState("");
   const [currentChatId, setCurrentChatId] = useState("")
@@ -170,6 +173,8 @@ export default function Test() {
   //! Still error with Video Mode, need to fix sending to API
   async function sendRequestOpenAI() {
     try {
+      setLoading(true); //  loading starts
+      responseRef.current?.scrollIntoView({ behavior: 'smooth' }); // page scrolls down when loading starts
       let frames: string[] = [];
       if (videoBlob) {
         frames = await extractFrames(videoBlob);
@@ -220,6 +225,9 @@ export default function Test() {
       console.error('Error sending request to OpenAI:', e);
       setOpenAIResponse('An error occurred while processing your request. Please try again.');
     }
+    finally {
+      setLoading(false); // loading cirlce stops
+    }
   }
 
 
@@ -264,14 +272,14 @@ export default function Test() {
       component="main"
       role="main"
       sx={{
-        display: 'flex', // Make it a flex container
+        display: 'flex', //flex container
         flexDirection: 'column',
-        justifyContent: 'center', // Center horizontally
-        alignItems: 'center', // Center vertically
+        justifyContent: 'center', //centered horizontally
+        alignItems: 'center', //centered vertically
         paddingLeft: isMobile ? '8px' : '32px',
         paddingRight: isMobile ? '8px' : '32px',
         backgroundColor: '#F5F5F5',
-        height: '100vh', // Full viewport height
+        height: '100vh', //full height
         overflowY: 'auto',
       }}
     >
@@ -315,9 +323,9 @@ export default function Test() {
               padding: '20px',
               fontSize: isMobile ? '2rem' : '1.5rem',
               marginTop: '16px',
-              marginBottom: '16px',  // Added padding below the button
+              marginBottom: '16px',  //Added padding below the button
               // backgroundColor: '#000',
-              background: 'linear-gradient(145deg, #1a1a1a, #121212)',  // Almost black gradient background
+              background: 'linear-gradient(145deg, #1a1a1a, #121212)',  //Almost black gradient background
               color: '#fff',
               borderRadius: '12px',
               textAlign: 'center',
@@ -449,7 +457,7 @@ export default function Test() {
       />
       </GraySection>
 
-      {/* Green Section: Displaying Response */}
+      {/* Green Section: Displaying the Response */}
       <GreenSection>
       {/* Get Description button */}
       <AccessibleButton
@@ -462,9 +470,22 @@ export default function Test() {
       >
         Submit
       </AccessibleButton>
+
+      <div ref={responseRef} style={{ marginTop: '16px' }}> {/* to start the scroll down */}  
+      {loading ? ( //loading circle
+        <CircularProgress 
+        size={80}
+        thickness={6} //increased thickness for better visibility
+        sx={{ margin: '20px', 
+              color: '#f8f8ff',
+            }}
+        />
+        ) : (
       <Box aria-live="polite" role="status" sx={{marginTop: 2, maxWidth: '600px'}}>
         <AccessibleTypography>{openAIResponse}</AccessibleTypography>
       </Box>
+        )}
+        
       {/* code below adds the drag/seek audio bar */}
       {audioUrl && <audio controls src={audioUrl} autoPlay style={{maxWidth: '600px', marginTop: '16px'}}/>} 
 {/* --------------------------------------------------------------------------------------------- */}
@@ -527,7 +548,7 @@ export default function Test() {
         </audio>
       </div>
     )}
-
+  </div>
   </GreenSection>
       {/* Toggle switch for camera mode visible on desktop */}
       {!isMobile && (
