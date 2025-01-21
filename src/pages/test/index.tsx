@@ -174,6 +174,7 @@ export default function Test() {
   async function sendRequestOpenAI() {
     try {
       setLoading(true); //  loading starts
+      speak("loading response"); // Play TTS message
       responseRef.current?.scrollIntoView({ behavior: 'smooth' }); // page scrolls down when loading starts
       let frames: string[] = [];
       if (videoBlob) {
@@ -227,9 +228,21 @@ export default function Test() {
     }
     finally {
       setLoading(false); // loading cirlce stops
+      speechSynthesis.cancel(); // Stop TTS when loading ends
+
     }
   }
 
+  //tts function for loading state
+  function speak(text: string) {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    } else {
+      console.error('Speech synthesis not supported in this browser.');
+    }
+  }
+  
 
   const handleCapture = (target: EventTarget & HTMLInputElement) => {
     if (target.files) {
@@ -473,6 +486,7 @@ export default function Test() {
 
       <div ref={responseRef} style={{ marginTop: '16px' }}> {/* to start the scroll down */}  
       {loading ? ( //loading circle
+      <Box>
         <CircularProgress 
         size={80}
         thickness={6} //increased thickness for better visibility
@@ -480,6 +494,10 @@ export default function Test() {
               color: '#f8f8ff',
             }}
         />
+        <AccessibleTypography sx={{ color: '#f8f8ff', marginTop: '10px' }}>
+        Loading response...
+        </AccessibleTypography>
+      </Box>
         ) : (
       <Box aria-live="polite" role="status" sx={{marginTop: 2, maxWidth: '600px'}}>
         <AccessibleTypography>{openAIResponse}</AccessibleTypography>

@@ -55,8 +55,8 @@ const App: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         height: '100vh',
-        // background: 'linear-gradient(135deg, #001f4d, #87CEEB)', // Match home page gradient
-        background: 'linear-gradient(135deg, #2f4f4f, #708090)', // Black to dark gray gradient
+        background: 'linear-gradient(135deg, #001f4d, #87CEEB)', // Match home page gradient
+        // background: 'linear-gradient(135deg, #2f4f4f, #708090)', // Black to dark gray gradient
         color: 'white',
         textAlign: 'center',
         padding: 2,
