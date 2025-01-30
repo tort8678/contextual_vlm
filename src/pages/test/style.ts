@@ -37,6 +37,12 @@ export const AccessibleTextField = styled(TextField)({
   '& .MuiInputLabel-root': {
     fontSize: '1.5rem', // Increased label size
   },
+  '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'black', // Black outline on focus
+  },
+  '& .Mui-focused .MuiInputLabel-root': {
+    color: 'black !important' , // Black label text on focus
+  },
 });
 
 export const AccessibleTypography = styled(Typography)({

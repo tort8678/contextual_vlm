@@ -14,4 +14,8 @@ export class ChatLogController {
     const body: {chat: messageInterface, id: string} = req.body;
     await chatLogService.addChat({req,res}, body);
   }
+  async flagMessage(req: Request, res: Response): Promise<void> {
+    const body: {messageId: string, flagReason:string, chatlogId:string} = req.body;
+    await chatLogService.flagMessage({req,res}, body);
+  }
 }

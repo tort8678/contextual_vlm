@@ -1,13 +1,15 @@
 import {Camera, CameraType} from 'react-camera-pro';
 import {useRef, useState, useEffect} from 'react';
-import {Box, Stack, Switch, FormControlLabel, useMediaQuery} from '@mui/material';
+import {Box, Stack, Switch, FormControlLabel, useMediaQuery, Dialog, DialogContent, DialogTitle, Button} from '@mui/material';
 import {useGeolocated} from 'react-geolocated';
 import {sendAudioRequest, sendTextRequest} from "../../api/openAi.ts";
 // import {FirebaseStart} from "../../api/firebase.ts";
 import {RequestData} from "./types.ts";
 import {AccessibleButton, AccessibleTypography, AccessibleTextField, BlueSection, GraySection, GreenSection} from "./style.ts";
-import {createChatLog, addChatToChatLog} from "../../api/chatLog.ts";
+import {createChatLog, addChatToChatLog, flagMessage} from "../../api/chatLog.ts";
 import CircularProgress from '@mui/material/CircularProgress';
+import ReportMessage from '../../components/ReportMessage.tsx';
+
 
 
 export default function Test() {
@@ -22,6 +24,7 @@ export default function Test() {
   const [userInput, setUserInput] = useState<string>('Describe the image');
   const [audioUrl, setAudioUrl] = useState("");
   const [currentChatId, setCurrentChatId] = useState("")
+  const [currentMessageId, setCurrentMessageId] = useState("")
   const {coords, isGeolocationEnabled} = useGeolocated({
     positionOptions: {
       enableHighAccuracy: true,
@@ -37,6 +40,8 @@ export default function Test() {
   const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('photo');
   const [isRecording, setIsRecording] = useState(false);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [flagReason, setFlagReason] = useState("")
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -103,16 +108,24 @@ export default function Test() {
       if(openAIResponse !== "") {
         if (currentChatId === "") {
           console.log(openAIResponse)
-          const res3 = await createChatLog({input: userInput, output: openAIResponse, imageURL: image as string})
+          const res3 = await createChatLog({input: userInput, output: openAIResponse, imageURL: image as string, location:{lat:coords?.latitude as number, lon:coords?.longitude as number}})
           console.log('chatLog', res3)
-          setCurrentChatId(res3.data._id)
+          if(res3){
+            setCurrentChatId(res3.data._id)
+            setCurrentMessageId(res3.data.messages[res3.data.messages.length-1]._id)
+          }
         } else {
           const res3 = await addChatToChatLog({
             id: currentChatId,
-            chat: {input: userInput, output: openAIResponse, imageURL: image as string}
+            chat: {input: userInput, output: openAIResponse, imageURL: image as string, location:{lat:coords?.latitude as number, lon:coords?.longitude as number}}
           })
           console.log('chatLog', res3)
+          if(res3){
+
+            setCurrentMessageId(res3.data.messages[res3.data.messages.length-1]._id)
+          }
         }
+        console.log(currentMessageId)
       }
     })()
 
@@ -231,6 +244,16 @@ export default function Test() {
       speechSynthesis.cancel(); // Stop TTS when loading ends
 
     }
+  }
+  async function submitFlag(){
+    try{
+      const res = await flagMessage({messageId: currentMessageId, chatlogId: currentChatId, flagReason: flagReason})
+      if(res){
+        console.log(res)
+      }
+    } catch(e){
+      console.log(e)
+    } 
   }
 
   //tts function for loading state
@@ -550,6 +573,7 @@ export default function Test() {
           </span>
           Play/Pause Response
         </AccessibleButton>
+        <ReportMessage openAIResponse={openAIResponse} currentMessageId={currentMessageId} currentChatId={currentChatId}/>
 
         {/*audio Element for Seek without extra controls */}
         <audio

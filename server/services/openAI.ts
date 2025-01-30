@@ -123,7 +123,7 @@ export class OpenAIService {
     //try function?
     try {
       const openAiResponse = await this.client.chat.completions.create({
-        model: "gpt-4-0613",
+        model: "gpt-4",
         messages: [
           {role: "user", content: text},
           {
@@ -146,12 +146,12 @@ export class OpenAIService {
   async textRequest(ctx: AppContext, content: textRequestBody) {
     const {res} = ctx;
     // console.log("hello world!!!")
-    let systemContent = `You are a assistant to a Blind or Low Vision person, be quick and to the point answering what the user asks.
-                                Additional geolocation data is here to orient your systems. Try your best to give a coherent response using a synthesis of image data and location data.
-                                If provided data is lacking to give a sufficient answer, respond with "I do not have enough data".
-                                Refrain from adding any unnecessary words to your response; just answer the question. If giving directions, list them out. If an image is attached, always try to
-                                utilize its content in your response if it is relevant. Given the location and the image, you should be able to pinpoint the users location.
-                                If a user requests transportation, prioritize identifying the nearest train stations or relevant transport services.`
+    let systemContent = `You are a assistant to a Blind or Low Vision person, be quick and to the point answering what the user asks.\n
+                                Additional geolocation data is here to orient your systems. Try your best to give a coherent response using a synthesis of image data and location data.\n
+                                If provided data is lacking to give a sufficient answer, respond with "I do not have enough data".\n
+                                Refrain from adding any unnecessary words to your response; just answer the question. If giving directions, list them out. If an image is attached, always try to\n
+                                utilize its content in your response if it is relevant. Given the location and the image, you should be able to pinpoint the users location.\n
+                                If a user requests transportation, prioritize identifying the nearest train stations or relevant transport services.\n`
                 
     systemContent += ` Always strive to give consistent answers for the same questions, unless the user asks for a different answer, particularly regarding transport services.`;
     let nearbyPlaces = '';
@@ -195,7 +195,7 @@ export class OpenAIService {
             //if its giving back a nearby places link
             if (places.data.results) {
               // console.log(places.data.results)
-              nearbyPlaces = places.data.results.map((place: { name: string }) => place.name).join(', ');
+              nearbyPlaces = places.data.results.map((place: { name: string, geometry:{location:{lat:number, lng: number}} }) => `\n{name: ${place.name}, location(lat,lng): ${place.geometry.location.lat},${place.geometry.location.lng}}`).join(', ');
               console.log(nearbyPlaces)
               systemContent += ` Nearby Places in order of nearest distance: ${nearbyPlaces}`;
               console.log(systemContent)
@@ -238,7 +238,7 @@ export class OpenAIService {
           role: 'user', content: userContent,
         },
           {role: 'system', content: systemContent}],
-        model: 'gpt-4o-mini-2024-07-18',
+        model: 'gpt-4o',
       });
       // console.log('OpenAI API response:', chatCompletion);
       res.status(200).json(chatCompletion.choices[0].message.content);
