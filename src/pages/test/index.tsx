@@ -139,14 +139,18 @@ export default function Test() {
     } else if (recorder) {
       recorder.start();
       setIsRecording(true);
+      // Automatically stop recording after 5 seconds
       setTimeout(() => {
         if (recorder.state === 'recording') {
           recorder.stop();
           setIsRecording(false);
         }
-      }, 30000); // Stop recording after 30 seconds
+      }, 6000); // Stop after 5 seconds
+      setUserInput('Please describe the video');
     }
   };
+
+  
 
   const handleRetake = () => {
     setVideoBlob(null);
@@ -375,7 +379,7 @@ export default function Test() {
           >
             TAKE A PICTURE
             <input
-              accept="image/*"
+              accept="image/*,video/*"
               type="file"
               capture="environment"
               onChange={(e) => handleCapture(e.target)}
@@ -408,9 +412,29 @@ export default function Test() {
               Take photo
             </AccessibleButton>
           )}
+
+          {/* Start/Stop Video button should only be visible on desktop and when camera mode is 'video' */}
+          {!isMobile && cameraMode === 'video' && (
+            <AccessibleButton
+            onClick={handleVideoRecording}
+            aria-label={isRecording ? "Stop video" : "Start video"}
+            sx={{
+              width: '100%', 
+              maxWidth: '600px', 
+              marginTop: '16px', 
+              marginBottom: '16px',
+              backgroundColor: isRecording ? '#FF0000' : 'inherit', // Red when recording
+              '&:hover': {backgroundColor: isRecording ? '#CC0000' : '#303030',},
+              '&:focus': {outline: '3px solid #FFA500', outlineOffset: '2px',},
+            }}
+          >
+            {isRecording ? "Stop Video" : "Start Video"}
+          </AccessibleButton>
+          )}
         </>
       ) : (
         <>
+          <p>No video recorded yet.</p>
           <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center'}}>
             {videoBlob ? (
               <video
