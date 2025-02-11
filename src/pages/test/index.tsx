@@ -1,14 +1,14 @@
 import {Camera, CameraType} from 'react-camera-pro';
 import {useRef, useState, useEffect} from 'react';
-import {Box, Stack, Switch, FormControlLabel, useMediaQuery, Dialog, DialogContent, DialogTitle, Button} from '@mui/material';
+import {Box, Stack, Switch, FormControlLabel, useMediaQuery, InputAdornment, IconButton, CircularProgress} from '@mui/material';
 import {useGeolocated} from 'react-geolocated';
 import {sendAudioRequest, sendTextRequest} from "../../api/openAi.ts";
 // import {FirebaseStart} from "../../api/firebase.ts";
 import {RequestData} from "./types.ts";
 import {AccessibleButton, AccessibleTypography, AccessibleTextField, BlueSection, GraySection, GreenSection} from "./style.ts";
-import {createChatLog, addChatToChatLog, flagMessage} from "../../api/chatLog.ts";
-import CircularProgress from '@mui/material/CircularProgress';
+import {createChatLog, addChatToChatLog} from "../../api/chatLog.ts";
 import ReportMessage from '../../components/ReportMessage.tsx';
+import ClearIcon from '@mui/icons-material/Clear';
 
 
 
@@ -40,8 +40,7 @@ export default function Test() {
   const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('photo');
   const [isRecording, setIsRecording] = useState(false);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [flagReason, setFlagReason] = useState("")
+  const [history, setHistory] = useState<string[]>([]);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -228,9 +227,9 @@ export default function Test() {
       const res = await sendTextRequest(data)
 
       if (res) {
-        setOpenAIResponse(res);
+        setOpenAIResponse(res.output);
         // TODO: Commented out audio response cause it takes a lot of tokens but make sure to reenable if building for production
-        const res2 = await sendAudioRequest(res);
+        const res2 = await sendAudioRequest(res.output);
         if (res2) {
           const blob = new Blob([res2], {type: "audio/mpeg"});
           const url = URL.createObjectURL(blob);
@@ -248,16 +247,6 @@ export default function Test() {
       speechSynthesis.cancel(); // Stop TTS when loading ends
 
     }
-  }
-  async function submitFlag(){
-    try{
-      const res = await flagMessage({messageId: currentMessageId, chatlogId: currentChatId, flagReason: flagReason})
-      if(res){
-        console.log(res)
-      }
-    } catch(e){
-      console.log(e)
-    } 
   }
 
   //tts function for loading state
@@ -514,6 +503,20 @@ export default function Test() {
         label="Enter a question below:"
         aria-label="User input"
         fullWidth
+        InputProps={{ 
+          endAdornment:  (   
+              <InputAdornment position="end">
+                  <IconButton
+                      aria-label="clear text"
+                      onClick={()=> setUserInput("")}
+                      edge="end"
+                      sx={{ visibility: userInput ? "visible" : "hidden" }}
+                  >
+                      <ClearIcon />
+                  </IconButton>
+              </InputAdornment>
+          ),
+      }}
       />
       </GraySection>
 

@@ -23,7 +23,7 @@ export default function ReportMessage({
       const res = await flagMessage({
         messageId: currentMessageId,
         chatlogId: currentChatId,
-        flagReason,
+        flagReason
       });
       if (res) {
         console.log('Flag submitted successfully:', res);

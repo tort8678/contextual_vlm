@@ -12,9 +12,10 @@
     "backend": "nodemon --exec npx tsx ./server/index.ts"
   },
   "dependencies": {
-    "@emotion/react": "^11.13.0",
-    "@emotion/styled": "^11.13.0",
-    "@mui/material": "^5.16.5",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.2",
+    "@mui/material": "^6.4.2",
     "axios": "^1.7.3",
     "concurrently": "^8.2.2",
     "cors": "^2.8.5",
