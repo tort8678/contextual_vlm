@@ -130,6 +130,7 @@ export default function Test() {
 
   }, [openAIResponse])
 
+// -------------------------------------------------------------------------------------------------------------------
 
   const handleVideoRecording = () => {
     if (isRecording && recorder) {
@@ -145,11 +146,10 @@ export default function Test() {
           setIsRecording(false);
         }
       }, 6000); // Stop after 5 seconds
-      setUserInput('Please describe the video');
     }
   };
-
   
+// -------------------------------------------------------------------------------------------------------------------
 
   const handleRetake = () => {
     setVideoBlob(null);
@@ -158,6 +158,7 @@ export default function Test() {
     setAudioUrl("")
     setOpenAIResponse("")
   };
+// -------------------------------------------------------------------------------------------------------------------
 
   const extractFrames = async (videoBlob: Blob): Promise<string[]> => {
     const videoUrl = URL.createObjectURL(videoBlob);
@@ -170,7 +171,7 @@ export default function Test() {
     if (!context) {
       throw new Error('Failed to get canvas context');
     }
-    const frameInterval = 1000; // Capture one frame per second
+    const frameInterval = 1; // Capture one frame per second
     const frames: string[] = [];
 
     return new Promise<string[]>((resolve) => {
@@ -178,13 +179,14 @@ export default function Test() {
         if (videoElement.currentTime < videoElement.duration) {
           context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
           frames.push(canvas.toDataURL('image/jpeg'));
-          videoElement.currentTime += frameInterval / 1000;
+          videoElement.currentTime += frameInterval;
         } else {
           resolve(frames);
         }
       });
     });
   };
+// -------------------------------------------------------------------------------------------------------------------
 
   //! Still error with Video Mode, need to fix sending to API
   async function sendRequestOpenAI() {
@@ -192,9 +194,12 @@ export default function Test() {
       setLoading(true); //  loading starts
       speak("loading response"); // Play TTS message
       responseRef.current?.scrollIntoView({ behavior: 'smooth' }); // page scrolls down when loading starts
+
       let frames: string[] = [];
+      // If videoBlob exists, extract all frames
       if (videoBlob) {
         frames = await extractFrames(videoBlob);
+        // console.log('Extracted frames:', frames);
       }
 
       // Create the CustomCoords object
@@ -213,9 +218,11 @@ export default function Test() {
         } : null,
       } : null;
 
+      //prepare the request data, including all extracted frames (if available)
       const data: RequestData = {
         text: userInput,
-        image: frames.length > 0 ? frames[0] : image,
+        // image: frames.length > 0 ? frames : [image], //sends all frames, or fallback to a single image 
+        image: frames.length > 0 ? frames[0] : image, //only takes the first extracted frame or fallback to default image
         coords: customCoords,  // Use the CustomCoords object here
       };
 
@@ -248,7 +255,7 @@ export default function Test() {
 
     }
   }
-
+// -------------------------------------------------------------------------------------------------------------------
   //tts function for loading state
   function speak(text: string) {
     if ('speechSynthesis' in window) {
@@ -258,33 +265,41 @@ export default function Test() {
       console.error('Speech synthesis not supported in this browser.');
     }
   }
-  
+// -------------------------------------------------------------------------------------------------------------------
+const handleCapture = (target: EventTarget & HTMLInputElement) => {
+  if (target.files) {
+    if (target.files.length !== 0) {
+      const file = target.files[0];
 
-  const handleCapture = (target: EventTarget & HTMLInputElement) => {
-    if (target.files) {
-      if (target.files.length !== 0) {
-        const file = target.files[0];
+      if (file.type.startsWith("video")) {
+        setUserInput('Please describe the video'); // Update prompt for video upload
+        //Blob URL for uploaded video
+        const videoBlob = new Blob([file], { type: file.type });
+        const videoUrl = URL.createObjectURL(videoBlob);
+        console.log("Video URL:", videoUrl);
+        setVideoBlob(videoBlob); // uploaded video is stored in BLOB same as recorded video
+      } else {
         const reader = new FileReader();
-
         reader.onloadend = () => {
           const img = new Image();
           img.src = reader.result as string;
           img.onload = () => {
-            const canvas = document.createElement('canvas');
+            const canvas = document.createElement("canvas");
             const maxWidth = 640; // Max width for the image
             const scaleSize = maxWidth / img.width;
             canvas.width = maxWidth;
             canvas.height = img.height * scaleSize;
 
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext("2d");
             ctx!.drawImage(img, 0, 0, canvas.width, canvas.height);
 
             // Convert the resized image to Base64
-            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); // 0.7 = 70% quality
+            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7); // 0.7 = 70% quality
             console.log(compressedBase64); // Use the compressed base64 string
             setImage(compressedBase64);
           };
         };
+        
         if (file) {
           reader.readAsDataURL(file);
         }
@@ -293,8 +308,10 @@ export default function Test() {
       }
     }
   }
+};
 
-  return (
+// -------------------------------------------------------------------------------------------------------------------
+return (
     <center>
     <Stack
       maxWidth={'100vw'}
@@ -405,7 +422,14 @@ export default function Test() {
           {/* Start/Stop Video button should only be visible on desktop and when camera mode is 'video' */}
           {!isMobile && cameraMode === 'video' && (
             <AccessibleButton
-            onClick={handleVideoRecording}
+            onClick={() => {
+              handleVideoRecording();
+              if (!isRecording) {
+                setUserInput('Please describe the video');
+              } else {
+                console.error("Failed to capture video");
+              }
+            }}
             aria-label={isRecording ? "Stop video" : "Start video"}
             sx={{
               width: '100%', 
@@ -522,7 +546,7 @@ export default function Test() {
 
       {/* Green Section: Displaying the Response */}
       <GreenSection>
-      {/* Get Description button */}
+      {/* Submit button */}
       <AccessibleButton
         onClick={() => sendRequestOpenAI()}
         aria-label="Get description"
