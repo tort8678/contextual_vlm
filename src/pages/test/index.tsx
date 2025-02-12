@@ -198,7 +198,7 @@ export default function Test() {
       let frames: string[] = [];
       // If videoBlob exists, extract all frames
       if (videoBlob) {
-        frames = await extractFrames(videoBlob);
+        frames= await extractFrames(videoBlob);
         // console.log('Extracted frames:', frames);
       }
 
@@ -221,8 +221,8 @@ export default function Test() {
       //prepare the request data, including all extracted frames (if available)
       const data: RequestData = {
         text: userInput,
-        // image: frames.length > 0 ? frames : [image], //sends all frames, or fallback to a single image 
-        image: frames.length > 0 ? frames[0] : image, //only takes the first extracted frame or fallback to default image
+        image: frames.length > 0 ? frames : [image], //sends all frames, or fallback to a single image 
+        // image: frames.length > 0 ? frames[0] : image, //only takes the first extracted frame or fallback to default image
         coords: customCoords,  // Use the CustomCoords object here
       };
 

@@ -152,16 +152,20 @@ export class OpenAIService {
     // console.log("hello world!!!")
     let systemContent = AIPrompt;
     let relevantData = '';
-    const userContent: [ChatCompletionContentPartText | ChatCompletionContentPartImage] = [
+    const userContent: [ChatCompletionContentPartText | ChatCompletionContentPartImage]= [
       {type: 'text', text: content.text}
     ]
-    if (content.image) {
+    //updated userContent to take array of images instead of a singe string image
+    if (Array.isArray(content.image) && content.image.length > 0) {
+      content.image.forEach(image => {
       userContent.push({
-        type: 'image_url', image_url: {
-          url: content.image,
+        type: 'image_url', 
+        image_url: {
+          url: image,
           detail: 'low',
         },
-      })
+      });
+    });
     }
     // console.log(userContent)
     if (content.coords) {
@@ -247,7 +251,7 @@ export class OpenAIService {
       res.status(500).json({error: 'Error processing your request'});
     }
   }
-
+// ----------------------------------------------------------------------------------------------------------------
 //* OpenAI Audio API
   async audioRequest(ctx: AppContext, text: string) {
     const {res} = ctx

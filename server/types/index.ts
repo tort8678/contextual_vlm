@@ -7,7 +7,8 @@ export interface AppContext {
 
 export interface textRequestBody {
   text: string;
-  image?: string;
+  // image?: string;
+  image?: string[];  // Changed from string to an array to support mulitpl video frames
   coords: {
     latitude: number;
     longitude: number,
