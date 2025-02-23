@@ -356,7 +356,7 @@ return (
               />
             )}
           </Box>
-
+{/* ----------------------------------------------------------------------------------------------------------- */}
           {/* Upload file input visible on both mobile and desktop */}
           <Box
             component="label"
@@ -383,7 +383,7 @@ return (
             }}
             aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
           >
-            TAKE A PICTURE
+            TAKE A PICTURE / VIDEO
             <input
               accept="image/*,video/*"
               type="file"
@@ -392,8 +392,8 @@ return (
               style={{display: 'none'}}
             />
           </Box>
-
-          {/* Take photo button should only be visible on desktop  */}
+{/* ----------------------------------------------------------------------------------------------------------- */}
+          {/* Take photo button (desktop)  */}
           {!isMobile && cameraMode === 'photo' && (
             <AccessibleButton
               onClick={() => {
@@ -415,11 +415,11 @@ return (
                             outlineOffset: '2px',},
                 }}
             >
-              Take photo
+              Take photo (desktop)
             </AccessibleButton>
           )}
-
-          {/* Start/Stop Video button should only be visible on desktop and when camera mode is 'video' */}
+{/* ----------------------------------------------------------------------------------------------------------- */}
+          {/* Start/Stop Video button (desktop) */}
           {!isMobile && cameraMode === 'video' && (
             <AccessibleButton
             onClick={() => {
@@ -441,13 +441,13 @@ return (
               '&:focus': {outline: '3px solid #FFA500', outlineOffset: '2px',},
             }}
           >
-            {isRecording ? "Stop Video" : "Start Video"}
+            {isRecording ? "Stop Video (desktop)" : "Start Video (desktop)"}
           </AccessibleButton>
           )}
         </>
       ) : (
         <>
-          <p>No video recorded yet.</p>
+          <p>Buddy Walk</p> {/* this text is a conditon that helps the video render */}
           <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center'}}>
             {videoBlob ? (
               <video
