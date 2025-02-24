@@ -617,7 +617,7 @@ return (
                       sx={{ visibility: userInput ? "visible" : "hidden" }}
                   >
                       <ClearIcon />
-                  </IconButton>
+                  </IconButton> 
               </InputAdornment>
           ),
       }}
