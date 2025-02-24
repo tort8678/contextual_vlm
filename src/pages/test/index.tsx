@@ -357,7 +357,8 @@ return (
             )}
           </Box>
 {/* ----------------------------------------------------------------------------------------------------------- */}
-          {/* Upload file input visible on both mobile and desktop */}
+          {/* Upload file input visible on desktop */}
+          {!isMobile && (
           <Box
             component="label"
             sx={{
@@ -383,7 +384,7 @@ return (
             }}
             aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
           >
-            TAKE A PICTURE / VIDEO
+            UPLOAD IMAGE/VIDEO (DESKTOP)
             <input
               accept="image/*,video/*"
               type="file"
@@ -392,7 +393,86 @@ return (
               style={{display: 'none'}}
             />
           </Box>
+          )}
 {/* ----------------------------------------------------------------------------------------------------------- */}
+          {/* button for taking photo mobile version */}
+          {isMobile && (
+  <>
+           <Box
+            component="label"
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: isMobile ? '200px' : '100%',
+              height: isMobile ? '200px' : 'auto',
+              padding: '20px',
+              fontSize: isMobile ? '2rem' : '1.5rem',
+              marginTop: '16px',
+              marginBottom: '16px',  //Added padding below the button
+              // backgroundColor: '#000',
+              background: 'linear-gradient(145deg, #1a1a1a, #121212)',  //Almost black gradient background
+              color: '#fff',
+              borderRadius: '12px',
+              textAlign: 'center',
+              cursor: 'pointer',
+              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2), -2px -2px 10px rgba(255, 255, 255, 0.2)', // Shadow effect
+              '&:hover': {backgroundColor: '#303030',},
+              '&:focus': {outline: '3px solid #FFA500',
+                          outlineOffset: '2px',},
+            }}
+            aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
+          >
+            TAKE A PICTURE
+            <input
+              accept="image/*"
+              type="file"
+              capture="environment"
+              onChange={(e) => handleCapture(e.target)}
+              style={{display: 'none'}}
+            />
+          </Box>
+
+          {/* button for taking video mobile version*/}
+          <Box
+            component="label"
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: isMobile ? '200px' : '100%',
+              height: isMobile ? '200px' : 'auto',
+              padding: '20px',
+              fontSize: isMobile ? '2rem' : '1.5rem',
+              marginTop: '16px',
+              marginBottom: '16px',  //Added padding below the button
+              // backgroundColor: '#000',
+              background: 'linear-gradient(145deg, #1a1a1a, #121212)',  //Almost black gradient background
+              color: '#fff',
+              borderRadius: '12px',
+              textAlign: 'center',
+              cursor: 'pointer',
+              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2), -2px -2px 10px rgba(255, 255, 255, 0.2)', // Shadow effect
+              '&:hover': {backgroundColor: '#303030',},
+              '&:focus': {outline: '3px solid #FFA500',
+                          outlineOffset: '2px',},
+            }}
+            aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
+          >
+            TAKE A VIDEO
+            <input
+              accept="video/*"
+              type="file"
+              capture="environment"
+              onChange={(e) => handleCapture(e.target)}
+              style={{display: 'none'}}
+            />
+          </Box>
+  </>
+  )}
+
+{/* ----------------------------------------------------------------------------------------------------------- */}
+
           {/* Take photo button (desktop)  */}
           {!isMobile && cameraMode === 'photo' && (
             <AccessibleButton
