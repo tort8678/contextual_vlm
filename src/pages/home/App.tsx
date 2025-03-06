@@ -54,7 +54,6 @@ const App: React.FC = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        height: '100vh',
         background: 'linear-gradient(135deg, #001f4d, #87CEEB)', // Match home page gradient
         // background: 'linear-gradient(135deg, #2f4f4f, #708090)', // Black to dark gray gradient
         color: 'white',
@@ -71,8 +70,21 @@ const App: React.FC = () => {
                     textAlign: 'center',
                     color: 'white',
                   }}
+      >This app is designed to assist blind and visually impaired users in navigation and localization. However, due to the limitations of AI, GPS accuracy, and real-world conditions, the app may not always provide correct or real-time information. Users should not rely solely on this app for navigation and should use additional assistive tools. By using this app, you acknowledge that you assume full responsibility for your safety and agree that the developers are not liable for any accidents, injuries, or damages that may occur while using the app.
+      For the detailed Waiver and Disclaimer for AI-Powered Navigation App, please click the link: <a href='#' onClick={()=>navigate('/waiver')}>Waiver</a>
+      </Typography>
+      <br></br>
+      <Typography variant="h5" 
+                  gutterBottom
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.5rem', //enlarged for readability
+                    letterSpacing: '0.05em',
+                    textAlign: 'center',
+                    color: 'white',
+                  }}
       >
-        Please enable location and camera access to continue
+        If you agree to the waiver, please enable location and camera access to continue
       </Typography>
 
       <Button

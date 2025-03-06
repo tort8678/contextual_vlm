@@ -130,8 +130,10 @@ export class OpenAIService {
           {role: "user", content: text},
           {
             role: "system",
-            content: `decide the appropriate link to return from function options. If none fit the user query, return 'none'. The latitude is ${lat} and the longitude is ${lng}.  If no type is specified, leave this part out: &type=type
-            use the chat history to find names of locations, types of locations that the user has asked about, the ratings of locations user has asked about, or the latitude and longitude of relevant locations`
+            content: `decide the appropriate link to return from function options. If none fit the user query, return 'none'. 
+            The latitude is ${lat} and the longitude is ${lng}.  If no type is specified, leave this part out: &type=type
+            use the chat history to find names of locations, types of locations that the user has asked about, the ratings of 
+            locations user has asked about, or the latitude and longitude of relevant locations`
           },
           {role: "system", content: "chat history: " + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
         ],
@@ -156,7 +158,8 @@ export class OpenAIService {
       {type: 'text', text: content.text}
     ]
     //updated userContent to take array of images instead of a singe string image
-    if (Array.isArray(content.image) && content.image.length > 0) {
+    if (Array.isArray(content.image) && content.image.length > 0 && content.image[0] !== null) {
+      console.log(content)
       content.image.forEach(image => {
       userContent.push({
         type: 'image_url', 
@@ -236,11 +239,12 @@ export class OpenAIService {
     // console.log(systemContent)
     try {
       const chatCompletion = await this.client.chat.completions.create({
-        messages: [{
-          role: 'user', content: userContent,
-        },
+        messages: [
+          {role: 'user', content: userContent},
           {role: 'system', content: systemContent},
-          {role: 'system', content: "chat history: " + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}],
+          {role: 'system', content: "chat history: " 
+            + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
+          ],
         model: 'gpt-4o',
       });
       // console.log('OpenAI API response:', chatCompletion);

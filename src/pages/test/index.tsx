@@ -60,9 +60,9 @@ export default function Test() {
 
     window.addEventListener('deviceorientation', handleOrientation, true);
 
-    return () => {
-      window.removeEventListener('deviceorientation', handleOrientation);
-    };
+    // return () => {
+    //   window.removeEventListener('deviceorientation', handleOrientation);
+    // };
   }, []);
 
   interface CustomCoords {
@@ -314,7 +314,7 @@ const handleCapture = (target: EventTarget & HTMLInputElement) => {
 return (
     <center>
     <Stack
-      maxWidth={'100vw'}
+      
       component="main"
       role="main"
       sx={{
