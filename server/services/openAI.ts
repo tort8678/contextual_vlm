@@ -6,22 +6,6 @@ import {ChatCompletionContentPartImage, ChatCompletionContentPartText} from "ope
 
 dotenv.config();
 
-
-async function fetchNearbyPlaces(latitude: number, longitude: number) {
-  // can add "Types" and "keywords" to the google query
-  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1500&key=${process.env.GOOGLE_API_KEY}`;
-  console.log(`Fetching nearby places with URL: ${url}`);
-
-  try {
-    const response = await axios.get(url);
-    console.log('Google Places API response:', response.data);
-    return response.data.results;
-  } catch (error) {
-    console.error('Error fetching nearby places:', error);
-    throw error;
-  }
-}
-
 async function geocodeCoordinates(latitude: number, longitude: number) {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`;
   try {
@@ -130,10 +114,9 @@ export class OpenAIService {
           {role: "user", content: text},
           {
             role: "system",
-            content: `decide the appropriate link to return from function options. If none fit the user query, return 'none'. 
-            The latitude is ${lat} and the longitude is ${lng}.  If no type is specified, leave this part out: &type=type
-            use the chat history to find names of locations, types of locations that the user has asked about, the ratings of 
-            locations user has asked about, or the latitude and longitude of relevant locations`
+            content: `decide the appropriate link to return from function options. If none fit the user query, return 'none'. The latitude is ${lat} and the longitude is ${lng}.  If no type is specified, leave this part out: &type=type.
+            Use the chat history to find names of locations, types of locations that the user has asked about, the ratings of locations user has asked about, or the latitude and longitude of relevant locations.
+            If no tool is appropriate, return a nearby place search link by default`
           },
           {role: "system", content: "chat history: " + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
         ],

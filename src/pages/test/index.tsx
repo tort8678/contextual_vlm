@@ -312,7 +312,7 @@ const handleCapture = (target: EventTarget & HTMLInputElement) => {
 
 // -------------------------------------------------------------------------------------------------------------------
 return (
-    <center>
+    <div>
     <Stack
       
       component="main"
@@ -740,6 +740,6 @@ return (
 
 
     </Stack>
-    </center>
+    </div>
   );
 }

@@ -60,8 +60,6 @@ export const SectionContainer = styled(Box)(({ theme }) => ({
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
-  padding: theme.spacing(4),
-  marginBottom: theme.spacing(2),
   borderRadius: "16px", // Rounded corners
   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Subtle shadow
 }));

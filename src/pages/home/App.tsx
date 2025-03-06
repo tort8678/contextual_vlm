@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Typography, Container } from '@mui/material';
+import { Box, Button, Typography, Container, Link } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 // for the wording font
@@ -71,7 +71,7 @@ const App: React.FC = () => {
                     color: 'white',
                   }}
       >This app is designed to assist blind and visually impaired users in navigation and localization. However, due to the limitations of AI, GPS accuracy, and real-world conditions, the app may not always provide correct or real-time information. Users should not rely solely on this app for navigation and should use additional assistive tools. By using this app, you acknowledge that you assume full responsibility for your safety and agree that the developers are not liable for any accidents, injuries, or damages that may occur while using the app.
-      For the detailed Waiver and Disclaimer for AI-Powered Navigation App, please click the link: <a href='#' onClick={()=>navigate('/waiver')}>Waiver</a>
+      For the detailed Waiver and Disclaimer for AI-Powered Navigation App, please click the link: <Link aria-label='Link to Waiver' sx={{color:"white", textDecorationColor:"white", fontWeight:"1000"}} component={"button"} onClick={()=>navigate('/waiver')}>Waiver</Link>
       </Typography>
       <br></br>
       <Typography variant="h5" 
