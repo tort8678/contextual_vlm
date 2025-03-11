@@ -359,40 +359,27 @@ return (
 {/* ----------------------------------------------------------------------------------------------------------- */}
           {/* Upload file input visible on desktop */}
           {!isMobile && (
-          <Box
+          <AccessibleButton
             component="label"
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: isMobile ? '200px' : '100%',
-              height: isMobile ? '200px' : 'auto',
-              padding: '20px',
-              fontSize: isMobile ? '2rem' : '1.5rem',
-              marginTop: '16px',
-              marginBottom: '16px',  //Added padding below the button
-              // backgroundColor: '#000',
-              background: 'linear-gradient(145deg, #1a1a1a, #121212)',  //Almost black gradient background
-              color: '#fff',
-              borderRadius: '12px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2), -2px -2px 10px rgba(255, 255, 255, 0.2)', // Shadow effect
+            sx={{width: '100%', 
+              maxWidth: '600px', 
+              marginTop: '16px', 
+              marginBottom: '16px',
               '&:hover': {backgroundColor: '#303030',},
               '&:focus': {outline: '3px solid #FFA500',
                           outlineOffset: '2px',},
-            }}
+              }}
             aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
           >
-            UPLOAD IMAGE/VIDEO (DESKTOP)
-            <input
+              {cameraMode === 'video' ? "UPLOAD VIDEO" : "UPLOAD IMAGE"}
+              <input
               accept="image/*,video/*"
               type="file"
               capture="environment"
               onChange={(e) => handleCapture(e.target)}
               style={{display: 'none'}}
             />
-          </Box>
+          </AccessibleButton>
           )}
 {/* ----------------------------------------------------------------------------------------------------------- */}
           {/* button for taking photo mobile version */}
@@ -495,7 +482,7 @@ return (
                             outlineOffset: '2px',},
                 }}
             >
-              Take photo (desktop)
+              Take photo
             </AccessibleButton>
           )}
 {/* ----------------------------------------------------------------------------------------------------------- */}
@@ -521,7 +508,7 @@ return (
               '&:focus': {outline: '3px solid #FFA500', outlineOffset: '2px',},
             }}
           >
-            {isRecording ? "Stop Video (desktop)" : "Start Video (desktop)"}
+            {isRecording ? "Stop Video" : "Start Video"}
           </AccessibleButton>
           )}
         </>
