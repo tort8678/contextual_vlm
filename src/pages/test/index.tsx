@@ -187,8 +187,6 @@ export default function Test() {
     });
   };
 // -------------------------------------------------------------------------------------------------------------------
-
-  //! Still error with Video Mode, need to fix sending to API
   async function sendRequestOpenAI() {
     try {
       setLoading(true); //  loading starts
@@ -357,7 +355,7 @@ return (
             )}
           </Box>
 {/* ----------------------------------------------------------------------------------------------------------- */}
-          {/* Upload file input visible on desktop */}
+          {/* Upload file button for desktop */}
           {!isMobile && (
           <AccessibleButton
             component="label"
@@ -444,16 +442,18 @@ return (
               '&:focus': {outline: '3px solid #FFA500',
                           outlineOffset: '2px',},
             }}
-            aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
+            // aria-label={videoBlob ? "Reupload file" : "Upload file"}
+            onClick={handleVideoRecording}
           >
-            TAKE A VIDEO
-            <input
+            {isRecording ? "STOP VIDEO" : "TAKE A VIDEO"}
+
+            {/* <input
               accept="video/*"
               type="file"
               capture="environment"
               onChange={(e) => handleCapture(e.target)}
               style={{display: 'none'}}
-            />
+            /> */}
           </Box>
   </>
   )}
