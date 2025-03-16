@@ -90,7 +90,7 @@ export default function Test() {
         .getUserMedia({video: true})
         .then((stream) => {
           videoRef.current!.srcObject = stream;
-          const newRecorder = new MediaRecorder(stream, {mimeType: 'video/webm'});
+          const newRecorder = new MediaRecorder(stream, {mimeType: 'video/webm'}); //webm is for desktop video compatibility
           newRecorder.ondataavailable = (event: BlobEvent) => {
             if (event.data.size > 0) {
               setVideoBlob(event.data);
@@ -136,7 +136,7 @@ export default function Test() {
 
 const handleVideoRecording = async () => {
   if (!isRecording) {
-    setUserInput('Please describe the video');
+    setUserInput('Describe the video');
     try {
       // Request rear camera access
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -144,7 +144,7 @@ const handleVideoRecording = async () => {
       });
       videoStreamRef.current = stream;
 
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/mp4" });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/mp4" }); //mp4 is needed for browser compatibility on mobile 
       mediaRecorderRef.current = mediaRecorder;
 
       const chunks: Blob[] = [];
@@ -310,7 +310,7 @@ const handleCapture = (target: EventTarget & HTMLInputElement) => {
       const file = target.files[0];
 
       if (file.type.startsWith("video")) {
-        setUserInput('Please describe the video'); // Update prompt for video upload
+        setUserInput('Describe the video'); // Update prompt for video upload
         //Blob URL for uploaded video
         const videoBlob = new Blob([file], { type: file.type });
         const videoUrl = URL.createObjectURL(videoBlob);
@@ -373,8 +373,7 @@ return (
       {!image && !videoBlob ? (
         <>
           <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center'}}>
-            {/* Display the Camera component on desktop only */}
-            {/* && !isMobile */}
+            {/* Display the Camera component on both desktop/mobile */}
             {cameraMode === 'photo'  ? ( 
               <Box sx={{width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden',textAlign: 'center'}}>
                 <Camera
@@ -451,7 +450,7 @@ return (
               const capturedImage = camera.current?.takePhoto() as string;
               if (capturedImage) {
                 setImage(capturedImage);
-                setUserInput('Please describe the image');
+                setUserInput('Describe the image');
               } else {
                 console.error('Failed to capture image.');
               }
@@ -521,7 +520,7 @@ return (
                 const capturedImage = camera.current?.takePhoto() as string;
                 if (capturedImage) {
                   setImage(capturedImage);
-                  setUserInput('Please describe the image');
+                  setUserInput('Describe the image');
                 } else {
                   console.error('Failed to capture image.');
                 }
