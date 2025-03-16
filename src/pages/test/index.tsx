@@ -334,7 +334,8 @@ return (
         <>
           <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center'}}>
             {/* Display the Camera component on desktop only */}
-            {cameraMode === 'photo' && !isMobile ? (
+            {/* && !isMobile */}
+            {cameraMode === 'photo'  ? ( 
               <Box sx={{width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden',textAlign: 'center'}}>
                 <Camera
                   aspectRatio={4 / 3}
@@ -344,7 +345,7 @@ return (
                   errorMessages={{}}
                 />
               </Box>
-            ) : (
+             ) : (
               <video
                 ref={videoRef}
                 autoPlay
@@ -417,7 +418,7 @@ return (
               style={{display: 'none'}}
             />
           </Box>
-
+{/* -------------------------------------------------------------------------------------------- */}
           {/* button for taking video mobile version*/}
           <Box
             component="label"
@@ -443,9 +444,16 @@ return (
                           outlineOffset: '2px',},
             }}
             // aria-label={videoBlob ? "Reupload file" : "Upload file"}
-            onClick={handleVideoRecording}
+            onClick={() => {
+              handleVideoRecording();
+              if (!isRecording) {
+                setUserInput('Please describe the video');
+              } else {
+                console.error("Failed to capture video");
+              }
+            }}
           >
-            {isRecording ? "STOP VIDEO" : "TAKE A VIDEO"}
+            {isRecording ? "STOP VIDEO" : "START VIDEO"}
 
             {/* <input
               accept="video/*"
