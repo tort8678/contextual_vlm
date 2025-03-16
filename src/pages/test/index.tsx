@@ -41,6 +41,8 @@ export default function Test() {
   const [isRecording, setIsRecording] = useState(false);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [history, setHistory] = useState<string[]>([]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const videoStreamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -132,22 +134,52 @@ export default function Test() {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-  const handleVideoRecording = () => {
-    if (isRecording && recorder) {
-      recorder.stop();
-      setIsRecording(false);
-    } else if (recorder) {
-      recorder.start();
-      setIsRecording(true);
-      // Automatically stop recording after 5 seconds
+const handleVideoRecording = async () => {
+  if (!isRecording) {
+    // Start video recording
+    setUserInput('Please describe the video');
+    try {
+      // Request access to the user's camera
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoStreamRef.current = stream;
+
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      const chunks: Blob[] = [];
+
+      // Push data when video chunks are available
+      mediaRecorder.ondataavailable = (event) => {
+        chunks.push(event.data);
+      };
+
+      // On stop, save the video blob
+      mediaRecorder.onstop = () => {
+        const videoBlob = new Blob(chunks, { type: 'video/webm' });
+        setVideoBlob(videoBlob); // Save the recorded video
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true); // Set recording state to true
+
+      // Automatically stop the recording after 5 seconds
       setTimeout(() => {
-        if (recorder.state === 'recording') {
-          recorder.stop();
-          setIsRecording(false);
+        if (mediaRecorder.state === 'recording') { // Check if it's still recording
+          mediaRecorder.stop(); // Stop the recording after 5 seconds
+          videoStreamRef.current?.getTracks().forEach((track) => track.stop()); // Stop the video stream
+          setIsRecording(false); // Set recording state to false
         }
-      }, 6000); // Stop after 5 seconds
+      }, 6000); // 5 seconds
+    } catch (error) {
+      console.error('Error accessing the camera:', error);
     }
-  };
+  } else {
+    // Stop video recording if the user clicks the button before the timeout
+    mediaRecorderRef.current?.stop();
+    videoStreamRef.current?.getTracks().forEach((track) => track.stop()); // Stop the video stream
+    setIsRecording(false); // Set recording state to false
+  }
+};
   
 // -------------------------------------------------------------------------------------------------------------------
 
@@ -382,8 +414,7 @@ return (
           )}
 {/* ----------------------------------------------------------------------------------------------------------- */}
           {/* button for taking photo mobile version */}
-          {isMobile && (
-  <>
+          {isMobile  &&(
 
            <Box
             component="label"
@@ -429,8 +460,11 @@ return (
               style={{display: 'none'}}
             /> */}
           </Box>
+  )}
 {/* -------------------------------------------------------------------------------------------- */}
           {/* button for taking video mobile version*/}
+          {isMobile &&(
+
           <Box
             component="label"
             sx={{
@@ -455,14 +489,9 @@ return (
                           outlineOffset: '2px',},
             }}
             // aria-label={videoBlob ? "Reupload file" : "Upload file"}
-            onClick={() => {
-              handleVideoRecording();
-              if (!isRecording) {
-                setUserInput('Please describe the video');
-              } else {
-                console.error("Failed to capture video");
-              }
-            }}
+            onClick={handleVideoRecording} // Trigger video recording
+
+
           >
             {isRecording ? "STOP VIDEO" : "START VIDEO"}
             {/* <input
@@ -473,7 +502,6 @@ return (
               style={{display: 'none'}}
             /> */}
           </Box>
-  </>
   )}
 
 {/* ----------------------------------------------------------------------------------------------------------- */}
@@ -507,14 +535,8 @@ return (
           {/* Start/Stop Video button (desktop) */}
           {!isMobile && cameraMode === 'video' && (
             <AccessibleButton
-            onClick={() => {
-              handleVideoRecording();
-              if (!isRecording) {
-                setUserInput('Please describe the video');
-              } else {
-                console.error("Failed to capture video");
-              }
-            }}
+            onClick={handleVideoRecording}
+              
             aria-label={isRecording ? "Stop video" : "Start video"}
             sx={{
               width: '100%', 
