@@ -136,49 +136,57 @@ export default function Test() {
 
 const handleVideoRecording = async () => {
   if (!isRecording) {
-    // Start video recording
     setUserInput('Please describe the video');
     try {
-      // Request access to the user's camera
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      // Request rear camera access
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }, // Force rear camera
+      });
       videoStreamRef.current = stream;
 
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/mp4" });
       mediaRecorderRef.current = mediaRecorder;
 
       const chunks: Blob[] = [];
 
-      // Push data when video chunks are available
+      // Push recorded video data
       mediaRecorder.ondataavailable = (event) => {
-        chunks.push(event.data);
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
       };
 
-      // On stop, save the video blob
+      // Handle stop recording
       mediaRecorder.onstop = () => {
-        const videoBlob = new Blob(chunks, { type: 'video/webm' });
-        setVideoBlob(videoBlob); // Save the recorded video
+        const videoBlob = new Blob(chunks, { type: "video/mp4" });
+        setVideoBlob(videoBlob);
+        console.log("Video recorded:", URL.createObjectURL(videoBlob));
       };
 
       mediaRecorder.start();
-      setIsRecording(true); // Set recording state to true
+      setIsRecording(true);
 
-      // Automatically stop the recording after 5 seconds
+      // Auto-stop after 5 seconds
       setTimeout(() => {
-        if (mediaRecorder.state === 'recording') { // Check if it's still recording
-          mediaRecorder.stop(); // Stop the recording after 5 seconds
-          videoStreamRef.current?.getTracks().forEach((track) => track.stop()); // Stop the video stream
-          setIsRecording(false); // Set recording state to false
+        if (mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+          stopVideoStream();
         }
-      }, 6000); // 5 seconds
+      }, 6000);
     } catch (error) {
-      console.error('Error accessing the camera:', error);
+      console.error("Error accessing the camera:", error);
     }
   } else {
-    // Stop video recording if the user clicks the button before the timeout
+    // Stop manually if button is clicked again
     mediaRecorderRef.current?.stop();
-    videoStreamRef.current?.getTracks().forEach((track) => track.stop()); // Stop the video stream
-    setIsRecording(false); // Set recording state to false
+    stopVideoStream();
   }
+};
+
+// Stops the video stream
+const stopVideoStream = () => {
+  videoStreamRef.current?.getTracks().forEach((track) => track.stop());
+  setIsRecording(false);
 };
   
 // -------------------------------------------------------------------------------------------------------------------
@@ -489,7 +497,7 @@ return (
                           outlineOffset: '2px',},
             }}
             // aria-label={videoBlob ? "Reupload file" : "Upload file"}
-            onClick={handleVideoRecording} // Trigger video recording
+            onClick={handleVideoRecording}
 
 
           >
@@ -555,11 +563,15 @@ return (
       ) : (
         <>
           <p>Buddy Walk</p> {/* this text is a conditon that helps the video render */}
+          {/* Video Preview */}
           <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center'}}>
             {videoBlob ? (
               <video
                 src={URL.createObjectURL(videoBlob)}
                 controls
+                autoPlay
+                playsInline
+                muted  // Ensures video autoplay works on mobile
                 aria-label="Recorded video"
                 style={{
                   width: '100%',
