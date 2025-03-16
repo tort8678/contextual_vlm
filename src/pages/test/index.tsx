@@ -384,6 +384,7 @@ return (
           {/* button for taking photo mobile version */}
           {isMobile && (
   <>
+
            <Box
             component="label"
             sx={{
@@ -407,16 +408,26 @@ return (
               '&:focus': {outline: '3px solid #FFA500',
                           outlineOffset: '2px',},
             }}
+            onClick={() => {
+              const capturedImage = camera.current?.takePhoto() as string;
+              if (capturedImage) {
+                setImage(capturedImage);
+                setUserInput('Please describe the image');
+              } else {
+                console.error('Failed to capture image.');
+              }
+            }}
             aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
           >
             TAKE A PICTURE
-            <input
+            {/* below code is for opening camera interface on mobile */}
+            {/* <input
               accept="image/*"
               type="file"
               capture="environment"
               onChange={(e) => handleCapture(e.target)}
               style={{display: 'none'}}
-            />
+            /> */}
           </Box>
 {/* -------------------------------------------------------------------------------------------- */}
           {/* button for taking video mobile version*/}
@@ -454,7 +465,6 @@ return (
             }}
           >
             {isRecording ? "STOP VIDEO" : "START VIDEO"}
-
             {/* <input
               accept="video/*"
               type="file"
