@@ -43,9 +43,8 @@ export default function Test() {
   const [history, setHistory] = useState<string[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const videoStreamRef = useRef<MediaStream | null>(null);
-  const [question, setQuestion] = useState('');
   const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const [isListening, setIsListening] = useState(false); // Track if it's active
+  const [isListening, setIsListening] = useState(false); // Track if voice button is active
 
 
   useEffect(() => {
@@ -325,7 +324,7 @@ const startListening = () => {
 
   recognition.onresult = (event: SpeechRecognitionEvent) => {
     const transcript = event.results[0][0].transcript;
-    setQuestion(transcript);
+    setUserInput(transcript);  // Update userInput with the transcribed text
   };
 
   recognitionRef.current = recognition;
