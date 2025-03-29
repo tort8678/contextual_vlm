@@ -14,6 +14,7 @@ const theme = createTheme({
 const App: React.FC = () => {
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [microphoneEnabled, setMicrophoneEnabled] = useState(false);
   const navigate = useNavigate();
 
   // Enable location using the Geolocation API
@@ -38,9 +39,19 @@ const App: React.FC = () => {
     }
   };
 
+  // Enable microphone using the MediaDevices API
+  const enableMicrophone = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      setMicrophoneEnabled(true);
+    } catch (error) {
+      alert('Microphone access denied or unavailable.');
+    }
+  };
+
   // Navigate to the main project route
   const handleContinue = () => {
-    if (locationEnabled && cameraEnabled) {
+    if (locationEnabled && cameraEnabled && microphoneEnabled) {
       navigate('/test');
     }
   };
@@ -84,7 +95,7 @@ const App: React.FC = () => {
                     color: 'white',
                   }}
       >
-        If you agree to the waiver, please enable location and camera access to continue
+        If you agree to the waiver, please enable location, camera, and microphone access to continue
       </Typography>
 
       <Button
@@ -140,7 +151,27 @@ const App: React.FC = () => {
         {cameraEnabled ? 'Camera Enabled' : 'Enable Camera'}
       </Button>
 
-      {locationEnabled && cameraEnabled && (
+      <Button
+          variant="contained"
+          onClick={enableMicrophone}
+          sx={{
+            fontWeight: 'bold',
+            fontSize: '1.0rem',
+            letterSpacing: '0.05em',
+            marginY: 1,
+            width: '100%',
+            background: microphoneEnabled ? 'linear-gradient(to bottom, #56ab2f, #66bb6a)' : 'linear-gradient(to bottom, #e53935, #d32f2f)',
+            color: 'white',
+            boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+            '&:hover': {
+              background: microphoneEnabled ? 'linear-gradient(to bottom, #66bb6a, #56ab2f)' : 'linear-gradient(to bottom, #d32f2f, #e53935)',
+            },
+          }}
+        >
+          {microphoneEnabled ? 'Microphone Enabled' : 'Enable Microphone'}
+        </Button>
+
+      {locationEnabled && cameraEnabled && microphoneEnabled &&(
         <Button
           variant="contained"
           // color="success"

@@ -21,7 +21,7 @@ export default function Test() {
   const [openAIResponse, setOpenAIResponse] = useState<string>('');
   const [loading, setLoading] = useState(false); //for the loading bar
   const responseRef = useRef<HTMLDivElement>(null); //to make the page scroll down when submit is clicked
-  const [userInput, setUserInput] = useState<string>('Describe the image');
+  const [userInput, setUserInput] = useState<string>('Describe the image'); //-----------------------------
   const [audioUrl, setAudioUrl] = useState("");
   const [currentChatId, setCurrentChatId] = useState("")
   const [currentMessageId, setCurrentMessageId] = useState("")
@@ -43,6 +43,10 @@ export default function Test() {
   const [history, setHistory] = useState<string[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const videoStreamRef = useRef<MediaStream | null>(null);
+  const [question, setQuestion] = useState('');
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const [isListening, setIsListening] = useState(false); // Track if it's active
+
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -303,6 +307,37 @@ const stopVideoStream = () => {
       console.error('Speech synthesis not supported in this browser.');
     }
   }
+// -------------------------------------------------------------------------------------------------------------------
+//speech to text- Speech recognition
+const startListening = () => {
+  if (!('webkitSpeechRecognition' in window)) {
+    alert('Speech recognition is not supported in your browser.');
+    return;
+  }
+
+  const recognition = new (window as any).webkitSpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = 'en-US';
+
+  recognition.onstart = () => setIsListening(true); // Update UI state
+  recognition.onend = () => setIsListening(false);
+
+  recognition.onresult = (event: SpeechRecognitionEvent) => {
+    const transcript = event.results[0][0].transcript;
+    setQuestion(transcript);
+  };
+
+  recognitionRef.current = recognition;
+  recognition.start();
+};
+
+const stopListening = () => {
+  if (recognitionRef.current) {
+    recognitionRef.current.stop();
+    setIsListening(false);
+  }
+};
 // -------------------------------------------------------------------------------------------------------------------
 const handleCapture = (target: EventTarget & HTMLInputElement) => {
   if (target.files) {
@@ -660,6 +695,25 @@ return (
           ),
       }}
       />
+      {/* speech to text button below */}
+      <button
+        onMouseDown={startListening}
+        onMouseUp={stopListening}
+        onTouchStart={startListening}
+        onTouchEnd={stopListening}
+        onTouchCancel={stopListening} // Ensure it stops if finger is moved
+        style={{
+          padding: '10px 20px',
+          fontSize: '16px',
+          backgroundColor: '#1a1a1a',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer',
+        }}
+      >
+    {isListening ? 'Listening...' : 'Hold to Ask a Question'}
+    </button>
       </GraySection>
 
       {/* Green Section: Displaying the Response */}
