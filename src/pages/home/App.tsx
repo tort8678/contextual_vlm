@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Typography, Container, Link } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useDeviceOrientation } from '../../hooks/useDeviceOrientation';
+import OrientationSwitcher from '../../components/OrientationSwitcher';
+
 
 // for the wording font
 const theme = createTheme({
@@ -28,6 +31,12 @@ const App: React.FC = () => {
       alert('Geolocation is not supported by this browser.');
     }
   };
+  const { orientation, requestAccess, revokeAccess } = useDeviceOrientation();
+  
+    const onToggle = (toggleState: boolean): void => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const result = toggleState ? requestAccess() : revokeAccess();
+    };
 
   // Enable camera using the MediaDevices API
   const enableCamera = async () => {
@@ -170,6 +179,12 @@ const App: React.FC = () => {
         >
           {microphoneEnabled ? 'Microphone Enabled' : 'Enable Microphone'}
         </Button>
+
+        {/* <OrientationSwitcher
+          onToggle={onToggle}
+          labelOff="Show orientation angles"
+          labelOn="Hide orientation angles" // Pass the onToggle function to the OrientationSwitcher component 
+          /> */}
 
       {locationEnabled && cameraEnabled && microphoneEnabled &&(
         <Button

@@ -5,6 +5,7 @@ import Test from "./pages/test";
 import './index.css'
 import { createBrowserRouter, RouterProvider} from "react-router-dom";
 import Waiver from "./pages/Waiver";
+import Cube3D from './pages/update/index.tsx';
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
   {
     path: "/waiver",
     element: <Waiver />
+  },
+  {
+    path: "/cube",
+    element: <Cube3D />
   }
 ])
 

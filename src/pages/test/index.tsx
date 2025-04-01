@@ -9,6 +9,7 @@ import {AccessibleButton, AccessibleTypography, AccessibleTextField, BlueSection
 import {createChatLog, addChatToChatLog} from "../../api/chatLog.ts";
 import ReportMessage from '../../components/ReportMessage.tsx';
 import ClearIcon from '@mui/icons-material/Clear';
+import { useDeviceOrientation } from '../../hooks/useDeviceOrientation.ts';
 
 
 
@@ -32,7 +33,7 @@ export default function Test() {
     userDecisionTimeout: 5000,
     watchLocationPermissionChange: true
   });
-  const [orientation, setOrientation] = useState<{
+  const [currentOrientation, setCurrentOrientation] = useState<{
     alpha: number | null,
     beta: number | null,
     gamma: number | null
@@ -45,6 +46,7 @@ export default function Test() {
   const videoStreamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const [isListening, setIsListening] = useState(false); // Track if voice button is active
+  const {orientation, requestAccess} = useDeviceOrientation();
 
 
   useEffect(() => {
@@ -54,16 +56,21 @@ export default function Test() {
       console.log(error.message);
       setOpenAIResponse(error.message)
     });
+    requestAccess().then((granted) => { 
+      console.log(orientation)
+      if (orientation)
+      setCurrentOrientation({alpha: orientation.alpha, beta: orientation.beta, gamma: orientation.gamma});
+      console.log(currentOrientation)
+    })
+    console.log(orientation)
+    
 
-    const handleOrientation = (event: DeviceOrientationEvent) => {
-      setOrientation({
-        alpha: event.alpha,  // Rotation around z-axis
-        beta: event.beta,    // Rotation around x-axis
-        gamma: event.gamma   // Rotation around y-axis
-      });
-    };
-
-    window.addEventListener('deviceorientation', handleOrientation, true);
+    if (orientation) {
+      setCurrentOrientation({alpha: orientation.alpha, beta: orientation.beta, gamma: orientation.gamma});
+      console.log(currentOrientation)
+    } else {
+      setCurrentOrientation({alpha: null, beta: null, gamma: null});
+    }
 
     // return () => {
     //   window.removeEventListener('deviceorientation', handleOrientation);
@@ -401,6 +408,7 @@ return (
         overflowY: 'auto',
       }}
     >
+      
       {/* Blue Section: Take Photo */}
       <BlueSection>
       {/* Condition for displaying either camera or video view depending on whether the image or videoBlob exists */}
@@ -488,6 +496,7 @@ return (
               } else {
                 console.error('Failed to capture image.');
               }
+              console.log(orientation)
             }}
             aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
           >
@@ -639,7 +648,15 @@ return (
         </>
       )}
       </BlueSection>
-      
+      {orientation && (
+        <div className="mt-6">
+        <ul style={{ margin: 0, padding: 0, color: 'black' }}>
+          <li>ɑ: {orientation && <code className="language-text">{orientation.alpha}</code>}</li>
+          <li>β: {orientation && <code className="language-text">{orientation.beta}</code>}</li>
+          <li>γ: {orientation && <code className="language-text">{orientation.gamma}</code>}</li>
+        </ul>
+      </div>
+      )}
 
       {/* Geolocation data display for desktop */}
       {/*{!isMobile && (*/}
@@ -806,7 +823,8 @@ return (
             marginTop: '8px',
             display: 'none', // Hide controls and seek bar
           }}
-          controls
+          //controls
+          autoPlay
         >
           Your browser does not support the audio element. 
         </audio>

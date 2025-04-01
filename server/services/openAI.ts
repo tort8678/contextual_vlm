@@ -3,6 +3,8 @@ import OpenAI from "openai";
 import {textRequestBody, history, AIPrompt, AppContext} from "../types";
 import dotenv from "dotenv";
 import {ChatCompletionContentPartImage, ChatCompletionContentPartText} from "openai/resources";
+import GtfsRealtimeBindings from "gtfs-realtime-bindings";
+import fetch from "node-fetch";
 
 dotenv.config();
 
@@ -15,6 +17,46 @@ async function geocodeCoordinates(latitude: number, longitude: number) {
   } catch (error) {
     console.error('Error fetching nearby places:', error);
     throw error;
+  }
+}
+
+async function getTrainInfo(url:string){
+  try {
+    const response = await fetch("https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace"
+    //   , {
+    //   headers: {
+    //     "x-api-key": "<redacted>",
+    //     // replace with your GTFS-realtime source's auth token
+    //     // e.g. x-api-key is the header value used for NY's MTA GTFS APIs
+    //   },
+    // }
+  );
+    if (!response.ok) {
+      const error = new Error(`${response.url}: ${response.status} ${response.statusText}`);
+      throw error;
+      process.exit(1);
+    }
+    const buffer = await response.arrayBuffer();
+    const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(
+      new Uint8Array(buffer)
+    );
+    //console.log(feed.entity[0].tripUpdate)
+    feed.entity.forEach((entity) => {
+      console.log(entity);  
+      // if (entity.vehicle?.stopId) {
+      //   console.log(entity.vehicle.stopId);
+      // }
+      // if(entity.tripUpdate?.trip) {
+      //   // console.log(entity.tripUpdate.trip);
+      //   if(entity.tripUpdate.trip.routeId === "A") {
+      //     console.log(entity.tripUpdate.trip.routeId);
+      //   }
+      // }
+    });
+  }
+  catch (error) {
+    console.log(error);
+    process.exit(1);
   }
 }
 
@@ -42,7 +84,7 @@ const tools = [
     function: {
       name: "generateGooglePlacesApiLinkSpecificLocation",
       description: "Generates a Google Place From Text API link based on user location. Use when a user names a specific place. If there are spaces in user request, replace with {%20}" +
-        "Link Format: https://maps.googleapis.com/maps/api/place/findplacefromtext/json?fields=formatted_address%2Cname&inputtype=textquery&input={USER_REQUEST}",
+        "Link Format: https://maps.googleapis.com/maps/api/place/findplacefromtext/json?location=${latitude},${longitude}&fields=formatted_address%2Cname&inputtype=textquery&input={USER_REQUEST}",
       parameters: {
         type: "object",
         properties: {
@@ -92,6 +134,24 @@ const tools = [
       }
     }
   },
+  // {
+  //   type: "function" as "function",
+  //   function: {
+  //     name: "generateTrainInformation",
+  //     description: "Returns the link to the GTFS API for the MTA subway system. Use when a user asks about train information." +
+  //       "Link Format: https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace",
+  //     parameters: {
+  //       type: "object",
+  //       properties: {
+  //         link: {
+  //           type: "string",
+  //           description: "The completed API link for the MTA subway system, as provided in the description. Include as an argument in the output"
+  //         }
+  //       },
+  //       required: ["link"]
+  //     }
+  //   }
+  // },
 
 
 ]
@@ -176,7 +236,7 @@ export class OpenAIService {
           //get link
           const {link} = parsedArgs;
           console.log(link + `&key=${process.env.GOOGLE_API_KEY}`)
-          if (link !== undefined) {
+          if (link !== undefined && places.choices[0].message.tool_calls![0].function.name !== "generateTrainInformation") {
             //use link
             const places: any = await axios.get(link + `&key=${process.env.GOOGLE_API_KEY}`);
             //if its giving back a nearby places link
@@ -210,6 +270,9 @@ export class OpenAIService {
               systemContent += `Distance in miles: ${places.data.rows[0].elements[0].distance.value * 0.00062137}, How long it will take to walk: ${places.data.rows[0].elements[0].duration.text}`
               //console.log(systemContent)
             }
+          } else{
+            const trainInfo = await getTrainInfo(link)
+            //console.log(trainInfo)
           }
         }
         // const places = await fetchNearbyPlaces(content.coords.latitude, content.coords.longitude);
