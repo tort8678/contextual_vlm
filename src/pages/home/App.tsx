@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Typography, Container, Link } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useDeviceOrientation } from '../../hooks/useDeviceOrientation';
 import OrientationSwitcher from '../../components/OrientationSwitcher';
+import { Box, Button, Typography, Container, Link } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { FaArrowRightLong } from "react-icons/fa6";
 
 
 // for the wording font
 const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    background: {
+      default: '#000000',
+    },
+    text: {
+      primary: '#ffffff',
+    },
+  },
   typography: {
     fontFamily: 'Poppins, Arial, sans-serif',
   },
 });
-
 
 const App: React.FC = () => {
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [microphoneEnabled, setMicrophoneEnabled] = useState(false);
   const navigate = useNavigate();
+
 
   // Enable location using the Geolocation API
   const enableLocation = () => {
@@ -32,11 +42,12 @@ const App: React.FC = () => {
     }
   };
   const { orientation, requestAccess, revokeAccess } = useDeviceOrientation();
-  
+ 
     const onToggle = (toggleState: boolean): void => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const result = toggleState ? requestAccess() : revokeAccess();
     };
+
 
   // Enable camera using the MediaDevices API
   const enableCamera = async () => {
@@ -48,6 +59,7 @@ const App: React.FC = () => {
     }
   };
 
+
   // Enable microphone using the MediaDevices API
   const enableMicrophone = async () => {
     try {
@@ -58,12 +70,14 @@ const App: React.FC = () => {
     }
   };
 
+
   // Navigate to the main project route
   const handleContinue = () => {
     if (locationEnabled && cameraEnabled && microphoneEnabled) {
       navigate('/test');
     }
   };
+
 
   return (
     <ThemeProvider theme={theme}>
@@ -74,14 +88,14 @@ const App: React.FC = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #001f4d, #87CEEB)', // Match home page gradient
-        // background: 'linear-gradient(135deg, #2f4f4f, #708090)', // Black to dark gray gradient
+        background: 'black',
         color: 'white',
         textAlign: 'center',
         padding: 2,
+        minHeight: '100vh', //covers the full viewport height
       }}
     >
-      <Typography variant="h5" 
+      <Typography variant="h5"
                   gutterBottom
                   sx={{
                     fontWeight: 'bold',
@@ -94,7 +108,7 @@ const App: React.FC = () => {
       For the detailed Waiver and Disclaimer for AI-Powered Navigation App, please click the link: <Link aria-label='Link to Waiver' sx={{color:"white", textDecorationColor:"white", fontWeight:"1000"}} component={"button"} onClick={()=>navigate('/waiver')}>Waiver</Link>
       </Typography>
       <br></br>
-      <Typography variant="h5" 
+      <Typography variant="h5"
                   gutterBottom
                   sx={{
                     fontWeight: 'bold',
@@ -107,112 +121,149 @@ const App: React.FC = () => {
         If you agree to the waiver, please enable location, camera, and microphone access to continue
       </Typography>
 
-      <Button
-        variant="contained"
-        // color={locationEnabled ? 'success' : 'error'}
-        onClick={enableLocation}
-        sx={{ // css to change button color gradient
-            fontWeight: 'bold',
-            fontSize: '1.0rem', //enlarged for readability
-            letterSpacing: '0.05em',
-            textAlign: 'center',
-            // color: 'white',
-              marginY: 1,
-              width: '100%',
-            background: locationEnabled
-              ? 'linear-gradient(to bottom, #56ab2f, #66bb6a)'
-              : 'linear-gradient(to bottom, #e53935, #d32f2f)', 
-            color: 'white',
-            boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
-            '&:hover': {
-              background: locationEnabled
-                ? 'linear-gradient(to bottom, #66bb6a, #56ab2f)'
-                : 'linear-gradient(to bottom, #d32f2f, #e53935)',
-            },
-          }}
-      >
-        {locationEnabled ? 'Location Enabled' : 'Enable Location'}
-      </Button>
 
       <Button
         variant="contained"
-        // color={cameraEnabled ? 'success' : 'error'}
-        onClick={enableCamera}
+        onClick={enableLocation}
         sx={{
-          fontWeight: 'bold',
-          fontSize: '1.0rem', //enlarged for readability
-          letterSpacing: '0.05em',
+          padding: "10px 20px",
+          borderRadius: "20px",
+          border: "none",
+          cursor: "pointer",
+          color: "black",
+          fontSize: '1.1rem',          
+          fontWeight: '900', // Bolder text (options: 400 = normal, 700 = bold, 900 = extra bold)
+          letterSpacing: '0.15em',
           textAlign: 'center',
           marginY: 1,
           width: '100%',
-          background: cameraEnabled
-            ? 'linear-gradient(to bottom, #56ab2f, #66bb6a)'
-            : 'linear-gradient(to bottom, #e53935, #d32f2f)', // Green or red gradient
-          color: 'white',
+          backgroundColor: 'white',
           boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+
+
           '&:hover': {
-            background: cameraEnabled
-              ? 'linear-gradient(to bottom, #66bb6a, #56ab2f)'
-              : 'linear-gradient(to bottom, #d32f2f, #e53935)',
+            backgroundColor: '#e0e0e0',
+          },
+          '&:active': {
+            backgroundColor: '#d0d0d0',
+          },
+        }}
+      >
+        {locationEnabled ? 'Location Enabled' : 'Enable Location'}
+      </Button>
+ 
+
+
+
+
+      <Button
+        variant="contained"
+        onClick={enableCamera}
+        sx={{
+          padding: "10px 20px",
+          borderRadius: "20px",
+          border: "none",
+          cursor: "pointer",
+          color: "black",
+          fontSize: '1.1rem',          
+          fontWeight: '900', // Bolder text (options: 400 = normal, 700 = bold, 900 = extra bold)
+          letterSpacing: '0.15em',
+          textAlign: 'center',
+          marginY: 1,
+          width: '100%',
+          backgroundColor: 'white',
+          boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+
+
+          '&:hover': {
+            backgroundColor: '#e0e0e0',
+          },
+          '&:active': {
+            backgroundColor: '#d0d0d0',
           },
         }}
       >
         {cameraEnabled ? 'Camera Enabled' : 'Enable Camera'}
       </Button>
 
+
       <Button
           variant="contained"
           onClick={enableMicrophone}
           sx={{
-            fontWeight: 'bold',
-            fontSize: '1.0rem',
-            letterSpacing: '0.05em',
+            padding: "10px 20px",
+            borderRadius: "20px",
+            border: "none",
+            cursor: "pointer",
+            color: "black",
+            fontSize: '1.1rem',          
+            fontWeight: '900', // Bolder text (options: 400 = normal, 700 = bold, 900 = extra bold)
+            letterSpacing: '0.15em',
+            textAlign: 'center',
             marginY: 1,
             width: '100%',
-            background: microphoneEnabled ? 'linear-gradient(to bottom, #56ab2f, #66bb6a)' : 'linear-gradient(to bottom, #e53935, #d32f2f)',
-            color: 'white',
+            backgroundColor: 'white',
             boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+ 
             '&:hover': {
-              background: microphoneEnabled ? 'linear-gradient(to bottom, #66bb6a, #56ab2f)' : 'linear-gradient(to bottom, #d32f2f, #e53935)',
+              backgroundColor: '#e0e0e0',
+            },
+            '&:active': {
+              backgroundColor: '#d0d0d0',
             },
           }}
         >
           {microphoneEnabled ? 'Microphone Enabled' : 'Enable Microphone'}
         </Button>
 
+
         {/* <OrientationSwitcher
           onToggle={onToggle}
           labelOff="Show orientation angles"
-          labelOn="Hide orientation angles" // Pass the onToggle function to the OrientationSwitcher component 
+          labelOn="Hide orientation angles" // Pass the onToggle function to the OrientationSwitcher component
           /> */}
+
 
       {locationEnabled && cameraEnabled && microphoneEnabled &&(
         <Button
           variant="contained"
-          // color="success"
           onClick={handleContinue}
           sx={{
-            fontWeight: 'bold',
-            fontSize: '1.0rem', //enlarged for readability
-            letterSpacing: '0.05em',
+            padding: "20px 40px", // Increase the padding to double the size
+            borderRadius: "45px 45px 0 0", // corner radius
+            // borderRadius: "45px 45px 45px 45px", // corner radius
+            cursor: "pointer",
+            color: "black",
+            fontSize: '2rem',  
+            fontWeight: '900',
+            letterSpacing: '0.15em',
             textAlign: 'center',
-            marginTop: 2,
-            padding: 2,
+            marginY: 1,
+            marginBottom: 0,
             width: '100%',
-            background: 'linear-gradient(to bottom, #56ab2f, #66bb6a)', // Green gradient
-            color: 'white',
+            display: "flex", // Flexbox to align text and icon
+            flexDirection: "column", // Stack the text and icon vertically
+
+            backgroundColor: 'white',
             boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+ 
             '&:hover': {
-              background: 'linear-gradient(to bottom, #66bb6a, #56ab2f)',
+              backgroundColor: '#e0e0e0',
             },
-           }}
+            '&:active': {
+              backgroundColor: '#d0d0d0',
+            },
+          }}
         >
           Continue
+          <FaArrowRightLong size={80}/>
         </Button>
-      )}
+        )}
+     
     </Container>
     </ThemeProvider>
   );
 };
+
 
 export default App;
