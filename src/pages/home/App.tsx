@@ -125,6 +125,7 @@ const App: React.FC = () => {
       <Button
         variant="contained"
         onClick={enableLocation}
+        aria-label="Enable location access"
         sx={{
           padding: "10px 20px",
           borderRadius: "20px",
@@ -139,8 +140,6 @@ const App: React.FC = () => {
           width: '100%',
           backgroundColor: 'white',
           boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
-
-
           '&:hover': {
             backgroundColor: '#e0e0e0',
           },
@@ -151,14 +150,11 @@ const App: React.FC = () => {
       >
         {locationEnabled ? 'Location Enabled' : 'Enable Location'}
       </Button>
- 
-
-
-
 
       <Button
         variant="contained"
         onClick={enableCamera}
+        aria-label="Enable camera access"
         sx={{
           padding: "10px 20px",
           borderRadius: "20px",
@@ -173,8 +169,6 @@ const App: React.FC = () => {
           width: '100%',
           backgroundColor: 'white',
           boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
-
-
           '&:hover': {
             backgroundColor: '#e0e0e0',
           },
@@ -186,10 +180,10 @@ const App: React.FC = () => {
         {cameraEnabled ? 'Camera Enabled' : 'Enable Camera'}
       </Button>
 
-
       <Button
           variant="contained"
           onClick={enableMicrophone}
+          aria-label="Enable microphone access"
           sx={{
             padding: "10px 20px",
             borderRadius: "20px",
@@ -204,7 +198,6 @@ const App: React.FC = () => {
             width: '100%',
             backgroundColor: 'white',
             boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
- 
             '&:hover': {
               backgroundColor: '#e0e0e0',
             },
@@ -228,10 +221,11 @@ const App: React.FC = () => {
         <Button
           variant="contained"
           onClick={handleContinue}
+          aria-label="Continue to the next step"
           sx={{
             padding: "20px 40px", // Increase the padding to double the size
             borderRadius: "45px 45px 0 0", // corner radius
-            // borderRadius: "45px 45px 45px 45px", // corner radius
+            // borderRadius: "45px 45px 45px 45px", 
             cursor: "pointer",
             color: "black",
             fontSize: '2rem',  
@@ -243,10 +237,8 @@ const App: React.FC = () => {
             width: '100%',
             display: "flex", // Flexbox to align text and icon
             flexDirection: "column", // Stack the text and icon vertically
-
             backgroundColor: 'white',
             boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
- 
             '&:hover': {
               backgroundColor: '#e0e0e0',
             },

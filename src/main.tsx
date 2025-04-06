@@ -6,10 +6,15 @@ import './index.css'
 import { createBrowserRouter, RouterProvider} from "react-router-dom";
 import Waiver from "./pages/Waiver";
 import Cube3D from './pages/update/index.tsx';
+import Welcome from './pages/home/Welcome.tsx';
 
 const router = createBrowserRouter([
   {
     path: "/",
+    element: <Welcome/>
+  },
+  {
+    path: "/enable",
     element: <App />
   },
   {
