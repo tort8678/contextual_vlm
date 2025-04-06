@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography, Button } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -28,6 +28,22 @@ const Welcome: React.FC = () => {
   const handleContinue = () => {
     navigate('/enable'); //welcome --> enabling page (waiver) --> homepage
   };
+// -------------------------------------------------------------------------------------------
+  //tts function for loading state
+  function speak(text: string) {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    } else {
+      console.error('Speech synthesis not supported in this browser.');
+    }
+  }
+//   ---------------------------------------------------------------------------------------------
+    // speak
+    useEffect(() => {
+        speak('Welcome to Buddy Walk! Buddy Walk is designed to help you better understand and navigate your surroundings. Simply take a picture or video, ask a question, and well do the rest! From finding directions to the nearest train station to identifying the color of your shirt, we’re here to assist you. Tap continue to start');
+    }, []);
+//   ---------------------------------------------------------------------------------------------
 
   return (
     <ThemeProvider theme={theme}>

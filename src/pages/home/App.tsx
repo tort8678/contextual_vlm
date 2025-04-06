@@ -5,6 +5,8 @@ import OrientationSwitcher from '../../components/OrientationSwitcher';
 import { Box, Button, Typography, Container, Link } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { FaArrowRightLong } from "react-icons/fa6";
+// import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+
 
 
 // for the wording font
@@ -28,6 +30,8 @@ const App: React.FC = () => {
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [microphoneEnabled, setMicrophoneEnabled] = useState(false);
   const navigate = useNavigate();
+  // const [language, setLanguage] = useState('en');
+
 
 
   // Enable location using the Geolocation API
@@ -78,6 +82,10 @@ const App: React.FC = () => {
     }
   };
 
+  // const handleLanguageChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  // setLanguage(event.target.value as string);
+  // };
+
 
   return (
     <ThemeProvider theme={theme}>
@@ -95,18 +103,98 @@ const App: React.FC = () => {
         minHeight: '100vh', //covers the full viewport height
       }}
     >
-      <Typography variant="h5"
-                  gutterBottom
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: '1.5rem', //enlarged for readability
-                    letterSpacing: '0.05em',
-                    textAlign: 'center',
-                    color: 'white',
-                  }}
-      >This app is designed to assist blind and visually impaired users in navigation and localization. However, due to the limitations of AI, GPS accuracy, and real-world conditions, the app may not always provide correct or real-time information. Users should not rely solely on this app for navigation and should use additional assistive tools. By using this app, you acknowledge that you assume full responsibility for your safety and agree that the developers are not liable for any accidents, injuries, or damages that may occur while using the app.
-      For the detailed Waiver and Disclaimer for AI-Powered Navigation App, please click the link: <Link aria-label='Link to Waiver' sx={{color:"white", textDecorationColor:"white", fontWeight:"1000"}} component={"button"} onClick={()=>navigate('/waiver')}>Waiver</Link>
+      <Typography
+      variant="h3"
+      sx={{
+      fontWeight: 'bold',
+      marginTop: 5,
+      letterSpacing: '0.05em',
+      textAlign: 'center',
+      color: 'white',
+      textTransform: 'uppercase',
+      marginBottom: 3,
+      }}
+      aria-label="User Agreement"
+      >
+      User Agreement     
       </Typography>
+{/* code below is for changing langauges,might do for entire app */}
+{/* <FormControl fullWidth sx={{ marginBottom: 2 }}>
+  <InputLabel id="language-select-label" sx={{ color: 'white' }}>Language</InputLabel>
+  <Select
+    labelId="language-select-label"
+    value={language}
+    onChange={handleLanguageChange}
+    sx={{
+      color: 'white',
+      borderColor: 'white',
+      '.MuiOutlinedInput-notchedOutline': {
+        borderColor: 'white',
+      },
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'white',
+      },
+      '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'white',
+      },
+      '& .MuiSvgIcon-root': {
+        color: 'white',
+      },
+    }}
+  >
+    <MenuItem value="en">English</MenuItem>
+    <MenuItem value="es">Español</MenuItem>
+    <MenuItem value="zh">中文</MenuItem>
+  </Select>
+</FormControl> */}
+{/* ----------------------------- */}
+      <Box
+      sx={{
+        maxHeight: '250px', // Adjust height as needed
+        overflowY: 'auto',
+        paddingRight: 1,
+        marginBottom: 2,
+        border: '1px solid white',
+        borderRadius: 2,
+      }}
+    >
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{
+          fontWeight: 'bold',
+          fontSize: '1.5rem',
+          letterSpacing: '0.05em',
+          textAlign: 'center',
+          color: 'white',
+        }}
+      >
+        This app is designed to assist blind and visually impaired users in navigation and localization.
+        However, due to the limitations of AI, GPS accuracy, and real-world conditions, the app may not
+        always provide correct or real-time information. Users should not rely solely on this app for
+        navigation and should use additional assistive tools. By using this app, you acknowledge that
+        you assume full responsibility for your safety and agree that the developers are not liable for
+        any accidents, injuries, or damages that may occur while using the app. For the detailed Waiver
+        and Disclaimer for AI-Powered Navigation App, please click the link below:<br></br>
+        <Link
+          aria-label="Link to Waiver"
+          sx={{
+            color: 'white',
+            textDecorationColor: 'white',
+            fontWeight: '1000',
+            cursor: 'pointer',
+          }}
+          component="button"
+          onClick={() => navigate('/waiver')}
+        >
+          Waiver
+        </Link>
+      </Typography>
+    </Box>
+
+  
+
+      
       <br></br>
       <Typography variant="h5"
                   gutterBottom
