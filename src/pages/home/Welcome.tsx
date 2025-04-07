@@ -39,10 +39,10 @@ const Welcome: React.FC = () => {
     }
   }
 //   ---------------------------------------------------------------------------------------------
-    // speak
-    useEffect(() => {
-        speak('Welcome to Buddy Walk! Buddy Walk is designed to help you better understand and navigate your surroundings. Simply take a picture or video, ask a question, and well do the rest! From finding directions to the nearest train station to identifying the color of your shirt, we’re here to assist you. Tap continue to start');
-    }, []);
+    // // speak
+    // useEffect(() => {
+    //     speak('Welcome to Buddy Walk! Buddy Walk is designed to help you better understand and navigate your surroundings. Simply take a picture or video, ask a question, and well do the rest! From finding directions to the nearest train station to identifying the color of your shirt, we’re here to assist you. Tap continue to start');
+    // }, []);
 //   ---------------------------------------------------------------------------------------------
 
   return (
