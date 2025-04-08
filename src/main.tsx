@@ -4,7 +4,7 @@ import App from './pages/home/App.tsx'
 import Test from "./pages/test";
 import './index.css'
 import { createBrowserRouter, RouterProvider} from "react-router-dom";
-import Waiver from "./pages/Waiver";
+import Waiver from "./pages/Waiver/index.tsx";
 import Cube3D from './pages/update/index.tsx';
 import Welcome from './pages/home/Welcome.tsx';
 
