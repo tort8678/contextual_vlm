@@ -819,11 +819,7 @@ return (
         )}
         
       {/* code below adds the drag/seek audio bar */}
-      {audioUrl && <audio controls src={audioUrl} autoPlay style={{maxWidth: '600px', 
-                                                                    marginTop: '16px',display: 'flex',
-                                                                    flexDirection: 'column',
-                                                                    alignItems: 'center',
-                                                                    margin: '20px',}}/>} 
+      {audioUrl && <audio id="ttsAudio" src={audioUrl} autoPlay style={{display:"none"}}/>} 
 {/* --------------------------------------------------------------------------------------------- */}
 
     {/*TTS Button with Play/Pause option*/}
@@ -875,20 +871,18 @@ return (
         </AccessibleButton>
         <ReportMessage openAIResponse={openAIResponse} currentMessageId={currentMessageId} currentChatId={currentChatId}/>
 
-        {/*audio Element for Seek without extra controls */}
+        {/* audio Element for Seek without extra controls
         <audio
           id="ttsAudio"
           src={audioUrl}
           style={{
-            width: '100%',
-            marginTop: '8px',
             display: 'none', // Hide controls and seek bar
           }}
           //controls
           autoPlay
         >
           Your browser does not support the audio element. 
-        </audio>
+        </audio> */}
       </div>
     )}
   </div>

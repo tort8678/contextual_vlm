@@ -66,7 +66,8 @@ const tools = [
     function: {
       name: "generateGoogleAPILinkNonSpecificLocation",
       description: "Generates a Google Nearby Places API link based on user location. Use when user wants to find areas based on type, not specific name. Also use if user asks about where they are so you can geolocate them better." +
-      "Type refers what kind of establishment location is (i.e. supermarket, library, restaurant), keyword focuses search more (i.e. mexican vs japanese food) Format: https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&rankby=distance&type=${type}&keyword=${keyword}",
+      "Type refers what kind of establishment location is (i.e. supermarket, library, restaurant, subway_station), keyword focuses search more as a qualifier for the type (i.e. mexican vs japanese food when type is restaurant, pizza,)"+
+      "Format: https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&rankby=distance&type=${type}&keyword=${keyword}",
       parameters: {
         type: "object",
         properties: {
@@ -169,7 +170,7 @@ export class OpenAIService {
     //try function?
     try {
       const openAiResponse = await this.client.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-4.1-nano",
         messages: [
           {role: "user", content: text},
           {
@@ -242,7 +243,7 @@ export class OpenAIService {
             //if its giving back a nearby places link
             if (places.data.results) {
               // console.log(places.data.results)
-              relevantData = places.data.results.map((place: { name: string, geometry:{location:{lat:number, lng: number}}, rating:number }) => `\n{name: ${place.name}, location(lat,lng): ${place.geometry.location.lat},${place.geometry.location.lng}}, rating: ${place.rating} stars`).join(', ');
+              relevantData = places.data.results.map((place: { name: string, geometry:{location:{lat:number, lng: number}}, rating:number, vicinity:string }) => `\n{name: ${place.name}, location(lat,lng): ${place.geometry.location.lat},${place.geometry.location.lng}, address: ${place.vicinity}, rating: ${place.rating} stars}`).join(', ') ;
               console.log(relevantData)
               systemContent += ` Nearby Places in order of nearest distance: ${relevantData}`;
               //console.log(systemContent)
@@ -251,7 +252,7 @@ export class OpenAIService {
             else if (places.data.candidates) {
               //console.log(places.data.candidates[0])
               relevantData = `name: ${places.data.candidates[0].name}, address: ${places.data.candidates[0].formatted_address}`
-              console.log(relevantData)
+              //console.log(relevantData)
               systemContent += `Relevant Place Information: ${relevantData}`
             }
             //if its giving back directions link
@@ -284,6 +285,9 @@ export class OpenAIService {
     }
     // console.log(systemContent)
     try {
+      // console.log("user prompt: ", userContent)
+      // console.log("system prompt: ", systemContent)
+      // console.log("openAI history: ", openAIHistory)
       const chatCompletion = await this.client.chat.completions.create({
         messages: [
           {role: 'user', content: userContent},
@@ -291,7 +295,7 @@ export class OpenAIService {
           {role: 'system', content: "chat history: " 
             + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
           ],
-        model: 'gpt-4o',
+        model: 'gpt-4.1-nano',
       });
       // console.log('OpenAI API response:', chatCompletion);
       openAIHistory.push({input: content.text, output: chatCompletion.choices[0].message.content as string, data: relevantData});
