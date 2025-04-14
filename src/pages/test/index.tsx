@@ -463,113 +463,104 @@ return (
             />
           </AccessibleButton>
           )}
-{/* ----------------------------------------------------------------------------------------------------------- */}
-        {isMobile && (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '16px', // space between buttons
-              flexWrap: 'wrap',
-              marginTop: '16px',
-              marginBottom: '16px',
-            }}
-          >
-            {/* Take Picture Button */}
-            <Box
-              component="label"
-              sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      width: '120px',
-                      height: '120px',
-                      padding: '20px',
-                      fontSize: '2rem',
-                      marginTop: '16px',
-                      marginBottom: '16px',
-                      backgroundColor: 'white',
-                      color: 'black',
-                      borderRadius: '20px',
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      letterSpacing: '0.1em',
-                      boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
-                      '&:hover': {
-                        backgroundColor: '#e0e0e0',
-                      },
-                      '&:active': {
-                        backgroundColor: '#d0d0d0',
-                      },
-              }}
-              onClick={() => {
-                const capturedImage = camera.current?.takePhoto() as string;
-                if (capturedImage) {
-                  setImage(capturedImage);
-                  setUserInput('Describe the image');
-                } else {
-                  console.error('Failed to capture image.');
-                }
-                console.log(orientation);
-              }}
-              aria-label="Take a picture"
-            >
-              TAKE PICTURE
-            </Box>
+  {/* ------------------------------------------------------------------------------------------------------- */}
+  {/* code below for both photo/video on mobile */}
+  {isMobile && (
+  <Box sx={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' ,marginTop:'16px'}}>
+    {/* TAKE PICTURE BUTTON */}
+    <Box
+      component="label"
+      sx={{
+        display: 'inline-flex',
+        justifyContent: 'center',
+        verticalAlign: 'top',
+        alignItems: 'center',
+        width: '120px',
+        height: '120px',
+        padding: '20px',
+        fontSize: '2rem',
+        backgroundColor: 'white',
+        color: 'black',
+        borderRadius: '20px',
+        textAlign: 'center',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        letterSpacing: '0.1em',
+        boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+        '&:hover': {
+          backgroundColor: '#e0e0e0',
+        },
+        '&:active': {
+          backgroundColor: '#d0d0d0',
+        },
+      }}
+      onClick={() => {
+        const capturedImage = camera.current?.takePhoto() as string;
+        if (capturedImage) {
+          setImage(capturedImage);
+          setUserInput('Describe the image');
+        } else {
+          console.error('Failed to capture image.');
+        }
+        console.log(orientation);
+      }}
+      aria-label={image || videoBlob ? 'Reupload file' : 'Upload file'}
+    >
+      TAKE A PICTURE
+    </Box>
 
-            {/* Start/Stop Video Button */}
-            <Box
-              component="label"
-              sx={{
-                display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      width: '120px',
-                      height: '120px',
-                      padding: '20px',
-                      fontSize: '2rem',
-                      marginTop: '16px',
-                      marginBottom: '16px',
-                      backgroundColor: 'white',
-                      color: 'black',
-                      borderRadius: '20px', // Match shared style
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      letterSpacing: '0.1em',
-                      boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)', // Keep subtle, clean shadow
-                      '&:hover': {
-                        backgroundColor: '#e0e0e0',
-                      },
-                      '&:active': {
-                        backgroundColor: '#d0d0d0',
-                      },
-              }}
-              onClick={handleVideoRecording}
-              aria-label="Start or stop video recording"
-            >
-              {isRecording ? "STOP VIDEO" : "START VIDEO"}
-            </Box>
-          </Box>
-        )}
+    {/* VIDEO BUTTON */}
+    <Box
+      component="label"
+      sx={{
+        display: 'inline-flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '120px',
+        height: '120px',
+        padding: '20px',
+        fontSize: '2rem',
+        backgroundColor: 'white',
+        color: 'black',
+        borderRadius: '20px',
+        textAlign: 'center',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        letterSpacing: '0.1em',
+        boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+        '&:hover': {
+          backgroundColor: '#e0e0e0',
+        },
+        '&:active': {
+          backgroundColor: '#d0d0d0',
+        },
+      }}
+      onClick={handleVideoRecording}
+    >
+      {isRecording ? 'STOP VIDEO' : 'START VIDEO'}
+    </Box>
+  </Box>
+)}
 
-{/* ----------------------------------------------------------------------------------------------------------- */}
+{/* ----------------------------------------------------------------------------------------------------------- */}  
           {/* button for taking photo mobile version */}
-          {/* {isMobile  &&(
+          {/*
+          {isMobile  &&(
            <Box
             component="label"
             sx={{
-              display: 'flex',
+              display: 'inline-flex',
               justifyContent: 'center',
+              verticalAlign: 'top', // aligns them nicely
               alignItems: 'center',
-              width: '200px',
-              height: '200px',
-              padding: '20px',
-              fontSize: '2rem',
+              gap: '16px', // space between buttons
               marginTop: '16px',
               marginBottom: '16px',
+              margin: '8px',
+              width: '120px',
+              height: '120px',
+              padding: '20px',
+              fontSize: '2rem',
               backgroundColor: 'white',
               color: 'black',
               borderRadius: '20px',
@@ -605,25 +596,30 @@ return (
               capture="environment"
               onChange={(e) => handleCapture(e.target)}
               style={{display: 'none'}}
-            /> */}
-          {/* </Box> */}
-  {/* // )} */}
+            /> 
+          </Box>
+  )} 
+  */}
 {/* -------------------------------------------------------------------------------------------- */}
-          {/* button for taking video mobile version
-          {isMobile &&(
+          {/* button for taking video mobile version*/}
+          
+          {/*{isMobile &&(
 
           <Box
             component="label"
             sx={{
-              display: 'flex',
+              display: 'inline-flex',
               justifyContent: 'center',
               alignItems: 'center',
-              width: '200px',
-              height: '200px',
-              padding: '20px',
-              fontSize: '2rem',
+              gap: '16px', // space between buttons
+              flexWrap: 'wrap',
               marginTop: '16px',
               marginBottom: '16px',
+              margin: '8px', // spacing between buttons
+              width: '120px',
+              height: '120px',
+              padding: '20px',
+              fontSize: '2rem',
               backgroundColor: 'white',
               color: 'black',
               borderRadius: '20px', // Match shared style
@@ -649,9 +645,10 @@ return (
               capture="environment"
               onChange={(e) => handleCapture(e.target)}
               style={{display: 'none'}}
-            /> */}
-          {/* </Box>
+            /> 
+          </Box>
   )} */}
+  
 {/* ----------------------------------------------------------------------------------------------------------- */}
 
           {/* Take photo button (desktop)  */}
