@@ -5,30 +5,32 @@ export const AccessibleButton = styled(Button)({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  width: 'auto',
-  height: 'auto',
-  backgroundColor: '#000000',
-  color: '#FFFFFF',
-  fontSize: '1.5rem', // Increased size for better accessibility
-  padding: '16px 32px', // Adjusted padding
-  margin: '10px 0',
+  width: '100%',
+  maxWidth: '600px',
+  padding: '16px',
+  fontSize: '1.5rem',
   marginTop: '16px',
-  marginBottom: '16px',  // Added padding below the button
-  textAlign: 'center',
+  marginBottom: '16px',
+  backgroundColor: 'white',
+  color: 'black',
+  borderRadius: '16px',
+  border: '3px solid white',
+  fontWeight: 'bold',
+  letterSpacing: '0.05em',
   cursor: 'pointer',
-  borderRadius: '12px',
-  background: 'linear-gradient(145deg, #1a1a1a, #121212)',  // Almost black gradient background
-  boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2), -2px -2px 10px rgba(255, 255, 255, 0.2)', // Shadow effect
+  boxShadow: '2px 2px 12px rgba(255, 255, 255, 0.1)',
+  textAlign: 'center',
   '&:hover': {
-    backgroundColor: '#303030',
+    backgroundColor: '#f5f5f5',
   },
-  '&:focus': {
-    outline: '3px solid #FFA500',
-    outlineOffset: '2px',
+  '&:active': {
+    backgroundColor: '#e0e0e0',
   },
+  // '&:focus': {
+  //   outline: '3px solid #FFA500',
+  //   outlineOffset: '2px',
+  // },
 });
-
-
 
 export const AccessibleTextField = styled(TextField)({
   '& .MuiInputBase-input': {
@@ -48,9 +50,13 @@ export const AccessibleTextField = styled(TextField)({
 export const AccessibleTypography = styled(Typography)({
   fontSize: '1.8rem', // Increased size for better readability
   lineHeight: 1.6,
-  color: '#000000',
+  color: 'white',
   fontWeight: 500,
   width: "100%", // Adjusted for full width
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  margin: '20px',
 });
 
 // styles for sections
@@ -62,21 +68,23 @@ export const SectionContainer = styled(Box)(({ theme }) => ({
   alignItems: "center",
   borderRadius: "16px", // Rounded corners
   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Subtle shadow
+  marginTop: "16px",
 }));
 
 export const BlueSection = styled(SectionContainer)({
-  // background: "linear-gradient(135deg, #3A7BD5, #3A6073)", // Blue gradient
-  background: "linear-gradient(135deg, #001f4d, #87CEEB)",
-  color: "#FFFFFF", // White text for contrast
+  // background: "linear-gradient(135deg, #001f4d, #87CEEB)",
+  background: "black",
+  color: "white", // for contrast
 });
 
 export const GraySection = styled(SectionContainer)({
-  background: "linear-gradient(to bottom, #a9a9a9, #cfcfcf)",
-  color: "#000000",
+  // background: "linear-gradient(to bottom, #a9a9a9, #cfcfcf)",
+  background: "black",
+  color: "white", // for contrast
+  border: '2px solid white',
 });
 
 export const GreenSection = styled(SectionContainer)({
-  background: "linear-gradient(to bottom, #56ab2f, #66bb6a)",
-  color: "#FFFFFF",
+  background: "black",
+  color: "white", // for contrast
 });
-

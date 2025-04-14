@@ -403,9 +403,11 @@ return (
         alignItems: 'center', //centered vertically
         paddingLeft: isMobile ? '8px' : '32px',
         paddingRight: isMobile ? '8px' : '32px',
-        backgroundColor: '#F5F5F5',
+        backgroundColor: 'black',
+        color: 'white',
         height: '100vh', //full height
         overflowY: 'auto',
+        minHeight: '100vh'
       }}
     >
       
@@ -414,7 +416,7 @@ return (
       {/* Condition for displaying either camera or video view depending on whether the image or videoBlob exists */}
       {!image && !videoBlob ? (
         <>
-          <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center'}}>
+          <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center', border: '4px solid white',}}>
             {/* Display the Camera component on both desktop/mobile */}
             {cameraMode === 'photo'  ? ( 
               <Box sx={{width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden',textAlign: 'center'}}>
@@ -462,31 +464,126 @@ return (
           </AccessibleButton>
           )}
 {/* ----------------------------------------------------------------------------------------------------------- */}
-          {/* button for taking photo mobile version */}
-          {isMobile  &&(
+        {isMobile && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '16px', // space between buttons
+              flexWrap: 'wrap',
+              marginTop: '16px',
+              marginBottom: '16px',
+            }}
+          >
+            {/* Take Picture Button */}
+            <Box
+              component="label"
+              sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      width: '120px',
+                      height: '120px',
+                      padding: '20px',
+                      fontSize: '2rem',
+                      marginTop: '16px',
+                      marginBottom: '16px',
+                      backgroundColor: 'white',
+                      color: 'black',
+                      borderRadius: '20px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      letterSpacing: '0.1em',
+                      boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+                      '&:hover': {
+                        backgroundColor: '#e0e0e0',
+                      },
+                      '&:active': {
+                        backgroundColor: '#d0d0d0',
+                      },
+              }}
+              onClick={() => {
+                const capturedImage = camera.current?.takePhoto() as string;
+                if (capturedImage) {
+                  setImage(capturedImage);
+                  setUserInput('Describe the image');
+                } else {
+                  console.error('Failed to capture image.');
+                }
+                console.log(orientation);
+              }}
+              aria-label="Take a picture"
+            >
+              TAKE PICTURE
+            </Box>
 
+            {/* Start/Stop Video Button */}
+            <Box
+              component="label"
+              sx={{
+                display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      width: '120px',
+                      height: '120px',
+                      padding: '20px',
+                      fontSize: '2rem',
+                      marginTop: '16px',
+                      marginBottom: '16px',
+                      backgroundColor: 'white',
+                      color: 'black',
+                      borderRadius: '20px', // Match shared style
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      letterSpacing: '0.1em',
+                      boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)', // Keep subtle, clean shadow
+                      '&:hover': {
+                        backgroundColor: '#e0e0e0',
+                      },
+                      '&:active': {
+                        backgroundColor: '#d0d0d0',
+                      },
+              }}
+              onClick={handleVideoRecording}
+              aria-label="Start or stop video recording"
+            >
+              {isRecording ? "STOP VIDEO" : "START VIDEO"}
+            </Box>
+          </Box>
+        )}
+
+{/* ----------------------------------------------------------------------------------------------------------- */}
+          {/* button for taking photo mobile version */}
+          {/* {isMobile  &&(
            <Box
             component="label"
             sx={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              width: isMobile ? '200px' : '100%',
-              height: isMobile ? '200px' : 'auto',
+              width: '200px',
+              height: '200px',
               padding: '20px',
-              fontSize: isMobile ? '2rem' : '1.5rem',
+              fontSize: '2rem',
               marginTop: '16px',
-              marginBottom: '16px',  //Added padding below the button
-              // backgroundColor: '#000',
-              background: 'linear-gradient(145deg, #1a1a1a, #121212)',  //Almost black gradient background
-              color: '#fff',
-              borderRadius: '12px',
+              marginBottom: '16px',
+              backgroundColor: 'white',
+              color: 'black',
+              borderRadius: '20px',
               textAlign: 'center',
               cursor: 'pointer',
-              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2), -2px -2px 10px rgba(255, 255, 255, 0.2)', // Shadow effect
-              '&:hover': {backgroundColor: '#303030',},
-              '&:focus': {outline: '3px solid #FFA500',
-                          outlineOffset: '2px',},
+              fontWeight: 'bold',
+              letterSpacing: '0.1em',
+              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+              '&:hover': {
+                backgroundColor: '#e0e0e0',
+              },
+              '&:active': {
+                backgroundColor: '#d0d0d0',
+              },
             }}
             onClick={() => {
               const capturedImage = camera.current?.takePhoto() as string;
@@ -509,10 +606,10 @@ return (
               onChange={(e) => handleCapture(e.target)}
               style={{display: 'none'}}
             /> */}
-          </Box>
-  )}
+          {/* </Box> */}
+  {/* // )} */}
 {/* -------------------------------------------------------------------------------------------- */}
-          {/* button for taking video mobile version*/}
+          {/* button for taking video mobile version
           {isMobile &&(
 
           <Box
@@ -521,27 +618,29 @@ return (
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              width: isMobile ? '200px' : '100%',
-              height: isMobile ? '200px' : 'auto',
+              width: '200px',
+              height: '200px',
               padding: '20px',
-              fontSize: isMobile ? '2rem' : '1.5rem',
+              fontSize: '2rem',
               marginTop: '16px',
-              marginBottom: '16px',  //Added padding below the button
-              // backgroundColor: '#000',
-              background: 'linear-gradient(145deg, #1a1a1a, #121212)',  //Almost black gradient background
-              color: '#fff',
-              borderRadius: '12px',
+              marginBottom: '16px',
+              backgroundColor: 'white',
+              color: 'black',
+              borderRadius: '20px', // Match shared style
               textAlign: 'center',
               cursor: 'pointer',
-              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2), -2px -2px 10px rgba(255, 255, 255, 0.2)', // Shadow effect
-              '&:hover': {backgroundColor: '#303030',},
-              '&:focus': {outline: '3px solid #FFA500',
-                          outlineOffset: '2px',},
+              fontWeight: 'bold',
+              letterSpacing: '0.1em',
+              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)', // Keep subtle, clean shadow
+              '&:hover': {
+                backgroundColor: '#e0e0e0',
+              },
+              '&:active': {
+                backgroundColor: '#d0d0d0',
+              },
             }}
             // aria-label={videoBlob ? "Reupload file" : "Upload file"}
             onClick={handleVideoRecording}
-
-
           >
             {isRecording ? "STOP VIDEO" : "START VIDEO"}
             {/* <input
@@ -551,9 +650,8 @@ return (
               onChange={(e) => handleCapture(e.target)}
               style={{display: 'none'}}
             /> */}
-          </Box>
-  )}
-
+          {/* </Box>
+  )} */}
 {/* ----------------------------------------------------------------------------------------------------------- */}
 
           {/* Take photo button (desktop)  */}
@@ -620,6 +718,7 @@ return (
                   height: isMobile ? 'auto' : '60vh',
                   borderRadius: '12px',
                   overflow: 'hidden',
+                  border: '4px solid white',
                 }}
               />
             ) : (
@@ -627,7 +726,7 @@ return (
                 src={image as string}
                 alt="Taken photo"
                 aria-hidden="true"
-                style={{width: '100%', borderRadius: '12px'}}
+                style={{width: '100%', borderRadius: '12px', border: '4px solid white',}}
               />
             )}
             <AccessibleButton
@@ -650,7 +749,7 @@ return (
       </BlueSection>
       {orientation && (
         <div className="mt-6">
-        <ul style={{ margin: 0, padding: 0, color: 'black' }}>
+        <ul style={{ margin: 0, padding: 0, color: 'white' }}>
           <li>ɑ: {orientation && <code className="language-text">{orientation.alpha}</code>}</li>
           <li>β: {orientation && <code className="language-text">{orientation.beta}</code>}</li>
           <li>γ: {orientation && <code className="language-text">{orientation.gamma}</code>}</li>
@@ -692,7 +791,7 @@ return (
       <AccessibleTextField
         value={userInput}
         onChange={(e) => setUserInput(e.target.value)}
-        sx={{bgcolor: 'white', marginY: 2, maxWidth: '600px'}}
+        sx={{bgcolor: 'white', marginY: 2, maxWidth: '550px', borderRadius: '12px'}}
         label="Enter a question below:"
         aria-label="User input"
         fullWidth
@@ -719,13 +818,22 @@ return (
         onTouchEnd={stopListening}
         onTouchCancel={stopListening} // Ensure it stops if finger is moved
         style={{
-          padding: '10px 20px',
-          fontSize: '16px',
-          backgroundColor: '#1a1a1a',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer',
+          padding: "12px 28px",          // shorter height and wider for tap comfort
+          borderRadius: "40px",          // rounder edges
+          cursor: "pointer",
+          color: "black",
+          fontSize: "1.2rem",
+          fontWeight: "800",
+          letterSpacing: "0.05em",
+          backgroundColor: "white",
+          boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.2)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "fit-content",          // allows it to size based on content
+          marginTop: "5px",
+          marginBottom: "16px",
+          border: "none",
         }}
       >
     {isListening ? 'Listening...' : 'Hold to Ask a Question'}
@@ -738,9 +846,30 @@ return (
       <AccessibleButton
         onClick={() => sendRequestOpenAI()}
         aria-label="Get description"
-        sx={{width: '100%', 
-          maxWidth: '600px', 
-          marginTop: '18px',
+        sx={{ display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',                 // full width
+          maxWidth: '600px',            // responsive cap
+          height: '80px',               // shorter than 120px but still chunky
+          padding: '20px',
+          fontSize: '2rem',
+          marginTop: '16px',
+          marginBottom: '16px',
+          backgroundColor: 'white',
+          color: 'black',
+          borderRadius: '20px',
+          textAlign: 'center',
+          cursor: 'pointer',
+          fontWeight: 'bold',
+          letterSpacing: '0.1em',
+          boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+          '&:hover': {
+            backgroundColor: '#e0e0e0',
+          },
+          '&:active': {
+            backgroundColor: '#d0d0d0',
+          },
         }}
       >
         Submit
@@ -748,12 +877,20 @@ return (
 
       <div ref={responseRef} style={{ marginTop: '16px' }}> {/* to start the scroll down */}  
       {loading ? ( //loading circle
-      <Box>
+      <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        margin: '20px',
+      }}
+      >
         <CircularProgress 
         size={80}
         thickness={6} //increased thickness for better visibility
         sx={{ margin: '20px', 
               color: '#f8f8ff',
+
             }}
         />
         <AccessibleTypography sx={{ color: '#f8f8ff', marginTop: '10px' }}>
@@ -767,7 +904,11 @@ return (
         )}
         
       {/* code below adds the drag/seek audio bar */}
-      {audioUrl && <audio controls src={audioUrl} autoPlay style={{maxWidth: '600px', marginTop: '16px'}}/>} 
+      {audioUrl && <audio controls src={audioUrl} autoPlay style={{maxWidth: '600px', 
+                                                                    marginTop: '16px',display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    alignItems: 'center',
+                                                                    margin: '20px',}}/>} 
 {/* --------------------------------------------------------------------------------------------- */}
 
     {/*TTS Button with Play/Pause option*/}
@@ -794,17 +935,22 @@ return (
           }}
           aria-label="Play or Pause text-to-speech"
           sx={{
-            backgroundColor: '#000000', // button color
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px',
-            borderRadius: '8px',
-            fontSize: '18px',
-            color: '#FFFFFF', // text color
-            background: 'linear-gradient(145deg, #1a1a1a, #121212)',  // Almost black gradient background
-            boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2), -2px -2px 10px rgba(255, 255, 255, 0.2)', // Shadow effect
+            padding: "12px 28px",          // shorter height and wider for tap comfort
+          borderRadius: "40px",          // rounder edges
+          cursor: "pointer",
+          color: "black",
+          fontSize: "1.2rem",
+          fontWeight: "700",
+          letterSpacing: "0.05em",
+          backgroundColor: "white",
+          boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.2)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "fit-content",          // allows it to size based on content
+          marginTop: "5px",
+          marginBottom: "16px",
+          border: "none",
           }}
         >
           <span role="img" aria-label="Speaker" style={{ marginRight: '8px' }}>
