@@ -182,7 +182,7 @@ const handleVideoRecording = async () => {
           mediaRecorder.stop();
           stopVideoStream();
         }
-      }, 6000);
+      }, 30000); // 30 seconds
     } catch (error) {
       console.error("Error accessing the camera:", error);
     }
@@ -416,7 +416,7 @@ return (
       {/* Condition for displaying either camera or video view depending on whether the image or videoBlob exists */}
       {!image && !videoBlob ? (
         <>
-          <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center', border: '4px solid white',}}>
+          <Box sx={{width: '100%', textAlign: 'center', border: '2px solid white',borderRadius: '12px'}}>
             {/* Display the Camera component on both desktop/mobile */}
             {cameraMode === 'photo'  ? ( 
               <Box sx={{width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden',textAlign: 'center'}}>
@@ -463,112 +463,99 @@ return (
             />
           </AccessibleButton>
           )}  
-{/* ----------------------------------------------------------------------------------------------------------- */}  
-          {/* button for taking photo mobile version */}
-          {isMobile  &&(
-           <Box
-            component="label"
-            sx={{
-              display: 'inline-flex',
-              justifyContent: 'center',
-              verticalAlign: 'top', // aligns them nicely
-              alignItems: 'center',
-              gap: '16px', // space between buttons
-              marginTop: '16px',
-              marginBottom: '16px',
-              margin: '8px',
-              width: '120px',
-              height: '120px',
-              padding: '20px',
-              fontSize: '2rem',
-              backgroundColor: 'white',
-              color: 'black',
-              borderRadius: '20px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              letterSpacing: '0.1em',
-              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
-              '&:hover': {
-                backgroundColor: '#e0e0e0',
-              },
-              '&:active': {
-                backgroundColor: '#d0d0d0',
-              },
-            }}
-            onClick={() => {
-              const capturedImage = camera.current?.takePhoto() as string;
-              if (capturedImage) {
-                setImage(capturedImage);
-                setUserInput('Describe the image');
-              } else {
-                console.error('Failed to capture image.');
-              }
-              console.log(orientation)
-            }}
-            aria-label={image || videoBlob ? "Reupload file" : "Upload file"}
-          >
-            TAKE PICTURE
-            {/* below code is for opening camera interface on mobile */}
-            {/* <input
-              accept="image/*"
-              type="file"
-              capture="environment"
-              onChange={(e) => handleCapture(e.target)}
-              style={{display: 'none'}}
-            /> */}
-          </Box>
-  )} 
-
-{/* -------------------------------------------------------------------------------------------- */}
-          {/* button for taking video mobile version*/}
-          {isMobile &&(
-          <Box
-            component="label"
-            sx={{
-              display: 'inline-flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '16px', // space between buttons
-              flexWrap: 'wrap',
-              marginTop: '16px',
-              marginBottom: '16px',
-              margin: '8px', // spacing between buttons
-              width: '120px',
-              height: '120px',
-              padding: '20px',
-              fontSize: '2rem',
-              backgroundColor: 'white',
-              color: 'black',
-              borderRadius: '20px', // Match shared style
-              textAlign: 'center',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              letterSpacing: '0.1em',
-              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)', // Keep subtle, clean shadow
-              '&:hover': {
-                backgroundColor: '#e0e0e0',
-              },
-              '&:active': {
-                backgroundColor: '#d0d0d0',
-              },
-            }}
-            // aria-label={videoBlob ? "Reupload file" : "Upload file"}
-            onClick={handleVideoRecording}
-          >
-            {isRecording ? "STOP VIDEO" : "START VIDEO"}
-            {/* <input
-              accept="video/*"
-              type="file"
-              capture="environment"
-              onChange={(e) => handleCapture(e.target)}
-              style={{display: 'none'}}
-            /> */}
-          </Box>
-  )}
-  
 {/* ----------------------------------------------------------------------------------------------------------- */}
+{/* take picture/video buttons for mobile */}
+  {isMobile && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '16px', // space between buttons
+                flexWrap: 'wrap',
+                marginTop: '16px',
+                marginBottom: '16px',
+              }}
+            >
+              {/* Take Picture Button */}
+              <Box
+                component="label"
+                sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '120px',
+                        height: '120px',
+                        padding: '20px',
+                        fontSize: '2rem',
+                        marginTop: '16px',
+                        marginBottom: '16px',
+                        backgroundColor: 'white',
+                        color: 'black',
+                        borderRadius: '20px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        letterSpacing: '0.1em',
+                        boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+                        '&:hover': {
+                          backgroundColor: '#e0e0e0',
+                        },
+                        '&:active': {
+                          backgroundColor: '#d0d0d0',
+                        },
+                }}
+                onClick={() => {
+                  const capturedImage = camera.current?.takePhoto() as string;
+                  if (capturedImage) {
+                    setImage(capturedImage);
+                    setUserInput('Describe the image');
+                  } else {
+                    console.error('Failed to capture image.');
+                  }
+                  console.log(orientation);
+                }}
+                aria-label="Take a picture"
+                >
+                TAKE PICTURE
+              </Box>
 
+              {/* Start/Stop Video Button */}
+              <Box
+                component="label"
+                sx={{
+                  display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '120px',
+                        height: '120px',
+                        padding: '20px',
+                        fontSize: '2rem',
+                        marginTop: '16px',
+                        marginBottom: '16px',
+                        backgroundColor: 'white',
+                        color: 'black',
+                        borderRadius: '20px', 
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        letterSpacing: '0.1em',
+                        boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+                        '&:hover': {
+                          backgroundColor: '#e0e0e0',
+                        },
+                        '&:active': {
+                          backgroundColor: '#d0d0d0',
+                        },
+                }}
+                onClick={handleVideoRecording}
+                aria-label="Start video recording"
+              >
+                {isRecording ? "STOP VIDEO" : "START VIDEO"}
+              </Box>
+            </Box>
+          )}          
+{/* ----------------------------------------------------------------------------------------------------------- */}
           {/* Take photo button (desktop)  */}
           {!isMobile && cameraMode === 'photo' && (
             <AccessibleButton
@@ -606,9 +593,12 @@ return (
               maxWidth: '600px', 
               marginTop: '16px', 
               marginBottom: '16px',
-              backgroundColor: isRecording ? '#FF0000' : 'inherit', // Red when recording
-              '&:hover': {backgroundColor: isRecording ? '#CC0000' : '#303030',},
-              '&:focus': {outline: '3px solid #FFA500', outlineOffset: '2px',},
+              '&:hover': {
+                          backgroundColor: '#e0e0e0',
+                        },
+              '&:active': {
+                          backgroundColor: '#d0d0d0',
+                        },
             }}
           >
             {isRecording ? "Stop Video" : "Start Video"}
