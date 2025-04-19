@@ -143,6 +143,34 @@ export default function Test() {
   }, [openAIResponse])
 
 // -------------------------------------------------------------------------------------------------------------------
+// converting WebM to MP4 Conversion for video format
+const convertWebMToMP4 = async (webmBlob: Blob): Promise<Blob> => {
+  const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
+  const ffmpeg = createFFmpeg({ log: true });
+
+  await ffmpeg.load();
+
+  // Convert the WebM Blob to MP4
+  const webmFile = new File([webmBlob], 'video.webm');
+  const webmBuffer = await fetchFile(webmFile);
+  ffmpeg.FS('writeFile', 'input.webm', webmBuffer);
+
+  // Run the conversion
+  await ffmpeg.run('-i', 'input.webm', 'output.mp4');
+
+  // Get the converted file
+  const mp4Data = ffmpeg.FS('readFile', 'output.mp4');
+  const mp4Blob = new Blob([mp4Data.buffer], { type: 'video/mp4' });
+
+  return mp4Blob;
+};
+// ----------------------------------------------------------------------------------------------------------------------
+// detect if user is on iOS (Safari)
+const isIOS = () => {
+  const userAgent = window.navigator.userAgent;
+  return /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+};
+// ----------------------------------------------------------------------------------------------------------------------
 
 const handleVideoRecording = async () => {
   if (!isRecording) {
@@ -154,7 +182,7 @@ const handleVideoRecording = async () => {
       });
       videoStreamRef.current = stream;
 
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/mp4" }); //mp4 is needed for browser compatibility on mobile 
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp8" }); //mp4 is needed for browser compatibility on mobile 
       mediaRecorderRef.current = mediaRecorder;
 
       const chunks: Blob[] = [];
@@ -167,9 +195,17 @@ const handleVideoRecording = async () => {
       };
 
       // Handle stop recording
-      mediaRecorder.onstop = () => {
-        const videoBlob = new Blob(chunks, { type: "video/mp4" });
+        mediaRecorder.onstop = async () => {
+        let videoBlob = new Blob(chunks, { type: "video/webm" });
+        console.log("Blob type before:", videoBlob.type);
+
+        // If on iOS Safari, convert WebM to MP4
+        if (isIOS()) {
+          videoBlob = await convertWebMToMP4(videoBlob);
+        }
+
         setVideoBlob(videoBlob);
+        console.log("Blob type after:", videoBlob.type);
         console.log("Video recorded:", URL.createObjectURL(videoBlob));
       };
 
