@@ -167,8 +167,7 @@ const convertWebMToMP4 = async (webmBlob: Blob): Promise<Blob> => {
 // ----------------------------------------------------------------------------------------------------------------------
 // detect if user is on iOS (Safari)
 const isIOS = () => {
-  const userAgent = window.navigator.userAgent;
-  return /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 };
 // ----------------------------------------------------------------------------------------------------------------------
 
