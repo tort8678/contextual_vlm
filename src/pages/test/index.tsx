@@ -181,7 +181,9 @@ const handleVideoRecording = async () => {
       });
       videoStreamRef.current = stream;
 
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp8" }); //mp4 is needed for browser compatibility on mobile 
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/mp4" }); 
+      // "video/webm;mp4"
+      // mp4 is needed for browser compatibility on mobile 
       mediaRecorderRef.current = mediaRecorder;
 
       const chunks: Blob[] = [];
@@ -195,13 +197,13 @@ const handleVideoRecording = async () => {
 
       // Handle stop recording
         mediaRecorder.onstop = async () => {
-        let videoBlob = new Blob(chunks, { type: "video/webm" });
+        let videoBlob = new Blob(chunks, { type: "video/mp4" });
         console.log("Blob type before:", videoBlob.type);
 
         // If on iOS Safari, convert WebM to MP4
-        if (isIOS()) {
-          videoBlob = await convertWebMToMP4(videoBlob);
-        }
+        // if (isIOS()) {
+        //   videoBlob = await convertWebMToMP4(videoBlob);
+        // }
 
         setVideoBlob(videoBlob);
         console.log("Blob type after:", videoBlob.type);
@@ -687,7 +689,8 @@ return (
         </>
       )}
       </BlueSection>
-      {orientation && (
+      {/* orientation below */}
+      {/* {orientation && (
         <div className="mt-6">
         <ul style={{ margin: 0, padding: 0, color: 'white' }}>
           <li>ɑ: {orientation && <code className="language-text">{orientation.alpha}</code>}</li>
@@ -695,8 +698,8 @@ return (
           <li>γ: {orientation && <code className="language-text">{orientation.gamma}</code>}</li>
         </ul>
       </div>
-      )}
-
+      )} */}
+{/* --------------------------------------------------------------------------------------------------------- */}
       {/* Geolocation data display for desktop */}
       {/*{!isMobile && (*/}
       {/*  <Box*/}
