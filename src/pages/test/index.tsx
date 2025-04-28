@@ -4,7 +4,7 @@ import {Box, Stack, Switch, FormControlLabel, useMediaQuery, InputAdornment, Ico
 import {useGeolocated} from 'react-geolocated';
 import {sendAudioRequest, sendTextRequest} from "../../api/openAi.ts";
 // import {FirebaseStart} from "../../api/firebase.ts";
-import {RequestData} from "./types.ts";
+import {RequestData, CustomCoords} from "./types.ts";
 import {AccessibleButton, AccessibleTypography, AccessibleTextField, BlueSection, GraySection, GreenSection} from "./style.ts";
 import {createChatLog, addChatToChatLog} from "../../api/chatLog.ts";
 import ReportMessage from '../../components/ReportMessage.tsx';
@@ -64,6 +64,7 @@ export default function Test() {
     })
     console.log(orientation)
     
+    
 
     if (orientation) {
       setCurrentOrientation({alpha: orientation.alpha, beta: orientation.beta, gamma: orientation.gamma});
@@ -71,26 +72,13 @@ export default function Test() {
     } else {
       setCurrentOrientation({alpha: null, beta: null, gamma: null});
     }
+    
 
     // return () => {
     //   window.removeEventListener('deviceorientation', handleOrientation);
     // };
   }, []);
 
-  interface CustomCoords {
-    latitude: number;
-    longitude: number;
-    accuracy: number;
-    altitude?: number | null;
-    altitudeAccuracy?: number | null;
-    heading?: number | null;
-    speed?: number | null;
-    orientation?: {
-      alpha: number | null;
-      beta: number | null;
-      gamma: number | null;
-    } | null;
-  }
 
 
 //! Switch to video mode
@@ -746,7 +734,7 @@ return (
         value={userInput}
         onChange={(e) => setUserInput(e.target.value)}
         sx={{bgcolor: 'white', marginY: 2, maxWidth: '550px', borderRadius: '12px'}}
-        label="Enter a question below:"
+        label="Enter a question:"
         aria-label="User input"
         fullWidth
         InputProps={{ 

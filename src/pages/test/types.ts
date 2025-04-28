@@ -1,5 +1,5 @@
 
-interface CustomCoords {
+export interface CustomCoords {
   latitude: number;
   longitude: number;
   accuracy: number;
