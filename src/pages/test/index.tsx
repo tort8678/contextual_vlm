@@ -10,7 +10,7 @@ import {createChatLog, addChatToChatLog} from "../../api/chatLog.ts";
 import ReportMessage from '../../components/ReportMessage.tsx';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useDeviceOrientation } from '../../hooks/useDeviceOrientation.ts';
-import CallAccessARideButton from "../../components/call.tsx"
+// import CallAccessARideButton from "../../components/call.tsx"
 
 
 
@@ -444,6 +444,7 @@ return (
         height: '100dvh',
         overflowX: 'hidden',
         overflowY: 'scroll',
+        // paddingBottom: '100px',
       }}
     >
       
@@ -916,7 +917,7 @@ return (
   </div>
   </GreenSection>
   {/* Sticky Call Button */}
-  <CallAccessARideButton />
+  {/* <CallAccessARideButton /> */}
       {/* Toggle switch for camera mode visible on desktop */}
       {!isMobile && (
         <FormControlLabel
