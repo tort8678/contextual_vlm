@@ -55,8 +55,6 @@ export const AccessibleTypography = styled(Typography)({
   width: "100%", // Adjusted for full width
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
-  margin: '20px',
 });
 
 // styles for sections

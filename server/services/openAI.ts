@@ -66,7 +66,8 @@ const tools = [
     function: {
       name: "generateGoogleAPILinkNonSpecificLocation",
       description: "Generates a Google Nearby Places API link based on user location. Use when user wants to find areas based on type, not specific name. Also use if user asks about where they are so you can geolocate them better." +
-      "Type refers what kind of establishment location is (i.e. supermarket, library, restaurant, subway_station), keyword focuses search more as a qualifier for the type (i.e. mexican vs japanese food when type is restaurant, pizza,)"+
+      "Type only returns esthablishments that match(i.e. supermarket, library, restaurant, subway_station[use for subway, usually what people want if they say 'train' in New York City], transit_station[use for bus],"+
+      +"train_station[use for railroad trains], food, pharmacy), keyword is the relevant search term (i.e. mexican vs japanese food when type is restaurant, pizza,)"+
       "Format: https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&rankby=distance&type=${type}&keyword=${keyword}",
       parameters: {
         type: "object",
@@ -177,7 +178,7 @@ export class OpenAIService {
             role: "system",
             content: `decide the appropriate link to return from function options. If none fit the user query, return 'none'. The latitude is ${lat} and the longitude is ${lng}.  If no type is specified, leave this part out: &type=type.
             Use the chat history to find names of locations, types of locations that the user has asked about, the ratings of locations user has asked about, or the latitude and longitude of relevant locations.
-            If no tool is appropriate, return a nearby place search link by default`
+            If no tool is appropriate, do not return any link`
           },
           {role: "system", content: "chat history: " + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
         ],
@@ -232,7 +233,7 @@ export class OpenAIService {
         console.log(places!.choices[0].message)
         //determine if chat gpt is returning an api link
         if (places && places.choices.length > 0 && places.choices[0].message.tool_calls && places.choices[0].message.tool_calls!.length > 0) {
-          console.log(places.choices[0].message.tool_calls![0].function)
+          //console.log(places.choices[0].message.tool_calls![0].function)
           const parsedArgs = JSON.parse(places.choices[0].message.tool_calls![0].function.arguments)
           //get link
           const {link} = parsedArgs;
@@ -244,8 +245,8 @@ export class OpenAIService {
             if (places.data.results) {
               // console.log(places.data.results)
               relevantData = places.data.results.map((place: { name: string, geometry:{location:{lat:number, lng: number}}, rating:number, vicinity:string }) => `\n{name: ${place.name}, location(lat,lng): ${place.geometry.location.lat},${place.geometry.location.lng}, address: ${place.vicinity}, rating: ${place.rating} stars}`).join(', ') ;
-              console.log(relevantData)
-              systemContent += ` Nearby Places in order of nearest distance: ${relevantData}`;
+              //console.log(relevantData)
+              systemContent += `\nNearby Places in order of nearest distance: ${relevantData}`;
               //console.log(systemContent)
             }
             //if its giving back a specific place link
@@ -257,7 +258,7 @@ export class OpenAIService {
             }
             //if its giving back directions link
             else if (places.data.routes) {
-              console.log(places.data.routes[0].legs[0])
+              //console.log(places.data.routes[0].legs[0])
               relevantData = "Directions:\n"
               for (let i = 0; i < places.data.routes[0].legs[0].steps.length; i++) {
                 relevantData += `Step ${i + 1}) ${places.data.routes[0].legs[0].steps[i].html_instructions} \n`
@@ -272,7 +273,7 @@ export class OpenAIService {
               //console.log(systemContent)
             }
           } else{
-            const trainInfo = await getTrainInfo(link)
+            //const trainInfo = await getTrainInfo(link)
             //console.log(trainInfo)
           }
         }
@@ -284,9 +285,10 @@ export class OpenAIService {
       }
     }
     // console.log(systemContent)
-    try {
-      // console.log("user prompt: ", userContent)
-      // console.log("system prompt: ", systemContent)
+    // openAI separate text request
+    try{
+       console.log("user prompt: ", userContent)
+       console.log("system prompt: ", systemContent)
       // console.log("openAI history: ", openAIHistory)
       const chatCompletion = await this.client.chat.completions.create({
         messages: [
@@ -295,12 +297,33 @@ export class OpenAIService {
           {role: 'system', content: "chat history: " 
             + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
           ],
-        model: 'gpt-4.1-nano',
+        model: 'gpt-4.1',
       });
       // console.log('OpenAI API response:', chatCompletion);
       openAIHistory.push({input: content.text, output: chatCompletion.choices[0].message.content as string, data: relevantData});
       res.status(200).json({output: chatCompletion.choices[0].message.content, history: openAIHistory});
-    } catch (e) {
+    }
+    // try {
+    //   // console.log("user prompt: ", userContent)
+    //   // console.log("system prompt: ", systemContent)
+    //   // console.log("openAI history: ", openAIHistory)
+    //   const chatCompletion = await this.client.chat.completions.create({
+    //     messages: [
+    //       {role: 'user', content: userContent},
+    //       {role: 'system', content: systemContent},
+    //       {role: 'system', content: "chat history: " 
+    //         + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
+    //       ],
+    //     model: 'gpt-4o-audio-preview',
+    //     modalities: ["text", "audio"],
+    //     audio: { voice: "alloy", format: "mp3" },
+    //   });
+    //   console.log('OpenAI API response:', chatCompletion);
+    //   console.log('OpenAI API response:', chatCompletion.choices[0].message.audio);
+    //   openAIHistory.push({input: content.text, output: chatCompletion.choices[0].message.content as string, data: relevantData});
+    //   res.status(200).json({output: chatCompletion.choices[0].message.audio?.transcript, history: openAIHistory, audio: chatCompletion.choices[0].message.audio?.data});
+    // } 
+    catch (e) {
       console.error('Error with OpenAI API request:', e);
       res.status(500).json({error: 'Error processing your request'});
     }

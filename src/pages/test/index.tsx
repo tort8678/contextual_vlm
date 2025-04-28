@@ -119,6 +119,7 @@ export default function Test() {
       if(openAIResponse !== "") {
         if (currentChatId === "") {
           console.log(openAIResponse)
+          speak(openAIResponse)
           const res3 = await createChatLog({input: userInput, output: openAIResponse, imageURL: image as string, location:{lat:coords?.latitude as number, lon:coords?.longitude as number}})
           console.log('chatLog', res3)
           if(res3){
@@ -175,6 +176,7 @@ const handleVideoRecording = async () => {
   if (!isRecording) {
     setUserInput('Describe the video');
     try {
+      speak("Capturing video")
       // Request rear camera access
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" }, // Force rear camera
@@ -218,15 +220,18 @@ const handleVideoRecording = async () => {
         if (mediaRecorder.state === "recording") {
           mediaRecorder.stop();
           stopVideoStream();
+          speak("Video captured.")
         }
       }, 30000); // 30 seconds
     } catch (error) {
+      speak("Could not capture the video.")
       console.error("Error accessing the camera:", error);
     }
   } else {
     // Stop manually if button is clicked again
     mediaRecorderRef.current?.stop();
     stopVideoStream();
+    speak("Video captured.")
   }
 };
 
@@ -317,25 +322,31 @@ const stopVideoStream = () => {
 
       console.log('Sending request data to backend:', data);
       const res = await sendTextRequest(data)
-
       if (res) {
+        console.log('Received response from OpenAI:', res);
         setOpenAIResponse(res.output);
-        // TODO: Commented out audio response cause it takes a lot of tokens but make sure to reenable if building for production
-        const res2 = await sendAudioRequest(res.output);
-        if (res2) {
-          const blob = new Blob([res2], {type: "audio/mpeg"});
-          const url = URL.createObjectURL(blob);
-          setAudioUrl(url);
-        }
-      } else {
-        throw new Error('Invalid response from API.');
+         // Play TTS message with the response text
+        // setAudioUrl(res.audio);
       }
+      // don't need to send audio separately, as it is included in the response from OpenAI
+      // if (res) {
+      //   setOpenAIResponse(res.output);
+      //   // TODO: Commented out audio response cause it takes a lot of tokens but make sure to reenable if building for production
+      //   const res2 = await sendAudioRequest(res.output);
+      //   if (res2) {
+      //     const blob = new Blob([res2], {type: "audio/mpeg"});
+      //     const url = URL.createObjectURL(blob);
+      //     setAudioUrl(url);
+      //   }
+      // } else {
+      //   throw new Error('Invalid response from API.');
+      // }
     } catch (e) {
       console.error('Error sending request to OpenAI:', e);
       setOpenAIResponse('An error occurred while processing your request. Please try again.');
     }
     finally {
-      setLoading(false); // loading cirlce stops
+      setLoading(false);
       speechSynthesis.cancel(); // Stop TTS when loading ends
 
     }
@@ -428,9 +439,8 @@ const handleCapture = (target: EventTarget & HTMLInputElement) => {
 
 // -------------------------------------------------------------------------------------------------------------------
 return (
-    <div>
+
     <Stack
-      
       component="main"
       role="main"
       sx={{
@@ -442,19 +452,21 @@ return (
         paddingRight: isMobile ? '8px' : '32px',
         backgroundColor: 'black',
         color: 'white',
-        height: '100vh', //full height
-        overflowY: 'auto',
-        minHeight: '100vh'
+        height: '100dvh',
+        overflowX: 'hidden',
+        overflowY: 'scroll',
       }}
     >
       
       {/* Blue Section: Take Photo */}
       <BlueSection>
+        <AccessibleTypography sx={{visibility: (videoBlob || image) ? "visible" : "hidden", align:"center"}}>Image/Video Captured!</AccessibleTypography>
       {/* Condition for displaying either camera or video view depending on whether the image or videoBlob exists */}
       {!image && !videoBlob ? (
         <>
+          {/*}
           <Box sx={{width: '100%', textAlign: 'center', border: '2px solid white',borderRadius: '12px'}}>
-            {/* Display the Camera component on both desktop/mobile */}
+            {/* Display the Camera component on both desktop/mobile }
             {cameraMode === 'photo'  ? ( 
               <Box sx={{width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden',textAlign: 'center'}}>
                 <Camera
@@ -474,12 +486,11 @@ return (
                 style={{width: '100%', borderRadius: '12px', overflow: 'hidden'}}
               />
             )}
-          </Box>
+          </Box> */ }
 {/* ----------------------------------------------------------------------------------------------------------- */}
           {/* Upload file button for desktop */}
           {!isMobile && (
           <AccessibleButton
-            component="label"
             sx={{width: '100%', 
               maxWidth: '600px', 
               marginTop: '16px', 
@@ -550,7 +561,7 @@ return (
                   } else {
                     console.error('Failed to capture image.');
                   }
-                  console.log(orientation);
+                  //console.log(orientation);
                 }}
                 aria-label="Take a picture"
                 >
@@ -644,10 +655,10 @@ return (
         </>
       ) : (
         <>
-          <p>Buddy Walk</p> {/* this text is a conditon that helps the video render */}
+          {/* <p>Buddy Walk</p> this text is a conditon that helps the video render */}
           {/* Video Preview */}
           <Box sx={{width: '100%', maxWidth: '600px', textAlign: 'center'}}>
-            {videoBlob ? (
+            {/* {videoBlob ? (
               <video
                 src={URL.createObjectURL(videoBlob)}
                 controls
@@ -670,7 +681,7 @@ return (
                 aria-hidden="true"
                 style={{width: '100%', borderRadius: '12px', border: '4px solid white',}}
               />
-            )}
+            )}  */}
             <AccessibleButton
               onClick={handleRetake}
               aria-label="Retake photo or video"
@@ -929,9 +940,6 @@ return (
           sx={{width: '100%', maxWidth: '600px', marginTop: '16px'}}
         />
       )}
-
-
     </Stack>
-    </div>
   );
 }

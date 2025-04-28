@@ -55,7 +55,7 @@ const Welcome: React.FC = () => {
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          height: '100vh', // Fill the entire viewport height.
+          height: '100svh', // Fill the entire viewport height.
           background: 'black',
           color: 'white',
           textAlign: 'center',
