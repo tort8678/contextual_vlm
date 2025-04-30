@@ -10,11 +10,13 @@ import { createChatLog, addChatToChatLog } from "../../api/chatLog.ts";
 import ReportMessage from '../../components/ReportMessage.tsx';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useDeviceOrientation } from '../../hooks/useDeviceOrientation.ts';
+import Webcam from 'react-webcam';
 // import CallAccessARideButton from "../../components/call.tsx"
 
 
 
 export default function Test() {
+    const webcamRef = useRef<Webcam>(null);
     const camera = useRef<CameraType>(null);
     const isMobile = useMediaQuery('(max-width:600px)');
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -50,6 +52,8 @@ export default function Test() {
     const { orientation, requestAccess } = useDeviceOrientation();
     const timeoutRef = useRef<number>();
     const HOLD_DELAY = 600;
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((pos) => {
@@ -80,9 +84,12 @@ export default function Test() {
                 videoStreamRef.current = stream;
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
+                    videoRef.current.playsInline = true; // Ensure video plays inline on iOS
+                    videoRef.current.muted = true;
                 }
             })
             .catch(console.error);
+            
         } catch (error) {
             console.error("Error accessing the camera:", error);
         }
@@ -163,6 +170,7 @@ export default function Test() {
         setUserInput('Describe the video');
         try {
             if (videoStreamRef.current) {
+                speechSynthesis.cancel(); // Stop TTS when loading ends
                 speak("Capturing video")
                 // Request rear camera access
 
@@ -307,6 +315,8 @@ export default function Test() {
         const videoUrl = URL.createObjectURL(videoBlob);
         const videoElement = document.createElement('video');
         videoElement.src = videoUrl;
+        videoElement.setAttribute('playsinline', '');            // iOS inline hint :contentReference[oaicite:1]{index=1}
+        videoElement.setAttribute('webkit-playsinline', 'true'); // older WebKit
         await videoElement.play();
 
         const canvas = document.createElement('canvas');
@@ -341,7 +351,7 @@ export default function Test() {
             // If videoBlob exists, extract all frames
             if (videoBlob) {
                 frames = await extractFrames(videoBlob);
-                console.log('Extracted frames:', frames);
+                //console.log('Extracted frames:', frames);
             }
 
             // Create the CustomCoords object
@@ -488,15 +498,18 @@ export default function Test() {
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
             timeoutRef.current = undefined;
-            console.log(camera.current)
+            // console.log(camera.current)
+            try{
             const capturedImage = camera.current?.takePhoto() as string;
-            if (capturedImage) {
+            if (capturedImage.length > 0) {
+                // console.log("image captured ", capturedImage)
                 setImage(capturedImage);
                 speechSynthesis.cancel();
                 speak("Image captured.")
                 setUserInput('Describe the image');
-            } else {
+            } }catch (error) {
                 console.error('Failed to capture image.');
+                fileInputRef.current?.click();
             }
             //console.log(orientation);
 
@@ -545,6 +558,15 @@ export default function Test() {
                             aria-label="Camera viewfinder"
                             errorMessages={{}}
                         />
+                         <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            capture="environment"          
+                            onChange={(e) => handleCapture(e.target)}
+                            style={{ display: 'none' }}
+                        />
+                        
                     </div>
                 }
                 <Box
