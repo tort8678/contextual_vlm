@@ -52,7 +52,6 @@ const Welcome: React.FC = () => {
           color: 'white',
           textAlign: 'center',
           p: { xs: 1, sm: 2 },
-          height: '100dvh',
           overflow: 'hidden',
         }}
         aria-label="welcome page container"

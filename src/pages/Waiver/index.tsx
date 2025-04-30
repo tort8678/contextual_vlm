@@ -80,7 +80,7 @@ const Welcome: React.FC = () => {
               textTransform: 'uppercase',
               marginBottom: 3,
             }}
-            aria-label="Welcome to buddy walk"
+            aria-label="Waiver"
           >
             Waiver
           </Typography>

@@ -13,7 +13,7 @@ export interface messageInterface {
 export async function createChatLog(body:messageInterface){
   try{
     const result = await baseRequest.post("api/db/createChatLog", body);
-    console.log(result)
+    // console.log(result)
     if(result)
       return result.data
   } catch(e){
@@ -23,7 +23,7 @@ export async function createChatLog(body:messageInterface){
 export async function addChatToChatLog(body:{id:string, chat:messageInterface}){
   try{
     const result = await baseRequest.post("api/db/newChat", body);
-    console.log(result)
+    // console.log(result)
     if(result)
       return result.data
   } catch(e){
@@ -33,7 +33,7 @@ export async function addChatToChatLog(body:{id:string, chat:messageInterface}){
 export async function flagMessage(body:{flagReason?: string, messageId: string, chatlogId: string}){
   try{
     const result = await baseRequest.post("api/db/flagMessage", body);
-    console.log(result)
+    // console.log(result)
     if(result) return result.data
   } catch(e){
     console.log(e);

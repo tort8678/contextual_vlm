@@ -42,7 +42,7 @@ async function getTrainInfo(url:string){
     );
     //console.log(feed.entity[0].tripUpdate)
     feed.entity.forEach((entity) => {
-      console.log(entity);  
+      // console.log(entity);  
       // if (entity.vehicle?.stopId) {
       //   console.log(entity.vehicle.stopId);
       // }
@@ -129,7 +129,7 @@ const tools = [
         properties: {
           link: {
             type: "string",
-            description: "The completed Google Directions API link."
+            description: "The completed Google Distance Matrix API link."
           }
         },
         required: ["link"]
@@ -171,21 +171,21 @@ export class OpenAIService {
     //try function?
     try {
       const openAiResponse = await this.client.chat.completions.create({
-        model: "gpt-4.1-nano",
+        model: "gpt-4.1-mini",
         messages: [
           {role: "user", content: text},
           {
             role: "system",
             content: `decide the appropriate link to return from function options. If none fit the user query, return 'none'. The latitude is ${lat} and the longitude is ${lng}.  If no type is specified, leave this part out: &type=type.
             Use the chat history to find names of locations, types of locations that the user has asked about, the ratings of locations user has asked about, or the latitude and longitude of relevant locations.
-            If no tool is appropriate, do not return any link`
+            If no tool is appropriate, do not return any link. If the user asks about a location or building, return nearby places by default.`
           },
-          {role: "system", content: "chat history: " + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
         ],
         tools: tools,
         tool_choice: "auto"
       });
-      // console.log(openAiResponse)
+      console.log(openAIHistory)
+      console.log("token usage " + openAiResponse.usage?.total_tokens)
       return openAiResponse
       // res.status(200).json(openAiResponse);
     } catch (e) {
@@ -204,7 +204,7 @@ export class OpenAIService {
     ]
     //updated userContent to take array of images instead of a singe string image
     if (Array.isArray(content.image) && content.image.length > 0 && content.image[0] !== null) {
-      console.log(content)
+      // console.log(content)
       content.image.forEach(image => {
       userContent.push({
         type: 'image_url', 
@@ -287,8 +287,8 @@ export class OpenAIService {
     // console.log(systemContent)
     // openAI separate text request
     try{
-       console.log("user prompt: ", userContent)
-       console.log("system prompt: ", systemContent)
+      //  console.log("user prompt: ", userContent)
+      //  console.log("system prompt: ", systemContent)
       // console.log("openAI history: ", openAIHistory)
       const chatCompletion = await this.client.chat.completions.create({
         messages: [
@@ -297,9 +297,9 @@ export class OpenAIService {
           {role: 'system', content: "chat history: " 
             + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
           ],
-        model: 'gpt-4.1',
+        model: 'gpt-4o-mini',
       });
-      // console.log('OpenAI API response:', chatCompletion);
+      console.log('OpenAI API response:', chatCompletion.usage?.total_tokens);
       openAIHistory.push({input: content.text, output: chatCompletion.choices[0].message.content as string, data: relevantData});
       res.status(200).json({output: chatCompletion.choices[0].message.content, history: openAIHistory});
     }
