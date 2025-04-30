@@ -53,6 +53,7 @@ const Welcome: React.FC = () => {
           textAlign: 'center',
           p: { xs: 1, sm: 2 },
           overflow: 'hidden',
+          height: '100dvh', // Fill the entire viewport height.
         }}
         aria-label="welcome page container"
       >
@@ -93,7 +94,7 @@ const Welcome: React.FC = () => {
             <MdWavingHand
               size={30}
               color="white"
-              aria-label="waving hand"
+              aria-label="waving hand emoji"
               style={{ verticalAlign: 'middle', marginLeft: '5px' }}
             />
           </Typography>
