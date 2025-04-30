@@ -508,8 +508,9 @@ export default function Test() {
                 speak("Image captured.")
                 setUserInput('Describe the image');
             } }catch (error) {
-                console.error('Failed to capture image.');
+                console.error('Failed to capture image. ', error);
                 fileInputRef.current?.click();
+                setUserInput('Describe the image');
             }
             //console.log(orientation);
 
