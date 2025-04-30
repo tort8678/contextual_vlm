@@ -297,7 +297,7 @@ export class OpenAIService {
           {role: 'system', content: "chat history: " 
             + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
           ],
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-nano',
       });
       console.log('OpenAI API response:', chatCompletion.usage?.total_tokens);
       openAIHistory.push({input: content.text, output: chatCompletion.choices[0].message.content as string, data: relevantData});

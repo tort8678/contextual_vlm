@@ -203,7 +203,6 @@ export default function Test() {
                     if (mediaRecorder.state === "recording") {
                         mediaRecorder.stop();
                         stopVideoStream();
-                        speak("Video captured.")
                     }
                 }, 5000); // 5 seconds
             }
@@ -489,7 +488,7 @@ export default function Test() {
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
             timeoutRef.current = undefined;
-
+            console.log(camera.current)
             const capturedImage = camera.current?.takePhoto() as string;
             if (capturedImage) {
                 setImage(capturedImage);
@@ -532,7 +531,13 @@ export default function Test() {
             {/* Blue Section: Take Photo */}
             <BlueSection>
                 {(!(videoBlob?.size && videoBlob?.size > 0) && !image) &&
-                    <div style={{ visibility: "hidden" }}>
+                    <div style={{ position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',      // give it real layout size
+                        height: '100%',     // or whatever aspect you need
+                        opacity: 0,         // fully transparent
+                        pointerEvents: 'none' }}>
                         <Camera
                             aspectRatio={4 / 3}
                             facingMode={'environment'}
