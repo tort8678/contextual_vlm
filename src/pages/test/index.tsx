@@ -400,7 +400,7 @@ export default function Test() {
         }
     }
     // -------------------------------------------------------------------------------------------------------------------
-    //tts function for loading state
+    //tts function for speaking
     function speak(text: string) {
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text);

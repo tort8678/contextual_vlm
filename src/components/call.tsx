@@ -1,17 +1,34 @@
 import React from 'react';
 import { BiSolidPhoneCall } from 'react-icons/bi';
 
+
 const CallAccessARideButton: React.FC = () => {
+  // TTS function for speaking
+  function speak(text: string) {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    } else {
+      console.error('Speech synthesis not supported in this browser.');
+    }
+  }
+
+  const handleCall = () => {
+    speak("Calling Access-A-Ride.");
+    setTimeout(() => {
+      window.location.href = 'tel:+18773372017';
+    }, 1500); // give TTS time to speak before triggering the call
+  };
   return (
     <>
-      <a
-        href="tel:8773372017"
+      <button
         className="call-button"
+        onClick={handleCall}
         aria-label="Call Access-A-Ride"
       >
-        <BiSolidPhoneCall size={35} color="black" />
+        <BiSolidPhoneCall size={40} color="black" />
         <span className="call-label">AAR</span>
-      </a>
+      </button>
 
       <style>{`
         .call-button {
@@ -40,13 +57,12 @@ const CallAccessARideButton: React.FC = () => {
         }
 
         .call-label {
-          font-size: 25px;
-          fontWeight: bold;
-          letterSpacing: 0.1em;
-          fontSize: 2rem;
-          cursor: pointer;
-          color: black;
-          margin-top: 4px;
+        font-size: 25px;
+        font-weight: bold;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        color: black;
+        margin-top: 4px;
         }
       `}</style>
     </>
