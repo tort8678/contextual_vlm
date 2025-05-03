@@ -13,25 +13,21 @@ const CallAccessARideButton: React.FC = () => {
     }
   }
 
-  const handleCall = () => {
+  const handleClick = () => {
     speak("Calling Access-A-Ride.");
-    setTimeout(() => {
-      const link = document.createElement('a');
-      link.href = 'tel:+18773372017';
-      link.click();
-    }, 1500); // wait 1.5 seconds for TTS to finish
   };
 
   return (
     <>
-      <button
+      <a
+        href="tel:8773372017"
         className="call-button"
-        onClick={handleCall}
         aria-label="Call Access-A-Ride"
+        onClick={handleClick}
       >
-        <BiSolidPhoneCall size={40} color="black" />
+        <BiSolidPhoneCall size={35} color="black" />
         <span className="call-label">AAR</span>
-      </button>
+      </a>
 
       <style>{`
          .call-button {
