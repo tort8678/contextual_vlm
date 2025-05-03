@@ -11,7 +11,7 @@ import ReportMessage from '../../components/ReportMessage.tsx';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useDeviceOrientation } from '../../hooks/useDeviceOrientation.ts';
 import Webcam from 'react-webcam';
-// import CallAccessARideButton from "../../components/call.tsx"
+import CallAccessARideButton from "../../components/call.tsx"
 
 
 
@@ -958,7 +958,7 @@ export default function Test() {
                 </div>
             </GreenSection>
             {/* Sticky Call Button */}
-            {/* <CallAccessARideButton /> */}
+            <CallAccessARideButton />
             {/* Toggle switch for camera mode visible on desktop */}
             {!isMobile && (
                 <FormControlLabel

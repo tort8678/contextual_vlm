@@ -53,6 +53,7 @@ export default function ReportMessage({
             onChange={(e) => setFlagReason(e.target.value)}
             sx={{ bgcolor: 'white', marginY: 2, maxWidth: '600px' }}
             aria-label="Reason for reporting"
+            placeholder="Type a report here"
             fullWidth
           />
           <AccessibleButton

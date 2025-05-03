@@ -1,59 +1,56 @@
 import React from 'react';
-import { BiSolidPhoneCall } from "react-icons/bi";
-import { styled } from '@mui/material/styles';
-import Button from '@mui/material/Button';
-
+import { BiSolidPhoneCall } from 'react-icons/bi';
 
 const CallAccessARideButton: React.FC = () => {
-  const handleCall = () => {
-    window.location.href = 'tel:+18773372017';
-  };
-
-  const CallButton = styled(Button)({
-    position: 'fixed',
-    bottom: '20px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '90%',
-    maxWidth: '600px',
-    padding: '16px',
-    fontSize: '1.3rem',
-    backgroundColor: 'white',
-    color: 'black',
-    borderRadius: '16px',
-    border: '3px solid white',
-    fontWeight: 'bold',
-    letterSpacing: '0.05em',
-    cursor: 'pointer',
-    boxShadow: '2px 2px 12px rgba(255, 255, 255, 0.1)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    zIndex: 1000,
-    textAlign: 'center',
-    '&:hover': {
-      backgroundColor: '#f5f5f5',
-    },
-    '&:active': {
-      backgroundColor: '#e0e0e0',
-    },
-    // '&:focus': {
-    //   outline: '3px solid #FFA500',
-    //   outlineOffset: '2px',
-    // },
-  });
-
   return (
-    <CallButton
-      onClick={handleCall}
-      aria-label="Call Access-A-Ride"
-    >
-      <BiSolidPhoneCall size={30} />
-      <span>Call Access-A-Ride</span>
-    </CallButton>
+    <>
+      <a
+        href="tel:8773372017"
+        className="call-button"
+        aria-label="Call Access-A-Ride"
+      >
+        <BiSolidPhoneCall size={35} color="black" />
+        <span className="call-label">AAR</span>
+      </a>
+
+      <style>{`
+        .call-button {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          width: 80px;
+          height: 80px;
+          background-color: white;
+          border: 2px solid black;
+          border-radius: 50%;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+          z-index: 1000;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+          text-decoration: none;
+        }
+
+        .call-button:hover {
+          background-color: #f2f2f2;
+        }
+
+        .call-label {
+          font-size: 25px;
+          fontWeight: bold;
+          letterSpacing: 0.1em;
+          fontSize: 2rem;
+          cursor: pointer;
+          color: black;
+          margin-top: 4px;
+        }
+      `}</style>
+    </>
   );
 };
 
 export default CallAccessARideButton;
-
