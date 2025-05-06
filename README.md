@@ -3,6 +3,8 @@ Hello all and welcome to Buddy Walk!
 
 Buddy Walk is a web-based application created for mobile devices that is designed to help blind and low vision individuals travel independently. 
 
+![Alt Text](https://github.com/tort8678/contextual_vlm/raw/main/src/assets/buddy%20walk%20NEW%20mockup.png)
+
 
 ## How does it work
 Buddy Walk allows a user to take a photo of their surroundings and type a question related to the photo or related to their location. The user then submits the question and image combination, where then the software generates a response. 
