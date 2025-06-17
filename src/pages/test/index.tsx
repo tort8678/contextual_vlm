@@ -115,7 +115,7 @@ export default function Test() {
                 setVideoBlob(null)
                 if (currentChatId === "") {
                     const res3 = await createChatLog({ input: userInput, output: openAIResponse, imageURL: image as string, location: { lat: coords?.latitude as number, lon: coords?.longitude as number } })
-                    // console.log('chatLog', res3)
+                    console.log('chatLog', res3)
                     if (res3) {
                         setCurrentChatId(res3.data._id)
                         setCurrentMessageId(res3.data.messages[res3.data.messages.length - 1]._id)
