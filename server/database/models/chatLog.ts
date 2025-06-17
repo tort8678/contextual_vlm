@@ -11,6 +11,7 @@ export interface messageInterface {
 }
 export interface chatLogInterface {
   messages: messageInterface[],
+  date: Date
 }
 
 const MessageSchema = new Schema<messageInterface>({
@@ -24,11 +25,11 @@ const MessageSchema = new Schema<messageInterface>({
   flag: {type:Boolean, default: false},
   flag_reason: {type:String, required: false}
 
-
 })
 
 const ChatLogSchema = new Schema<chatLogInterface>({
-  messages: [MessageSchema]
+  messages: [MessageSchema],
+  date: {type: Date, default: Date.now}
 })
 
 export default mongoose.model<chatLogInterface>("ChatLog", ChatLogSchema, "chat_log");
