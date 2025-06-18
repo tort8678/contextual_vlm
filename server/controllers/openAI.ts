@@ -1,6 +1,7 @@
 import {OpenAIService} from "../services/openAI";
 import {textRequestBody} from "../types";
 import { Request, Response } from "express";
+import { getPanoramaData } from "../services/doorfront"
 
 const openAIService = new OpenAIService();
 
@@ -23,6 +24,12 @@ export class OpenAIController {
     const {text}= req.body
 
     await openAIService.audioRequest({req,res}, text)
+  }
 
+  async doorfrontPanorama(req: Request,
+                     res: Response): Promise<void> {
+    const {address}= req.body
+
+    await getPanoramaData({req,res}, address)
   }
 }

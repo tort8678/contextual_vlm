@@ -139,26 +139,26 @@ export default function Test() {
 
     // -------------------------------------------------------------------------------------------------------------------
     // converting WebM to MP4 Conversion for video format
-    const convertWebMToMP4 = async (webmBlob: Blob): Promise<Blob> => {
-        const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
-        const ffmpeg = createFFmpeg({ log: true });
+    // const convertWebMToMP4 = async (webmBlob: Blob): Promise<Blob> => {
+    //     const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
+    //     const ffmpeg = createFFmpeg({ log: true });
 
-        await ffmpeg.load();
+    //     await ffmpeg.load();
 
-        // Convert the WebM Blob to MP4
-        const webmFile = new File([webmBlob], 'video.webm');
-        const webmBuffer = await fetchFile(webmFile);
-        ffmpeg.FS('writeFile', 'input.webm', webmBuffer);
+    //     // Convert the WebM Blob to MP4
+    //     const webmFile = new File([webmBlob], 'video.webm');
+    //     const webmBuffer = await fetchFile(webmFile);
+    //     ffmpeg.FS('writeFile', 'input.webm', webmBuffer);
 
-        // Run the conversion
-        await ffmpeg.run('-i', 'input.webm', 'output.mp4');
+    //     // Run the conversion
+    //     await ffmpeg.run('-i', 'input.webm', 'output.mp4');
 
-        // Get the converted file
-        const mp4Data = ffmpeg.FS('readFile', 'output.mp4');
-        const mp4Blob = new Blob([mp4Data.buffer], { type: 'video/mp4' });
+    //     // Get the converted file
+    //     const mp4Data = ffmpeg.FS('readFile', 'output.mp4');
+    //     const mp4Blob = new Blob([mp4Data.buffer], { type: 'video/mp4' });
 
-        return mp4Blob;
-    };
+    //     return mp4Blob;
+    // };
     // ----------------------------------------------------------------------------------------------------------------------
     // detect if user is on iOS (Safari)
     const isIOS = () => {

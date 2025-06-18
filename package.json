@@ -24,7 +24,7 @@
     "fetch": "^1.1.0",
     "firebase": "^10.12.5",
     "gtfs-realtime-bindings": "^1.1.1",
-    "mongodb": "^6.10.0",
+    "mongodb": "^6.17.0",
     "mongoose": "^8.6.1",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.4",

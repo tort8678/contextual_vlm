@@ -11,9 +11,7 @@ export const databaseLink =
 export const config = {
   link: databaseLink,
   options: {
-    useNewUrlParser: true,
     autoIndex: false,
-    useUnifiedTopology: true,
   },
 };
 
