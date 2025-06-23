@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import {ChatCompletionContentPartImage, ChatCompletionContentPartText} from "openai/resources";
 import GtfsRealtimeBindings from "gtfs-realtime-bindings";
 import fetch from "node-fetch";
+import { getPanoramaData } from "./doorfront";
 
 dotenv.config();
 
@@ -85,8 +86,9 @@ const tools = [
     type: "function" as "function",
     function: {
       name: "generateGooglePlacesApiLinkSpecificLocation",
-      description: "Generates a Google Place From Text API link based on user location. Use when a user names a specific place. If there are spaces in user request, replace with {%20}" +
-        "Link Format: https://maps.googleapis.com/maps/api/place/findplacefromtext/json?location=${latitude},${longitude}&fields=formatted_address%2Cname&inputtype=textquery&input={USER_REQUEST}",
+      description: "Generates a Google Place From Text API link using user's current location as a starting point and the user's input as the destination."+
+        "Use when a user wants details on a specific location (not when asking about a buildings entrance). If there are spaces in user request, replace with {%20}" +
+        "Link Format: https://maps.googleapis.com/maps/api/place/findplacefromtext/json?location=${latitude},${longitude}&fields=formatted_address%2Cname%2Ctype%2Copening_hours%2Crating&inputtype=textquery&input={USER_REQUEST}",
       parameters: {
         type: "object",
         properties: {
@@ -103,7 +105,7 @@ const tools = [
     type: "function" as "function",
     function: {
       name: "generateGoogleDirectionAPILink",
-      description: "Generates a Google Directions API link based on user location. Use when a user names a specific place. If there are spaces in user request, replace with {%20}" +
+      description: "Generates a Google Directions API link based on user location. Use when a user asks for a direction to a location. If there are spaces in user request, replace with {%20}" +
         "Link Format: https://maps.googleapis.com/maps/api/directions/json?destination={USER_REQUEST}&mode=walking&origin={LAT,LNG}",
       parameters: {
         type: "object",
@@ -133,6 +135,23 @@ const tools = [
           }
         },
         required: ["link"]
+      }
+    }
+  },
+  {
+    type: "function" as "function",
+    function: {
+      name: "useDoorfrontAPI",
+      description: "Fetches panorama data from the Doorfront API based on user location. Use when a user asks where is a locations entrance or wants to know what to expect when they arrive at a location.",
+      parameters: {
+        type: "object",
+        properties: {
+          address: {
+            type: "string",
+            description: "The provided address the user is asking about."
+          }
+        },
+        required: ["address"]
       }
     }
   },
@@ -252,9 +271,9 @@ export class OpenAIService {
             //if its giving back a specific place link
             else if (places.data.candidates) {
               //console.log(places.data.candidates[0])
-              relevantData = `name: ${places.data.candidates[0].name}, address: ${places.data.candidates[0].formatted_address}`
+              //relevantData = `name: ${places.data.candidates[0].name}, address: ${places.data.candidates[0].formatted_address}`
               //console.log(relevantData)
-              systemContent += `Relevant Place Information: ${relevantData}`
+              systemContent += `Relevant Place Information: ${JSON.stringify(places.data.candidates[0], null, 2)}`
             }
             //if its giving back directions link
             else if (places.data.routes) {
@@ -272,11 +291,30 @@ export class OpenAIService {
               systemContent += `Distance in miles: ${places.data.rows[0].elements[0].distance.value * 0.00062137}, How long it will take to walk: ${places.data.rows[0].elements[0].duration.text}`
               //console.log(systemContent)
             }
-          } else{
-            //const trainInfo = await getTrainInfo(link)
-            //console.log(trainInfo)
+          } else if (places.choices[0].message.tool_calls![0].function.name === "useDoorfrontAPI") {
+            //use doorfront api
+            const parsedArgs = JSON.parse(places.choices[0].message.tool_calls![0].function.arguments)
+            //get link
+            const {address} = parsedArgs;
+            // console.log(address)
+            const reqlink= `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?location=${content.coords.latitude},${content.coords.longitude}&fields=formatted_address%2Cname&inputtype=textquery&input=${address.replace(/\s+/g, '%2C')}` + `&key=${process.env.GOOGLE_API_KEY}`;
+            console.log(reqlink)
+            const location: any = await axios.get(reqlink);
+            // console.log(location)
+            //console.log(geocodedCoords[0].formatted_address)
+            const panoramaData = await getPanoramaData(ctx, location.data.candidates[0].formatted_address);
+            if (panoramaData) {
+              //console.log(panoramaData.human_labels[0].labels);
+              relevantData = `Entrance Information and Features for ${location.data.candidates[0].formatted_address}:`
+              relevantData += panoramaData.human_labels[0].labels.map((label: { label: string, subtype: number }) => `\n${label.label} (${label.subtype ? label.subtype : 'exists'})`).join(', ');
+              console.log(relevantData);
+              systemContent += `\n${relevantData}`;
+            } else {
+              console.error('No panorama data found for this address.');
+              relevantData = 'Data on this address has not been collected yet. Let the user know if they want detailed information on this address, they can visit doorfront.org and request it be added.';
+            }
           }
-        }
+        } else console.log("No tool calls found in OpenAI response");
         // const places = await fetchNearbyPlaces(content.coords.latitude, content.coords.longitude);
         // nearbyPlaces = places.map((place: { name: string }) => place.name).join(', ');
         // systemContent += ` Nearby Places: ${nearbyPlaces}`;
@@ -290,14 +328,18 @@ export class OpenAIService {
       //  console.log("user prompt: ", userContent)
       //  console.log("system prompt: ", systemContent)
       // console.log("openAI history: ", openAIHistory)
+      const combinedSystemMessage = AIPrompt 
+        + "\n\n" 
+        + systemContent 
+        + "\n\nChat history: " 
+        + openAIHistory.map(history => `User Input: ${history.input}, Open AI Output: ${history.output}, Data Used: ${history.data}`).join('\n');
       const chatCompletion = await this.client.chat.completions.create({
         messages: [
-          {role: 'user', content: userContent},
-          {role: 'system', content: systemContent},
-          {role: 'system', content: "chat history: " 
-            + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
+          {role: 'system', content: combinedSystemMessage},
+          {role: 'user', content: userContent}
           ],
-        model: 'gpt-4.1-nano',
+        model: 'gpt-4.1-mini',
+        temperature: 0.0
       });
       console.log('OpenAI API response:', chatCompletion.usage?.total_tokens);
       openAIHistory.push({input: content.text, output: chatCompletion.choices[0].message.content as string, data: relevantData});
