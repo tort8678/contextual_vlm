@@ -1,11 +1,13 @@
 import axios from "axios";
 import OpenAI from "openai";
-import {textRequestBody, history, AIPrompt, AppContext} from "../types";
+import {textRequestBody, history, AIPrompt, AppContext, openAITools} from "../types";
 import dotenv from "dotenv";
 import {ChatCompletionContentPartImage, ChatCompletionContentPartText} from "openai/resources";
 import GtfsRealtimeBindings from "gtfs-realtime-bindings";
 import fetch from "node-fetch";
 import { getPanoramaData } from "./doorfront";
+import { getNearbyFeatures } from "./features";
+import { treeInterface, sidewalkMaterialInterface, pedestrianRampInterface } from "../database/models/features";
 
 dotenv.config();
 
@@ -61,121 +63,7 @@ async function getTrainInfo(url:string){
   }
 }
 
-const tools = [
-  {
-    type: "function" as "function",
-    function: {
-      name: "generateGoogleAPILinkNonSpecificLocation",
-      description: "Generates a Google Nearby Places API link based on user location. Use when user wants to find areas based on type, not specific name. Also use if user asks about where they are so you can geolocate them better." +
-      "Type only returns esthablishments that match(i.e. supermarket, library, restaurant, subway_station[use for subway, usually what people want if they say 'train' in New York City], transit_station[use for bus],"+
-      +"train_station[use for railroad trains], food, pharmacy), keyword is the relevant search term (i.e. mexican vs japanese food when type is restaurant, pizza,)"+
-      "Format: https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&rankby=distance&type=${type}&keyword=${keyword}",
-      parameters: {
-        type: "object",
-        properties: {
-          link: {
-            type: "string",
-            description: "The completed Google Distance Matrix API link."
-          }
-        },
-        required: ["link"]
-      }
-    }
-  },
-  {
-    type: "function" as "function",
-    function: {
-      name: "generateGooglePlacesApiLinkSpecificLocation",
-      description: "Generates a Google Place From Text API link using user's current location as a starting point and the user's input as the destination."+
-        "Use when a user wants details on a specific location (not when asking about a buildings entrance). If there are spaces in user request, replace with {%20}" +
-        "Link Format: https://maps.googleapis.com/maps/api/place/findplacefromtext/json?location=${latitude},${longitude}&fields=formatted_address%2Cname%2Ctype%2Copening_hours%2Crating&inputtype=textquery&input={USER_REQUEST}",
-      parameters: {
-        type: "object",
-        properties: {
-          link: {
-            type: "string",
-            description: "The completed Google Places From Text API link."
-          }
-        },
-        required: ["link"]
-      }
-    }
-  },
-  {
-    type: "function" as "function",
-    function: {
-      name: "generateGoogleDirectionAPILink",
-      description: "Generates a Google Directions API link based on user location. Use when a user asks for a direction to a location. If there are spaces in user request, replace with {%20}" +
-        "Link Format: https://maps.googleapis.com/maps/api/directions/json?destination={USER_REQUEST}&mode=walking&origin={LAT,LNG}",
-      parameters: {
-        type: "object",
-        properties: {
-          link: {
-            type: "string",
-            description: "The completed Google Directions API link."
-          }
-        },
-        required: ["link"]
-      }
-    }
-  },
-  {
-    type: "function" as "function",
-    function: {
-      name: "generateGoogleDistanceMatrixAPILink",
-      description: "Generates a Google Distance Matrix API link based on user location. Use when a user asks to know how far they are from a specific location."
-        + "If there are spaces in user request, replace with {%20}. USE LAT and LNG over the name of the place is both provided" +
-        "Link Format: https://maps.googleapis.com/maps/api/distancematrix/json?departure_time=now&destinations={USER_REQUEST}&origins={LAT,LNG}&mode=walking",
-      parameters: {
-        type: "object",
-        properties: {
-          link: {
-            type: "string",
-            description: "The completed Google Distance Matrix API link."
-          }
-        },
-        required: ["link"]
-      }
-    }
-  },
-  {
-    type: "function" as "function",
-    function: {
-      name: "useDoorfrontAPI",
-      description: "Fetches panorama data from the Doorfront API based on user location. Use when a user asks where is a locations entrance or wants to know what to expect when they arrive at a location.",
-      parameters: {
-        type: "object",
-        properties: {
-          address: {
-            type: "string",
-            description: "The provided address the user is asking about."
-          }
-        },
-        required: ["address"]
-      }
-    }
-  },
-  // {
-  //   type: "function" as "function",
-  //   function: {
-  //     name: "generateTrainInformation",
-  //     description: "Returns the link to the GTFS API for the MTA subway system. Use when a user asks about train information." +
-  //       "Link Format: https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace",
-  //     parameters: {
-  //       type: "object",
-  //       properties: {
-  //         link: {
-  //           type: "string",
-  //           description: "The completed API link for the MTA subway system, as provided in the description. Include as an argument in the output"
-  //         }
-  //       },
-  //       required: ["link"]
-  //     }
-  //   }
-  // },
-
-
-]
+const tools = openAITools
 
 const openAIHistory: history[] = []
 
@@ -203,7 +91,7 @@ export class OpenAIService {
         tools: tools,
         tool_choice: "auto"
       });
-      console.log(openAIHistory)
+      // console.log(openAIHistory)
       console.log("token usage " + openAiResponse.usage?.total_tokens)
       return openAiResponse
       // res.status(200).json(openAiResponse);
@@ -273,7 +161,14 @@ export class OpenAIService {
               //console.log(places.data.candidates[0])
               //relevantData = `name: ${places.data.candidates[0].name}, address: ${places.data.candidates[0].formatted_address}`
               //console.log(relevantData)
+              let operatingHours = '';
+              if(places.data.candidates[0].opening_hours){
+                //console.log("user wants operating hours")
+                const placeInformation = await axios.get(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${places.data.candidates[0].place_id}&fields=opening_hours&key=${process.env.GOOGLE_API_KEY}`);
+                operatingHours = placeInformation.data.result.opening_hours.weekday_text
+              }
               systemContent += `Relevant Place Information: ${JSON.stringify(places.data.candidates[0], null, 2)}`
+              systemContent += `Operating Hours: ${operatingHours.length > 0 ? operatingHours : 'Not available'}`;
             }
             //if its giving back directions link
             else if (places.data.routes) {
@@ -291,28 +186,73 @@ export class OpenAIService {
               systemContent += `Distance in miles: ${places.data.rows[0].elements[0].distance.value * 0.00062137}, How long it will take to walk: ${places.data.rows[0].elements[0].duration.text}`
               //console.log(systemContent)
             }
-          } else if (places.choices[0].message.tool_calls![0].function.name === "useDoorfrontAPI") {
+          }
+          //if its using doorfront api 
+          else if (places.choices[0].message.tool_calls![0].function.name === "useDoorfrontAPI") {
             //use doorfront api
             const parsedArgs = JSON.parse(places.choices[0].message.tool_calls![0].function.arguments)
             //get link
             const {address} = parsedArgs;
             // console.log(address)
-            const reqlink= `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?location=${content.coords.latitude},${content.coords.longitude}&fields=formatted_address%2Cname&inputtype=textquery&input=${address.replace(/\s+/g, '%2C')}` + `&key=${process.env.GOOGLE_API_KEY}`;
+            const reqlink= `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?location=
+            ${content.coords.latitude},${content.coords.longitude}&fields=formatted_address%2Cname&inputtype=textquery&input=${address.replace(/\s+/g, '%2C')}` + `&key=${process.env.GOOGLE_API_KEY}`;
             console.log(reqlink)
             const location: any = await axios.get(reqlink);
             // console.log(location)
-            //console.log(geocodedCoords[0].formatted_address)
+            // console.log(geocodedCoords[0].formatted_address)
             const panoramaData = await getPanoramaData(ctx, location.data.candidates[0].formatted_address);
             if (panoramaData) {
               //console.log(panoramaData.human_labels[0].labels);
               relevantData = `Entrance Information and Features for ${location.data.candidates[0].formatted_address}:`
-              relevantData += panoramaData.human_labels[0].labels.map((label: { label: string, subtype: number }) => `\n${label.label} (${label.subtype ? label.subtype : 'exists'})`).join(', ');
+              relevantData += panoramaData.human_labels[0].labels.map(
+                (label: { label: string, subtype: number, box: {x:number, y: number, width:number, height:number} }) => 
+                  `\n${label.label} (${label.subtype ? label.subtype : 'exists'}), Bounding Box: x = ${label.box.x}, y = ${label.box.y}, width: ${label.box.width}, height: ${label.box.height}`
+              ).join('; ');
               console.log(relevantData);
               systemContent += `\n${relevantData}`;
             } else {
               console.error('No panorama data found for this address.');
               relevantData = 'Data on this address has not been collected yet. Let the user know if they want detailed information on this address, they can visit doorfront.org and request it be added.';
             }
+          }
+          else if (places.choices[0].message.tool_calls![0].function.name === "getNearbyFeatures") {
+            const features = await getNearbyFeatures(content.coords.latitude, content.coords.longitude, 0.06);
+            // console.log(features);
+            const trees: treeInterface[] = features.trees;
+            const sidewalkMaterials: sidewalkMaterialInterface[] = features.sidewalkMaterials;
+            const pedestrianRamps: pedestrianRampInterface[] = features.pedestrianRamps;
+            relevantData = `Nearby Features for location (${content.coords.latitude}, ${content.coords.longitude}):\n`;
+            relevantData += `Trees: ${trees.length}, Sidewalk Materials: ${sidewalkMaterials.length}, Pedestrian Ramps: ${pedestrianRamps.length}`;
+            systemContent += `\n${relevantData}`;
+            let staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?&zoom=19&size=640x640&maptype=roadmap`;
+            // Add user location marker
+            staticMapUrl += `&markers=color:blue%7Clabel:U%7C${content.coords.latitude},${content.coords.longitude}`;
+            staticMapUrl += `&markers=color:green%7Clabel:T%7C${trees.map(tree => `${tree.location.coordinates[1]},${tree.location.coordinates[0]}`).join('%7C')}`;
+            // staticMapUrl += `&markers=color:yellow%7Clabel:S%7C${sidewalkMaterials.map(material => `${material.location.coordinates[1]},${material.location.coordinates[0]}`).join('%7C')}`;
+            // Define colors for each sidewalk material type
+            const materialColors: Record<string, string> = {
+              tactile: "yellow",
+              concrete: "gray",
+              manhole: "black",
+              "cellar door": "brown",
+              "subway grate": "orange",
+              other: "white"
+            };
+
+            // Add a marker for each material type
+            Object.entries(materialColors).forEach(([material, color]) => {
+              const locations = sidewalkMaterials
+                .filter(m => m.material.toLowerCase() === material)
+                .map(m => `${m.location.coordinates[1]},${m.location.coordinates[0]}`);
+              if (locations.length > 0) {
+                staticMapUrl += `&markers=color:${color}%7Clabel:S%7C${locations.join('%7C')}`;
+              }
+            });
+            staticMapUrl += `&markers=color:red%7Clabel:R%7C${pedestrianRamps.map(ramp => `${ramp.location.coordinates[1]},${ramp.location.coordinates[0]}`).join('%7C')}`;
+            // Add the API key to the static map URL
+            staticMapUrl += `&key=${process.env.GOOGLE_API_KEY}`;
+
+            console.log(staticMapUrl);
           }
         } else console.log("No tool calls found in OpenAI response");
         // const places = await fetchNearbyPlaces(content.coords.latitude, content.coords.longitude);
@@ -328,8 +268,9 @@ export class OpenAIService {
       //  console.log("user prompt: ", userContent)
       //  console.log("system prompt: ", systemContent)
       // console.log("openAI history: ", openAIHistory)
+      systemContent += `Current Date and Time: ${new Date().toLocaleString()}`;
       const combinedSystemMessage = AIPrompt 
-        + "\n\n" 
+        + "\n\nRelevant data: " 
         + systemContent 
         + "\n\nChat history: " 
         + openAIHistory.map(history => `User Input: ${history.input}, Open AI Output: ${history.output}, Data Used: ${history.data}`).join('\n');
@@ -345,26 +286,6 @@ export class OpenAIService {
       openAIHistory.push({input: content.text, output: chatCompletion.choices[0].message.content as string, data: relevantData});
       res.status(200).json({output: chatCompletion.choices[0].message.content, history: openAIHistory});
     }
-    // try {
-    //   // console.log("user prompt: ", userContent)
-    //   // console.log("system prompt: ", systemContent)
-    //   // console.log("openAI history: ", openAIHistory)
-    //   const chatCompletion = await this.client.chat.completions.create({
-    //     messages: [
-    //       {role: 'user', content: userContent},
-    //       {role: 'system', content: systemContent},
-    //       {role: 'system', content: "chat history: " 
-    //         + openAIHistory.map((history: history) => `\nInput: ${history.input}, Output: ${history.output}, Data: ${history.data}`).join(', ')}
-    //       ],
-    //     model: 'gpt-4o-audio-preview',
-    //     modalities: ["text", "audio"],
-    //     audio: { voice: "alloy", format: "mp3" },
-    //   });
-    //   console.log('OpenAI API response:', chatCompletion);
-    //   console.log('OpenAI API response:', chatCompletion.choices[0].message.audio);
-    //   openAIHistory.push({input: content.text, output: chatCompletion.choices[0].message.content as string, data: relevantData});
-    //   res.status(200).json({output: chatCompletion.choices[0].message.audio?.transcript, history: openAIHistory, audio: chatCompletion.choices[0].message.audio?.data});
-    // } 
     catch (e) {
       console.error('Error with OpenAI API request:', e);
       res.status(500).json({error: 'Error processing your request'});

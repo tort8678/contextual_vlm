@@ -12,6 +12,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { useDeviceOrientation } from '../../hooks/useDeviceOrientation.ts';
 import Webcam from 'react-webcam';
 import CallAccessARideButton from "../../components/call.tsx"
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 
 
 
@@ -54,6 +55,12 @@ export default function Test() {
     const HOLD_DELAY = 600;
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const {
+        transcript,
+        listening,
+        resetTranscript,
+        browserSupportsSpeechRecognition
+    } = useSpeechRecognition();
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((pos) => {
@@ -137,6 +144,11 @@ export default function Test() {
 
     }, [openAIResponse])
 
+    useEffect(() => {
+        setUserInput(transcript);
+    }, [transcript]);
+
+
     // -------------------------------------------------------------------------------------------------------------------
     // converting WebM to MP4 Conversion for video format
     // const convertWebMToMP4 = async (webmBlob: Blob): Promise<Blob> => {
@@ -199,8 +211,9 @@ export default function Test() {
                     let videoBlob = new Blob(chunks, { type: "video/mp4" });
                     if(videoBlob && videoBlob.size > 0) speak("Video captured.")
                     else speak("Video not captured. Please hold button for longer.")
-
+                    
                     setVideoBlob(videoBlob);
+                    console.log(navigator.vibrate(200))
                 };
 
                 mediaRecorder.start();
@@ -387,7 +400,7 @@ export default function Test() {
             if (res) {
                 //console.log('Received response from OpenAI:', res);
                 setOpenAIResponse(res.output);
-
+                navigator.vibrate([100,100])
             }
 
         } catch (e) {
@@ -405,13 +418,14 @@ export default function Test() {
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text);
             speechSynthesis.speak(utterance);
+            utterance.rate = 1; // Set the speech rate (optional)
         } else {
             console.error('Speech synthesis not supported in this browser.');
         }
     }
     // -------------------------------------------------------------------------------------------------------------------
     //speech to text- Speech recognition
-    const startListening = () => {
+    const startListening2 = () => {
         if (!('webkitSpeechRecognition' in window)) {
             alert('Speech recognition is not supported in your browser.');
             return;
@@ -433,12 +447,30 @@ export default function Test() {
         recognitionRef.current = recognition;
         recognition.start();
     };
+    function startListening(){
+        if (!browserSupportsSpeechRecognition) {
+            alert('Speech recognition is not supported in your browser.');
+            return;
+        }
+        resetTranscript(); // Reset the transcript before starting
+        if (!isListening) {
+            SpeechRecognition.startListening({ continuous: true, language: 'en-US' });
+            setIsListening(true);
+        } else {
+            SpeechRecognition.stopListening();
+            setIsListening(false);
+        }
+    }
 
     const stopListening = () => {
         if (recognitionRef.current) {
             recognitionRef.current.stop();
             setIsListening(false);
         }
+        SpeechRecognition.stopListening();
+        setIsListening(false);
+        // setUserInput(transcript); // Update userInput with the final transcript
+        
     };
     // -------------------------------------------------------------------------------------------------------------------
     const handleCapture = (target: EventTarget & HTMLInputElement) => {
@@ -507,9 +539,10 @@ export default function Test() {
                 speechSynthesis.cancel();
                 speak("Image captured.")
                 setUserInput('Describe the image');
+                navigator.vibrate(200)
             } }catch (error) {
                 console.error('Failed to capture image. ', error);
-                fileInputRef.current?.click();
+                // fileInputRef.current?.click();
                 setUserInput('Describe the image');
             }
             //console.log(orientation);
@@ -825,10 +858,13 @@ export default function Test() {
                 {/* speech to text button below */}
                 <Button
                     onPointerDown={startListening}
+                    // onPointerDown={()=> SpeechRecognition.startListening}
                     onPointerUp={stopListening}
+                    // onPointerUp={() => {SpeechRecognition.stopListening(); console.log(transcript)}}
                     // onTouchStart={startListening}
                     // onTouchEnd={stopListening}
                     onPointerCancel={stopListening} // Ensure it stops if finger is moved
+                    // onPointerCancel={() => SpeechRecognition.stopListening()}
                     style={{
                         padding: "12px 28px",          // shorter height and wider for tap comfort
                         borderRadius: "40px",          // rounder edges
@@ -846,6 +882,7 @@ export default function Test() {
                         marginTop: "5px",
                         marginBottom: "16px",
                         border: "none",
+                        minWidth: '50%', // minimum width for better touch target
                     }}
                 >
                     {isListening ? 'Listening...' : 'Hold to Ask a Question'}
