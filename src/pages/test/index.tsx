@@ -11,7 +11,7 @@ import ReportMessage from '../../components/ReportMessage.tsx';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useDeviceOrientation } from '../../hooks/useDeviceOrientation.ts';
 import CallAccessARideButton from "../../components/call.tsx"
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
+// import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import { createSpeechRecognitionPonyfill } from 'web-speech-cognitive-services';
 import { getToken } from '../../api/token.ts';
 
@@ -46,34 +46,51 @@ export default function Test() {
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const videoStreamRef = useRef<MediaStream | null>(null);
-    const recognitionRef = useRef<SpeechRecognition | null>(null);
+    const recognitionRef = useRef<SpeechRecognition | null | any>(null);
     const [isListening, setIsListening] = useState(false); // Track if voice button is active
     const { orientation, requestAccess } = useDeviceOrientation();
     const timeoutRef = useRef<number>();
     const HOLD_DELAY = 600;
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const {
-        transcript,
-        listening,
-        resetTranscript,
-        browserSupportsSpeechRecognition,
-    } = useSpeechRecognition();
+    // const {
+    //     transcript,
+    //     listening,
+    //     resetTranscript,
+    //     browserSupportsSpeechRecognition,
+    //     isMicrophoneAvailable
+    // } = useSpeechRecognition();
 
-    // useEffect(() => {
-    //     (async function () {
-    //                 const azureToken = await getToken();
-    //                 if (azureToken && azureToken.token && azureToken.region) {
-    //                     const { SpeechRecognition: AzureSpeechRecognition } = createSpeechRecognitionPonyfill({
-    //                         credentials: {
-    //                             region: azureToken.region,
-    //                             authorizationToken: azureToken.token,
-    //                         }
-    //                     });
-    //                 SpeechRecognition.applyPolyfill(AzureSpeechRecognition);
-    //                 console.log(SpeechRecognition);
-    //                 }
-    //     })()
-    // },[])
+    useEffect(() => {
+        (async function () {
+                    const azureToken = await getToken();
+                    if (azureToken && azureToken.token && azureToken.region) {
+                        const { SpeechRecognition } = createSpeechRecognitionPonyfill({
+                            credentials: {
+                                region: azureToken.region,
+                                authorizationToken: azureToken.token,
+                            }
+                        });
+                    // SpeechRecognition.applyPolyfill(AzureSpeechRecognition);
+                    // console.log(SpeechRecognition);
+                    const recognition = new SpeechRecognition();
+
+                    recognition.continuous = true;
+                    recognition.interimResults = false;
+                    recognition.lang = 'en-US';
+
+                    recognition.onstart = () => setIsListening(true);
+                    recognition.onend = () => setIsListening(false);
+                    recognition.onerror = (event) => console.error('Speech recognition error:', event.error);
+                    recognition.onresult = (event) => {
+                        const lastResultIndex = event.results.length - 1;
+                        const transcript = event.results[lastResultIndex]![0]!.transcript;
+                        setUserInput(transcript);
+                    };
+
+                    recognitionRef.current = recognition;
+                    }
+        })()
+    },[])
 
 
     useEffect(() => {
@@ -101,7 +118,7 @@ export default function Test() {
         }
         try{
         navigator.mediaDevices
-            .getUserMedia({ video: { facingMode: 'environment' }, audio: true})
+            .getUserMedia({ video: { facingMode: 'environment' }})
             .then(stream => {
                 videoStreamRef.current = stream;
                 if (videoRef.current) {
@@ -114,6 +131,12 @@ export default function Test() {
             
         } catch (error) {
             console.error("Error accessing the camera:", error);
+        }
+        try{
+            navigator.mediaDevices
+                .getUserMedia({ audio: true })
+        } catch (error) {  
+            console.error("Error accessing the mic:", error);
         }
         return () => {
             // videoStreamRef.current?.getTracks().forEach(t => t.stop());
@@ -159,9 +182,9 @@ export default function Test() {
 
     }, [openAIResponse])
 
-    useEffect(() => {
-        setUserInput(transcript);
-    }, [transcript]);
+    // useEffect(() => {
+    //     setUserInput(transcript);
+    // }, [transcript]);
 
 
 
@@ -418,54 +441,60 @@ export default function Test() {
     }
     // -------------------------------------------------------------------------------------------------------------------
     //speech to text- Speech recognition
-    // const startListening = () => {
-    //     if (!('webkitSpeechRecognition' in window)) {
-    //         alert('Speech recognition is not supported in your browser.');
-    //         return;
-    //     }
-
-    //     const recognition = new (window as any).webkitSpeechRecognition();
-    //     recognition.continuous = false;
-    //     recognition.interimResults = false;
-    //     recognition.lang = 'en-US';
-
-    //     recognition.onstart = () => setIsListening(true); // Update UI state
-    //     recognition.onend = () => setIsListening(false);
-
-    //     recognition.onresult = (event: SpeechRecognitionEvent) => {
-    //         const transcript = event.results[0][0].transcript;
-    //         setUserInput(transcript);  // Update userInput with the transcribed text
-    //     };
-
-    //     recognitionRef.current = recognition;
-    //     recognition.start();
-    // };
-    function startListening(){
-        if (!browserSupportsSpeechRecognition) {
-            console.error('Speech recognition is not supported in your browser.');
+    const startListening = () => {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert('Speech recognition is not supported in your browser.');
             return;
         }
-        resetTranscript(); // Reset the transcript before starting
-        console.log("listening... ", listening)
-        if (!isListening) {
-            SpeechRecognition.startListening({ continuous: true, language: 'en-US' });
-            setIsListening(true);
-        } else {
-            SpeechRecognition.abortListening();
+
+        // const recognition = new (window as any).webkitSpeechRecognition();
+        // recognition.continuous = false;
+        // recognition.interimResults = false;
+        // recognition.lang = 'en-US';
+
+        // recognition.onstart = () => setIsListening(true); // Update UI state
+        // recognition.onend = () => setIsListening(false);
+
+        // recognition.onresult = (event: SpeechRecognitionEvent) => {
+        //     const transcript = event.results[0][0].transcript;
+        //     setUserInput(transcript);  // Update userInput with the transcribed text
+        // };
+
+        // recognitionRef.current = recognition;
+        // recognition.start();
+        recognitionRef.current?.start();
+    };
+    // function startListening(){
+    //     console.log(isMicrophoneAvailable)
+    //     if (!browserSupportsSpeechRecognition) {
+    //         console.error('Speech recognition is not supported in your browser.');
+    //         return;
+    //     }
+    //     if(!isMicrophoneAvailable) {
+    //         console.error('Microphone is not available.');
+    //         speak("Microphone is not available.");
+    //         return;
+    //     }
+    //     resetTranscript(); // Reset the transcript before starting
+    //     console.log("listening... ", listening)
+    //     if (!listening) {
+    //         SpeechRecognition.startListening({ continuous: true, language: 'en-US' });
+    //     } else {
+    //         SpeechRecognition.abortListening();
+    //     }
+    // }
+    const stopListening = () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
             setIsListening(false);
         }
     }
     // const stopListening = () => {
-    //     if (recognitionRef.current) {
-    //         recognitionRef.current.stop();
-    //         setIsListening(false);
-    //     }
-    // }
-    const stopListening = () => {
-        SpeechRecognition.abortListening();
-        setIsListening(false);
-        // setUserInput(transcript); // Update userInput with the final transcript
-    };
+    //     console.log("transcript", transcript)
+    //     SpeechRecognition.stopListening();
+    //     setIsListening(false);
+    //     // setUserInput(transcript); // Update userInput with the final transcript
+    // };
     // -------------------------------------------------------------------------------------------------------------------
     const handleCapture = (target: EventTarget & HTMLInputElement) => {
         if (target.files) {
