@@ -160,10 +160,9 @@ export const openAITools= [
         properties: {
           address: {
             type: "string",
-            description: "The provided address the user is asking about."
+            description: "The provided address the user is asking about. If users asks for features near them, leave this blank."
           }
-        },
-        required: ["address"]
+        }
       }
     }
   },

@@ -218,6 +218,11 @@ export class OpenAIService {
             }
           }
           else if (places.choices[0].message.tool_calls![0].function.name === "getNearbyFeatures") {
+            const parsedArgs = JSON.parse(places.choices[0].message.tool_calls![0].function.arguments);
+            if (parsedArgs.address) {
+              //console.log(parsedArgs.address);
+              
+            }
             const features = await getNearbyFeatures(content.coords.latitude, content.coords.longitude, 0.06);
             // console.log(features);
             const trees: treeInterface[] = features.trees;

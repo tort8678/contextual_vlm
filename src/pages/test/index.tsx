@@ -10,7 +10,6 @@ import { createChatLog, addChatToChatLog } from "../../api/chatLog.ts";
 import ReportMessage from '../../components/ReportMessage.tsx';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useDeviceOrientation } from '../../hooks/useDeviceOrientation.ts';
-import Webcam from 'react-webcam';
 import CallAccessARideButton from "../../components/call.tsx"
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import { createSpeechRecognitionPonyfill } from 'web-speech-cognitive-services';
@@ -60,21 +59,21 @@ export default function Test() {
         browserSupportsSpeechRecognition,
     } = useSpeechRecognition();
 
-    useEffect(() => {
-        (async function () {
-                    const azureToken = await getToken();
-                    if (azureToken && azureToken.token && azureToken.region) {
-                        const { SpeechRecognition: AzureSpeechRecognition } = createSpeechRecognitionPonyfill({
-                            credentials: {
-                                region: azureToken.region,
-                                authorizationToken: azureToken.token,
-                            }
-                        });
-                    SpeechRecognition.applyPolyfill(AzureSpeechRecognition);
-                    console.log(SpeechRecognition);
-                    }
-        })()
-    },[])
+    // useEffect(() => {
+    //     (async function () {
+    //                 const azureToken = await getToken();
+    //                 if (azureToken && azureToken.token && azureToken.region) {
+    //                     const { SpeechRecognition: AzureSpeechRecognition } = createSpeechRecognitionPonyfill({
+    //                         credentials: {
+    //                             region: azureToken.region,
+    //                             authorizationToken: azureToken.token,
+    //                         }
+    //                     });
+    //                 SpeechRecognition.applyPolyfill(AzureSpeechRecognition);
+    //                 console.log(SpeechRecognition);
+    //                 }
+    //     })()
+    // },[])
 
 
     useEffect(() => {
@@ -419,7 +418,7 @@ export default function Test() {
     }
     // -------------------------------------------------------------------------------------------------------------------
     //speech to text- Speech recognition
-    // const startListening2 = () => {
+    // const startListening = () => {
     //     if (!('webkitSpeechRecognition' in window)) {
     //         alert('Speech recognition is not supported in your browser.');
     //         return;
@@ -443,10 +442,11 @@ export default function Test() {
     // };
     function startListening(){
         if (!browserSupportsSpeechRecognition) {
-            alert('Speech recognition is not supported in your browser.');
+            console.error('Speech recognition is not supported in your browser.');
             return;
         }
         resetTranscript(); // Reset the transcript before starting
+        console.log("listening... ", listening)
         if (!isListening) {
             SpeechRecognition.startListening({ continuous: true, language: 'en-US' });
             setIsListening(true);
@@ -455,16 +455,16 @@ export default function Test() {
             setIsListening(false);
         }
     }
-
+    // const stopListening = () => {
+    //     if (recognitionRef.current) {
+    //         recognitionRef.current.stop();
+    //         setIsListening(false);
+    //     }
+    // }
     const stopListening = () => {
-        // if (recognitionRef.current) {
-        //     recognitionRef.current.stop();
-        //     setIsListening(false);
-        // }
         SpeechRecognition.abortListening();
         setIsListening(false);
         // setUserInput(transcript); // Update userInput with the final transcript
-        
     };
     // -------------------------------------------------------------------------------------------------------------------
     const handleCapture = (target: EventTarget & HTMLInputElement) => {
