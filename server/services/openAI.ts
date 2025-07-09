@@ -151,7 +151,9 @@ export class OpenAIService {
             //if its giving back a nearby places link
             if (places.data.results) {
               // console.log(places.data.results)
-              relevantData = places.data.results.map((place: { name: string, geometry:{location:{lat:number, lng: number}}, rating:number, vicinity:string }) => `\n{name: ${place.name}, location(lat,lng): ${place.geometry.location.lat},${place.geometry.location.lng}, address: ${place.vicinity}, rating: ${place.rating} stars}`).join(', ') ;
+              relevantData = places.data.results.map(
+                (place: { name: string, geometry:{location:{lat:number, lng: number}}, rating:number, vicinity:string }) => 
+                  `\n{name: ${place.name}, location(lat,lng): ${place.geometry.location.lat},${place.geometry.location.lng}, address: ${place.vicinity}, rating: ${place.rating} stars}`).join(', ') ;
               //console.log(relevantData)
               systemContent += `\nNearby Places in order of nearest distance: ${relevantData}`;
               //console.log(systemContent)
@@ -232,7 +234,7 @@ export class OpenAIService {
             // Define colors for each sidewalk material type
             const materialColors: Record<string, string> = {
               tactile: "yellow",
-              concrete: "gray",
+              //concrete: "gray",
               manhole: "black",
               "cellar door": "brown",
               "subway grate": "orange",
@@ -248,7 +250,8 @@ export class OpenAIService {
                 staticMapUrl += `&markers=color:${color}%7Clabel:S%7C${locations.join('%7C')}`;
               }
             });
-            staticMapUrl += `&markers=color:red%7Clabel:R%7C${pedestrianRamps.map(ramp => `${ramp.location.coordinates[1]},${ramp.location.coordinates[0]}`).join('%7C')}`;
+            staticMapUrl += `&markers=color:red%7Clabel:R%7C${pedestrianRamps.map(
+              ramp => `${ramp.location.coordinates[1]},${ramp.location.coordinates[0]}`).join('%7C')}`;
             // Add the API key to the static map URL
             staticMapUrl += `&key=${process.env.GOOGLE_API_KEY}`;
 

@@ -153,7 +153,18 @@ export const openAITools= [
     type: "function" as "function",
     function: {
       name: "getNearbyFeatures",
-      description: "Fetches nearby geographic features based on user location. Use when a user asks about geographic features (sidewalk materials, trees, or pedestrian ramps) in their vicinity.",
+      description: "Fetches nearby geographic features based on user location. Use when a user asks about geographic features (sidewalk materials, trees, or pedestrian ramps)." +
+      "Return the address the user wants the features for. If they ask for features near them, provide the user's current location.",
+      parameters: {
+        type: "object",
+        properties: {
+          address: {
+            type: "string",
+            description: "The provided address the user is asking about."
+          }
+        },
+        required: ["address"]
+      }
     }
   },
 

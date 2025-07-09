@@ -24,6 +24,7 @@
     "fetch": "^1.1.0",
     "firebase": "^10.12.5",
     "gtfs-realtime-bindings": "^1.1.1",
+    "microsoft-cognitiveservices-speech-sdk": "^1.44.1",
     "mongodb": "^6.17.0",
     "mongoose": "^8.6.1",
     "node-fetch": "^3.3.2",
@@ -40,7 +41,8 @@
     "react-use": "^17.6.0",
     "react-webcam": "^7.2.0",
     "ts-node": "^10.9.2",
-    "vercel": "^35.2.4"
+    "vercel": "^35.2.4",
+    "web-speech-cognitive-services": "^8.1.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

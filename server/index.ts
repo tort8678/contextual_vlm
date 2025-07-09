@@ -4,6 +4,7 @@ import cors from 'cors';
 import path from 'path';
 import openAIRoute from "./routes/openAI"
 import chatLogRoute from "./routes/chatLog"
+import tokenRoute from "./routes/token"
 import mongoose from "mongoose";
 import {databaseLink, config} from "./database";
 
@@ -27,6 +28,7 @@ dotenv.config();
 
   app.use("/api", openAIRoute)
   app.use("/api/db", chatLogRoute)
+  app.use("/api/token", tokenRoute)
 
 
   app.listen(port, () => {

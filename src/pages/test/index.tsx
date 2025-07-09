@@ -13,11 +13,12 @@ import { useDeviceOrientation } from '../../hooks/useDeviceOrientation.ts';
 import Webcam from 'react-webcam';
 import CallAccessARideButton from "../../components/call.tsx"
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
+import { createSpeechRecognitionPonyfill } from 'web-speech-cognitive-services';
+import { getToken } from '../../api/token.ts';
 
 
 
 export default function Test() {
-    const webcamRef = useRef<Webcam>(null);
     const camera = useRef<CameraType>(null);
     const isMobile = useMediaQuery('(max-width:600px)');
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -44,8 +45,6 @@ export default function Test() {
     }>({ alpha: null, beta: null, gamma: null });
     const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('photo');
     const [isRecording, setIsRecording] = useState(false);
-    const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
-    const [history, setHistory] = useState<string[]>([]);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const videoStreamRef = useRef<MediaStream | null>(null);
     const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -53,14 +52,30 @@ export default function Test() {
     const { orientation, requestAccess } = useDeviceOrientation();
     const timeoutRef = useRef<number>();
     const HOLD_DELAY = 600;
-    const canvasRef = useRef<HTMLCanvasElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const {
         transcript,
         listening,
         resetTranscript,
-        browserSupportsSpeechRecognition
+        browserSupportsSpeechRecognition,
     } = useSpeechRecognition();
+
+    useEffect(() => {
+        (async function () {
+                    const azureToken = await getToken();
+                    if (azureToken && azureToken.token && azureToken.region) {
+                        const { SpeechRecognition: AzureSpeechRecognition } = createSpeechRecognitionPonyfill({
+                            credentials: {
+                                region: azureToken.region,
+                                authorizationToken: azureToken.token,
+                            }
+                        });
+                    SpeechRecognition.applyPolyfill(AzureSpeechRecognition);
+                    console.log(SpeechRecognition);
+                    }
+        })()
+    },[])
+
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((pos) => {
@@ -78,6 +93,7 @@ export default function Test() {
         // console.log(orientation)
 
 
+        
         if (orientation) {
             setCurrentOrientation({ alpha: orientation.alpha, beta: orientation.beta, gamma: orientation.gamma });
             // console.log(currentOrientation)
@@ -86,7 +102,7 @@ export default function Test() {
         }
         try{
         navigator.mediaDevices
-            .getUserMedia({ video: { facingMode: 'environment' } })
+            .getUserMedia({ video: { facingMode: 'environment' }, audio: true})
             .then(stream => {
                 videoStreamRef.current = stream;
                 if (videoRef.current) {
@@ -149,29 +165,7 @@ export default function Test() {
     }, [transcript]);
 
 
-    // -------------------------------------------------------------------------------------------------------------------
-    // converting WebM to MP4 Conversion for video format
-    // const convertWebMToMP4 = async (webmBlob: Blob): Promise<Blob> => {
-    //     const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
-    //     const ffmpeg = createFFmpeg({ log: true });
 
-    //     await ffmpeg.load();
-
-    //     // Convert the WebM Blob to MP4
-    //     const webmFile = new File([webmBlob], 'video.webm');
-    //     const webmBuffer = await fetchFile(webmFile);
-    //     ffmpeg.FS('writeFile', 'input.webm', webmBuffer);
-
-    //     // Run the conversion
-    //     await ffmpeg.run('-i', 'input.webm', 'output.mp4');
-
-    //     // Get the converted file
-    //     const mp4Data = ffmpeg.FS('readFile', 'output.mp4');
-    //     const mp4Blob = new Blob([mp4Data.buffer], { type: 'video/mp4' });
-
-    //     return mp4Blob;
-    // };
-    // ----------------------------------------------------------------------------------------------------------------------
     // detect if user is on iOS (Safari)
     const isIOS = () => {
         return /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -425,28 +419,28 @@ export default function Test() {
     }
     // -------------------------------------------------------------------------------------------------------------------
     //speech to text- Speech recognition
-    const startListening2 = () => {
-        if (!('webkitSpeechRecognition' in window)) {
-            alert('Speech recognition is not supported in your browser.');
-            return;
-        }
+    // const startListening2 = () => {
+    //     if (!('webkitSpeechRecognition' in window)) {
+    //         alert('Speech recognition is not supported in your browser.');
+    //         return;
+    //     }
 
-        const recognition = new (window as any).webkitSpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
+    //     const recognition = new (window as any).webkitSpeechRecognition();
+    //     recognition.continuous = false;
+    //     recognition.interimResults = false;
+    //     recognition.lang = 'en-US';
 
-        recognition.onstart = () => setIsListening(true); // Update UI state
-        recognition.onend = () => setIsListening(false);
+    //     recognition.onstart = () => setIsListening(true); // Update UI state
+    //     recognition.onend = () => setIsListening(false);
 
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
-            const transcript = event.results[0][0].transcript;
-            setUserInput(transcript);  // Update userInput with the transcribed text
-        };
+    //     recognition.onresult = (event: SpeechRecognitionEvent) => {
+    //         const transcript = event.results[0][0].transcript;
+    //         setUserInput(transcript);  // Update userInput with the transcribed text
+    //     };
 
-        recognitionRef.current = recognition;
-        recognition.start();
-    };
+    //     recognitionRef.current = recognition;
+    //     recognition.start();
+    // };
     function startListening(){
         if (!browserSupportsSpeechRecognition) {
             alert('Speech recognition is not supported in your browser.');
@@ -457,17 +451,17 @@ export default function Test() {
             SpeechRecognition.startListening({ continuous: true, language: 'en-US' });
             setIsListening(true);
         } else {
-            SpeechRecognition.stopListening();
+            SpeechRecognition.abortListening();
             setIsListening(false);
         }
     }
 
     const stopListening = () => {
-        if (recognitionRef.current) {
-            recognitionRef.current.stop();
-            setIsListening(false);
-        }
-        SpeechRecognition.stopListening();
+        // if (recognitionRef.current) {
+        //     recognitionRef.current.stop();
+        //     setIsListening(false);
+        // }
+        SpeechRecognition.abortListening();
         setIsListening(false);
         // setUserInput(transcript); // Update userInput with the final transcript
         
@@ -618,30 +612,6 @@ export default function Test() {
                 {/* Condition for displaying either camera or video view depending on whether the image or videoBlob exists */}
                 {!image && (!videoBlob || videoBlob.size == 0) ? (
                     <>
-                    {/*}
-                    <Box sx={{width: '100%', textAlign: 'center', border: '2px solid white',borderRadius: '12px'}}>
-                        {/* Display the Camera component on both desktop/mobile }
-                        {cameraMode === 'photo'  ? ( 
-                        <Box sx={{width: '100%', height: 'auto', borderRadius: '12px', overflow: 'hidden',textAlign: 'center'}}>
-                            <Camera
-                            aspectRatio={4 / 3}
-                            facingMode={'environment'}
-                            ref={camera}
-                            aria-label="Camera viewfinder"
-                            errorMessages={{}}
-                            />
-                        </Box>
-                        ) : (
-                        <video
-                            ref={videoRef}
-                            autoPlay
-                            muted
-                            aria-label="Camera video feed"
-                            style={{width: '100%', borderRadius: '12px', overflow: 'hidden'}}
-                        />
-                        )}
-                    </Box> */ }
-                        {/* ----------------------------------------------------------------------------------------------------------- */}
                         {/* Upload file button for desktop */}
                         {!isMobile && (
                             <AccessibleButton
@@ -773,30 +743,6 @@ export default function Test() {
                         {/* <p>Buddy Walk</p> this text is a conditon that helps the video render */}
                         {/* Video Preview */}
                         <Box sx={{ width: '100%', maxWidth: '600px', textAlign: 'center' }}>
-                            {/* {(videoBlob?.size && videoBlob?.size > 0) ? (
-                                <video
-                                    src={URL.createObjectURL(videoBlob)}
-                                    controls
-                                    autoPlay
-                                    playsInline
-                                    muted  // Ensures video autoplay works on mobile
-                                    aria-label="Recorded video"
-                                    style={{
-                                        width: '100%',
-                                        height: isMobile ? 'auto' : '60vh',
-                                        borderRadius: '12px',
-                                        overflow: 'hidden',
-                                        border: '4px solid white',
-                                    }}
-                                />
-                            ) : (
-                                <img
-                                    src={image as string}
-                                    alt="Taken photo"
-                                    aria-hidden="true"
-                                    style={{ width: '100%', borderRadius: '12px', border: '4px solid white', }}
-                                />
-                            )} */}
                             <AccessibleButton
                                 onPointerUp={handleRetake}
                                 aria-label="Retake photo or video"
