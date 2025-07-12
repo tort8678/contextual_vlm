@@ -136,17 +136,32 @@ export class OpenAIService {
       }
 
       try {
-        const places = await this.parseUserRequest(ctx, content.text, content.coords.latitude, content.coords.longitude)
-        console.log(places!.choices[0].message)
+        const parsedRequest = await this.parseUserRequest(ctx, content.text, content.coords.latitude, content.coords.longitude)
+        console.log(parsedRequest?.choices[0].message)
         //determine if chat gpt is returning an api link
-        if (places && places.choices.length > 0 && places.choices[0].message.tool_calls && places.choices[0].message.tool_calls!.length > 0) {
-          //console.log(places.choices[0].message.tool_calls![0].function)
-          const parsedArgs = JSON.parse(places.choices[0].message.tool_calls![0].function.arguments)
+        if (parsedRequest && parsedRequest.choices.length > 0 && parsedRequest.choices[0].message.tool_calls && parsedRequest.choices[0].message.tool_calls!.length > 0) {
+          console.log(parsedRequest.choices[0].message.tool_calls![0].function.name)
+          const parsedArgs = JSON.parse(parsedRequest.choices[0].message.tool_calls![0].function.arguments)
           //get link
           const {link} = parsedArgs;
           console.log(link + `&key=${process.env.GOOGLE_API_KEY}`)
-          if (link !== undefined && places.choices[0].message.tool_calls![0].function.name !== "generateTrainInformation") {
+          // console.log(places.choices[0].message.tool_calls![0].function.name)
+          if (link !== undefined && parsedRequest.choices[0].message.tool_calls![0].function.name !== "generateTrainInformation") {
             //use link
+            if (parsedRequest.choices[0].message.tool_calls![0].function.name === "getCrossStreets") {
+              console.log(link)
+              const completeLink = link + `&key=${process.env.GOOGLE_API_KEY}`;
+              console.log(completeLink)
+              userContent.push({
+                type: 'image_url',
+                image_url: {
+                  url: completeLink,
+                  detail: 'low',
+                }
+              });
+              // console.log(userContent);
+            }
+            else {
             const places: any = await axios.get(link + `&key=${process.env.GOOGLE_API_KEY}`);
             //if its giving back a nearby places link
             if (places.data.results) {
@@ -180,7 +195,14 @@ export class OpenAIService {
                 relevantData += `Step ${i + 1}) ${places.data.routes[0].legs[0].steps[i].html_instructions} \n`
               }
               systemContent += relevantData
-              //console.log(systemContent)
+              const routePoints: { lat: number, lng: number  }[] = [{lat:places.data.routes[0].legs[0].steps[0].start_location.lat, lng:places.data.routes[0].legs[0].steps[0].start_location.lng}]
+              routePoints.push(...places.data.routes[0].legs[0].steps.map((step: { start_location: { lat: number, lng: number }, end_location: { lat: number, lng: number } }) => ({
+                lat: step.end_location.lat, lng: step.end_location.lng
+              })));
+              let staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?&size=640x640&maptype=roadmap&path=color:0x0000ff|weight:5|`;
+              staticMapUrl += routePoints.map(point => `${point.lat},${point.lng}`).join('|');
+              staticMapUrl += `&key=${process.env.GOOGLE_API_KEY}`;
+              console.log(staticMapUrl)
             }
             //if its giving back distance matrix link
             else if(places.data.rows){
@@ -189,10 +211,11 @@ export class OpenAIService {
               //console.log(systemContent)
             }
           }
-          //if its using doorfront api 
-          else if (places.choices[0].message.tool_calls![0].function.name === "useDoorfrontAPI") {
+        }
+          //if its using doorfront api
+          else if (parsedRequest.choices[0].message.tool_calls![0].function.name === "useDoorfrontAPI") {
             //use doorfront api
-            const parsedArgs = JSON.parse(places.choices[0].message.tool_calls![0].function.arguments)
+            const parsedArgs = JSON.parse(parsedRequest.choices[0].message.tool_calls![0].function.arguments)
             //get link
             const {address} = parsedArgs;
             // console.log(address)
@@ -217,10 +240,10 @@ export class OpenAIService {
               relevantData = 'Data on this address has not been collected yet. Let the user know if they want detailed information on this address, they can visit doorfront.org and request it be added.';
             }
           }
-          else if (places.choices[0].message.tool_calls![0].function.name === "getNearbyFeatures") {
-            const parsedArgs = JSON.parse(places.choices[0].message.tool_calls![0].function.arguments);
+          else if (parsedRequest.choices[0].message.tool_calls![0].function.name === "getNearbyFeatures") {
+            const parsedArgs = JSON.parse(parsedRequest.choices[0].message.tool_calls![0].function.arguments);
             if (parsedArgs.address) {
-              //console.log(parsedArgs.address);
+              console.log(parsedArgs.address);
               
             }
             const features = await getNearbyFeatures(content.coords.latitude, content.coords.longitude, 0.06);
@@ -231,7 +254,7 @@ export class OpenAIService {
             relevantData = `Nearby Features for location (${content.coords.latitude}, ${content.coords.longitude}):\n`;
             relevantData += `Trees: ${trees.length}, Sidewalk Materials: ${sidewalkMaterials.length}, Pedestrian Ramps: ${pedestrianRamps.length}`;
             systemContent += `\n${relevantData}`;
-            let staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?&zoom=19&size=640x640&maptype=roadmap`;
+            let staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?&zoom=18&size=640x640&maptype=roadmap`;
             // Add user location marker
             staticMapUrl += `&markers=color:blue%7Clabel:U%7C${content.coords.latitude},${content.coords.longitude}`;
             staticMapUrl += `&markers=color:green%7Clabel:T%7C${trees.map(tree => `${tree.location.coordinates[1]},${tree.location.coordinates[0]}`).join('%7C')}`;
@@ -261,7 +284,8 @@ export class OpenAIService {
             staticMapUrl += `&key=${process.env.GOOGLE_API_KEY}`;
 
             console.log(staticMapUrl);
-          }
+          } 
+
         } else console.log("No tool calls found in OpenAI response");
         // const places = await fetchNearbyPlaces(content.coords.latitude, content.coords.longitude);
         // nearbyPlaces = places.map((place: { name: string }) => place.name).join(', ');
@@ -294,9 +318,9 @@ export class OpenAIService {
       openAIHistory.push({input: content.text, output: chatCompletion.choices[0].message.content as string, data: relevantData});
       res.status(200).json({output: chatCompletion.choices[0].message.content, history: openAIHistory});
     }
-    catch (e) {
+    catch (e: any) {
       console.error('Error with OpenAI API request:', e);
-      res.status(500).json({error: 'Error processing your request'});
+      res.status(500).json({error: 'Error processing your request: ' + e.message});
     }
   }
 // ----------------------------------------------------------------------------------------------------------------

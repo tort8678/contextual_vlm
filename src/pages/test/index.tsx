@@ -107,8 +107,6 @@ export default function Test() {
             // console.log(currentOrientation)
         })
         // console.log(orientation)
-
-
         
         if (orientation) {
             setCurrentOrientation({ alpha: orientation.alpha, beta: orientation.beta, gamma: orientation.gamma });
@@ -117,24 +115,34 @@ export default function Test() {
             setCurrentOrientation({ alpha: null, beta: null, gamma: null });
         }
         try{
-        navigator.mediaDevices
-            .getUserMedia({ video: { facingMode: 'environment' }})
-            .then(stream => {
-                videoStreamRef.current = stream;
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                    videoRef.current.playsInline = true; // Ensure video plays inline on iOS
-                    videoRef.current.muted = true;
-                }
-            })
-            .catch(console.error);
-            
+            navigator.permissions.query({ name: 'camera' }).then(result => {
+                if(result.state === 'prompt') 
+                    navigator.mediaDevices
+                        .getUserMedia({ video: { facingMode: 'environment' }})
+                        .then(stream => {
+                            videoStreamRef.current = stream;
+                            if (videoRef.current) {
+                                videoRef.current.srcObject = stream;
+                                videoRef.current.playsInline = true; // Ensure video plays inline on iOS
+                                videoRef.current.muted = true;
+                            }
+                        })
+                        .catch(console.error);
+                    })
         } catch (error) {
             console.error("Error accessing the camera:", error);
         }
         try{
-            navigator.mediaDevices
-                .getUserMedia({ audio: true })
+            navigator.permissions.query({ name: 'microphone' }).then(result => {
+                if (result.state === 'granted') {
+                    // Permission already granted — proceed without prompt
+                } else if (result.state === 'prompt') {
+                    navigator.mediaDevices
+                        .getUserMedia({ audio: true })
+                } else if (result.state === 'denied') {
+                    // Permission denied — show instructions to enable manually
+                }
+                });
         } catch (error) {  
             console.error("Error accessing the mic:", error);
         }
@@ -229,7 +237,7 @@ export default function Test() {
                     else speak("Video not captured. Please hold button for longer.")
                     
                     setVideoBlob(videoBlob);
-                    console.log(navigator.vibrate(200))
+                    // console.log(navigator.vibrate(200))
                 };
 
                 mediaRecorder.start();
@@ -416,7 +424,7 @@ export default function Test() {
             if (res) {
                 //console.log('Received response from OpenAI:', res);
                 setOpenAIResponse(res.output);
-                navigator.vibrate([100,100])
+                //navigator.vibrate([100,100])
             }
 
         } catch (e) {
@@ -483,18 +491,17 @@ export default function Test() {
     //         SpeechRecognition.abortListening();
     //     }
     // }
-    const stopListening = () => {
-        if (recognitionRef.current) {
-            recognitionRef.current.stop();
-            setIsListening(false);
-        }
-    }
     // const stopListening = () => {
-    //     console.log("transcript", transcript)
-    //     SpeechRecognition.stopListening();
-    //     setIsListening(false);
-    //     // setUserInput(transcript); // Update userInput with the final transcript
-    // };
+    //     if (recognitionRef.current) {
+    //         recognitionRef.current.stop();
+    //         setIsListening(false);
+    //     }
+    // }
+    const stopListening = () => {
+        recognitionRef.current?.stop();
+        setIsListening(false);
+        // setUserInput(transcript); // Update userInput with the final transcript
+    };
     // -------------------------------------------------------------------------------------------------------------------
     const handleCapture = (target: EventTarget & HTMLInputElement) => {
         if (target.files) {
@@ -562,7 +569,7 @@ export default function Test() {
                 speechSynthesis.cancel();
                 speak("Image captured.")
                 setUserInput('Describe the image');
-                navigator.vibrate(200)
+                // navigator.vibrate(200)
             } }catch (error) {
                 console.error('Failed to capture image. ', error);
                 // fileInputRef.current?.click();

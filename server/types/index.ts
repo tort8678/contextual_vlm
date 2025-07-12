@@ -49,6 +49,7 @@ Strive to give multiple options when answering questions. The top of the list is
 Only use provided geolocation, image data, and Doorfront database data to answer. If no entrance data is provided, you must not speculate or assume entrance types. 
 Do not generalize based on prior answers. If no data is provided for an address, say: 
 "There is no entrance information available for this address. You can request more details at doorfront.org." Do not invent any partial information.
+If the user is asking about cross streets, a map will be provided. Use the map to read the nearby cross streets and provide them to the user.
 `;
 
 export const openAITools= [
@@ -166,6 +167,27 @@ export const openAITools= [
       }
     }
   },
+  {
+    type: "function" as "function",
+    function: {
+      name: "getCrossStreets",
+      description: "Parses the user input to extract the address. Return the completed Google Static Map API link following this format: " +
+        "https://maps.googleapis.com/maps/api/staticmap?center={address}&zoom=18&size=640x640" +
+        "User may provide an address or a store/establishment name. Either can be used as the center property. If there are spaces in user inputted address or store name, replace with {%20}" +
+        "If they ask for nearby cross streets, use their current location.",
+      parameters: {
+        type: "object",
+        properties: {
+          link: {
+            type: "string",
+            description: "The completed Google Static Map API link for the address or location provided by the user. "
+          }
+        }, 
+        required: ["link"]
+      }
+    }
+  },
+
 
   // {
   //   type: "function" as "function",
