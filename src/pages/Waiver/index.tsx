@@ -24,7 +24,14 @@ const Welcome: React.FC = () => {
   const navigate = useNavigate();
 
   const handleAgree = () => {
-    navigate('/test'); // Navigate to enable page
+    if (localStorage.getItem('name')) {
+      console.log('Name is set:', localStorage.getItem('name'));
+      // If a name is set, navigate to the main page
+      navigate('/main');
+    } else {
+      // If no name is set, navigate to the name setting page
+      navigate('/name');
+    }
   };
 
   const handleDisagree = () => {

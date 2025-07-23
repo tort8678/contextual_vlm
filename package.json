@@ -1,7 +1,7 @@
 {
-  "name": "contextual-vlm",
+  "name": "Buddy Walk",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.5.0",
   "scripts": {
     "dev": "concurrently \"npm run frontend \" \"npm run backend \" ",
     "build": "vite build && npm run server-build",

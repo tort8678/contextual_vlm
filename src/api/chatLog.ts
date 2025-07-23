@@ -10,7 +10,12 @@ export interface messageInterface {
   flag?: boolean,
   flag_reason?: string
 }
-export async function createChatLog(body:messageInterface){
+
+export interface chatLogInterface {
+  messages: messageInterface[],
+  user?: string
+}
+export async function createChatLog(body:chatLogInterface){
   try{
     const result = await baseRequest.post("/db/createChatLog", body);
     // console.log(result)

@@ -31,7 +31,7 @@ export async function getPanoramaData(ctx: AppContext, address: string) {
         const collection = db.collection(collectionName);
         const data = await collection.findOne(
             { address:{$regex: address, $options: 'i' }}, 
-            { projection: {url:1, human_labels:{$slice:1}, creator:1,address:1 }})
+            { projection: {url:1, human_labels:{$slice:1}, creator:1,address:1, location: 1 }})
         if (data) {
             console.log("Panorama data fetched successfully for address:", address);
             // res.status(200).json(data);

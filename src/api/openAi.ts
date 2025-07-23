@@ -1,5 +1,5 @@
 import axios, {AxiosResponse} from "axios";
-import {RequestData} from "../pages/test/types.ts";
+import {RequestData} from "../pages/main/types.ts";
 
 const baseRequest = axios.create({baseURL: "/api"});
 

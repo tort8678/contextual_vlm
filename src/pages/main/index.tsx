@@ -11,7 +11,6 @@ import ReportMessage from '../../components/ReportMessage.tsx';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useDeviceOrientation } from '../../hooks/useDeviceOrientation.ts';
 import CallAccessARideButton from "../../components/call.tsx"
-// import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import { createSpeechRecognitionPonyfill } from 'web-speech-cognitive-services';
 import { getToken } from '../../api/token.ts';
 
@@ -52,45 +51,37 @@ export default function Test() {
     const timeoutRef = useRef<number>();
     const HOLD_DELAY = 600;
     const fileInputRef = useRef<HTMLInputElement>(null);
-    // const {
-    //     transcript,
-    //     listening,
-    //     resetTranscript,
-    //     browserSupportsSpeechRecognition,
-    //     isMicrophoneAvailable
-    // } = useSpeechRecognition();
+    const [lastError, setLastError] = useState<string>("");
 
     useEffect(() => {
         (async function () {
-                    const azureToken = await getToken();
-                    if (azureToken && azureToken.token && azureToken.region) {
-                        const { SpeechRecognition } = createSpeechRecognitionPonyfill({
-                            credentials: {
-                                region: azureToken.region,
-                                authorizationToken: azureToken.token,
-                            }
-                        });
-                    // SpeechRecognition.applyPolyfill(AzureSpeechRecognition);
-                    // console.log(SpeechRecognition);
-                    const recognition = new SpeechRecognition();
-
-                    recognition.continuous = true;
-                    recognition.interimResults = false;
-                    recognition.lang = 'en-US';
-
-                    recognition.onstart = () => setIsListening(true);
-                    recognition.onend = () => setIsListening(false);
-                    recognition.onerror = (event) => console.error('Speech recognition error:', event.error);
-                    recognition.onresult = (event) => {
-                        const lastResultIndex = event.results.length - 1;
-                        const transcript = event.results[lastResultIndex]![0]!.transcript;
-                        setUserInput(transcript);
-                    };
-
-                    recognitionRef.current = recognition;
+            const azureToken = await getToken();
+            if (azureToken && azureToken.token && azureToken.region) {
+                const { SpeechRecognition } = createSpeechRecognitionPonyfill({
+                    credentials: {
+                        region: azureToken.region,
+                        authorizationToken: azureToken.token,
                     }
+                });
+                const recognition = new SpeechRecognition();
+
+                recognition.continuous = true;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => setIsListening(true);
+                recognition.onend = () => setIsListening(false);
+                recognition.onerror = (event) => console.error('Speech recognition error:', event.error);
+                recognition.onresult = (event) => {
+                    const lastResultIndex = event.results.length - 1;
+                    const transcript = event.results[lastResultIndex]![0]!.transcript;
+                    setUserInput(transcript);
+                };
+
+                recognitionRef.current = recognition;
+            }
         })()
-    },[])
+    }, [])
 
 
     useEffect(() => {
@@ -107,18 +98,18 @@ export default function Test() {
             // console.log(currentOrientation)
         })
         // console.log(orientation)
-        
+
         if (orientation) {
             setCurrentOrientation({ alpha: orientation.alpha, beta: orientation.beta, gamma: orientation.gamma });
             // console.log(currentOrientation)
         } else {
             setCurrentOrientation({ alpha: null, beta: null, gamma: null });
         }
-        try{
+        try {
             navigator.permissions.query({ name: 'camera' }).then(result => {
-                if(result.state === 'prompt') 
+                if (result.state === 'prompt')
                     navigator.mediaDevices
-                        .getUserMedia({ video: { facingMode: 'environment' }})
+                        .getUserMedia({ video: { facingMode: 'environment' } })
                         .then(stream => {
                             videoStreamRef.current = stream;
                             if (videoRef.current) {
@@ -128,11 +119,11 @@ export default function Test() {
                             }
                         })
                         .catch(console.error);
-                    })
+            })
         } catch (error) {
             console.error("Error accessing the camera:", error);
         }
-        try{
+        try {
             navigator.permissions.query({ name: 'microphone' }).then(result => {
                 if (result.state === 'granted') {
                     // Permission already granted — proceed without prompt
@@ -142,18 +133,16 @@ export default function Test() {
                 } else if (result.state === 'denied') {
                     // Permission denied — show instructions to enable manually
                 }
-                });
-        } catch (error) {  
+            });
+        } catch (error) {
             console.error("Error accessing the mic:", error);
         }
-        return () => {
-            // videoStreamRef.current?.getTracks().forEach(t => t.stop());
-        };
+    }, []);
 
-
-        // return () => {
-        //   window.removeEventListener('deviceorientation', handleOrientation);
-        // };
+    useEffect(() => {
+        window.addEventListener('deviceorientation', function(e: any) {
+            console.log("device orientation", e.webkitCompassHeading);
+        }, false);
     }, []);
 
 
@@ -166,40 +155,39 @@ export default function Test() {
                 speak(openAIResponse)
                 setImage(null)
                 setVideoBlob(null)
-                if (currentChatId === "") {
-                    const res3 = await createChatLog({ input: userInput, output: openAIResponse, imageURL: image as string, location: { lat: coords?.latitude as number, lon: coords?.longitude as number } })
-                    console.log('chatLog', res3)
-                    if (res3) {
-                        setCurrentChatId(res3.data._id)
-                        setCurrentMessageId(res3.data.messages[res3.data.messages.length - 1]._id)
-                    }
-                } else {
-                    const res3 = await addChatToChatLog({
-                        id: currentChatId,
-                        chat: { input: userInput, output: openAIResponse, imageURL: image as string, location: { lat: coords?.latitude as number, lon: coords?.longitude as number } }
-                    })
-                    // console.log('chatLog', res3)
-                    if (res3) {
+                try {
+                    
+                    if (currentChatId === "") {
+                        // Use localStorage to get the name if it exists, otherwise do not include the name
+                        const res3 = localStorage.getItem('name') ? 
+                            await createChatLog({ user: localStorage.getItem('name') as string, messages: [{ input: userInput, output: openAIResponse + lastError, imageURL: image as string, location: { lat: coords?.latitude as number, lon: coords?.longitude as number } }] }) : 
+                            await createChatLog({ messages: [{ input: userInput, output: openAIResponse + lastError, imageURL: image as string, location: { lat: coords?.latitude as number, lon: coords?.longitude as number } }] })
+                        setLastError("")
+                        console.log('chatLog', res3)
+                        if (res3) {
+                            setCurrentChatId(res3.data._id)
+                            setCurrentMessageId(res3.data.messages[res3.data.messages.length - 1]._id)
+                        }
+                    } else {
+                        const res3 = await addChatToChatLog({
+                            id: currentChatId,
+                            chat: { input: userInput, output: openAIResponse + lastError, imageURL: image as string, location: { lat: coords?.latitude as number, lon: coords?.longitude as number } }
+                        })
+                        setLastError("")
+                        // console.log('chatLog', res3)
+                        if (res3) {
 
-                        setCurrentMessageId(res3.data.messages[res3.data.messages.length - 1]._id)
+                            setCurrentMessageId(res3.data.messages[res3.data.messages.length - 1]._id)
+                        }
                     }
+                } catch (error) {
+                    console.error('Error creating chat log:', error);
                 }
                 // console.log(currentMessageId)
             }
         })()
 
     }, [openAIResponse])
-
-    // useEffect(() => {
-    //     setUserInput(transcript);
-    // }, [transcript]);
-
-
-
-    // detect if user is on iOS (Safari)
-    const isIOS = () => {
-        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    };
     // ----------------------------------------------------------------------------------------------------------------------
 
     function startVideoRecording() {
@@ -233,9 +221,9 @@ export default function Test() {
                 // Handle stop recording
                 mediaRecorder.onstop = () => {
                     let videoBlob = new Blob(chunks, { type: "video/mp4" });
-                    if(videoBlob && videoBlob.size > 0) speak("Video captured.")
+                    if (videoBlob && videoBlob.size > 0) speak("Video captured.")
                     else speak("Video not captured. Please hold button for longer.")
-                    
+
                     setVideoBlob(videoBlob);
                     // console.log(navigator.vibrate(200))
                 };
@@ -415,10 +403,6 @@ export default function Test() {
                 coords: customCoords,  // Use the CustomCoords object here
             };
 
-            // if (!data.image) {
-            //   throw new Error('No image data available.');
-            // }
-
             //console.log('Sending request data to backend:', data);
             const res = await sendTextRequest(data)
             if (res) {
@@ -429,6 +413,7 @@ export default function Test() {
 
         } catch (e) {
             console.error('Error sending request to OpenAI:', e);
+            setLastError(e as string)
             setOpenAIResponse('An error occurred while processing your request. Please try again.');
         }
         finally {
@@ -449,58 +434,19 @@ export default function Test() {
     }
     // -------------------------------------------------------------------------------------------------------------------
     //speech to text- Speech recognition
-    const startListening = () => {
+    const startListening = (e: React.PointerEvent) => {
+        e.currentTarget.setPointerCapture(e.pointerId);
         if (!('webkitSpeechRecognition' in window)) {
             alert('Speech recognition is not supported in your browser.');
             return;
         }
-
-        // const recognition = new (window as any).webkitSpeechRecognition();
-        // recognition.continuous = false;
-        // recognition.interimResults = false;
-        // recognition.lang = 'en-US';
-
-        // recognition.onstart = () => setIsListening(true); // Update UI state
-        // recognition.onend = () => setIsListening(false);
-
-        // recognition.onresult = (event: SpeechRecognitionEvent) => {
-        //     const transcript = event.results[0][0].transcript;
-        //     setUserInput(transcript);  // Update userInput with the transcribed text
-        // };
-
-        // recognitionRef.current = recognition;
-        // recognition.start();
         recognitionRef.current?.start();
     };
-    // function startListening(){
-    //     console.log(isMicrophoneAvailable)
-    //     if (!browserSupportsSpeechRecognition) {
-    //         console.error('Speech recognition is not supported in your browser.');
-    //         return;
-    //     }
-    //     if(!isMicrophoneAvailable) {
-    //         console.error('Microphone is not available.');
-    //         speak("Microphone is not available.");
-    //         return;
-    //     }
-    //     resetTranscript(); // Reset the transcript before starting
-    //     console.log("listening... ", listening)
-    //     if (!listening) {
-    //         SpeechRecognition.startListening({ continuous: true, language: 'en-US' });
-    //     } else {
-    //         SpeechRecognition.abortListening();
-    //     }
-    // }
-    // const stopListening = () => {
-    //     if (recognitionRef.current) {
-    //         recognitionRef.current.stop();
-    //         setIsListening(false);
-    //     }
-    // }
-    const stopListening = () => {
+
+    const stopListening = (e: React.PointerEvent) => {
+        e.currentTarget.releasePointerCapture(e.pointerId);
         recognitionRef.current?.stop();
         setIsListening(false);
-        // setUserInput(transcript); // Update userInput with the final transcript
     };
     // -------------------------------------------------------------------------------------------------------------------
     const handleCapture = (target: EventTarget & HTMLInputElement) => {
@@ -556,21 +502,21 @@ export default function Test() {
     }
 
     function handlePointerUp(e: React.PointerEvent) {
-        e.currentTarget.releasePointerCapture(e.pointerId);
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
             timeoutRef.current = undefined;
             // console.log(camera.current)
-            try{
-            const capturedImage = camera.current?.takePhoto() as string;
-            if (capturedImage.length > 0) {
-                // console.log("image captured ", capturedImage)
-                setImage(capturedImage);
-                speechSynthesis.cancel();
-                speak("Image captured.")
-                setUserInput('Describe the image');
-                // navigator.vibrate(200)
-            } }catch (error) {
+            try {
+                const capturedImage = camera.current?.takePhoto() as string;
+                if (capturedImage.length > 0) {
+                    // console.log("image captured ", capturedImage)
+                    setImage(capturedImage);
+                    speechSynthesis.cancel();
+                    speak("Image captured.")
+                    setUserInput('Describe the image');
+                    // navigator.vibrate(200)
+                }
+            } catch (error) {
                 console.error('Failed to capture image. ', error);
                 // fileInputRef.current?.click();
                 setUserInput('Describe the image');
@@ -581,6 +527,7 @@ export default function Test() {
             // otherwise we started recording → stop now
             stopVideoRecording();
         }
+        e.currentTarget.releasePointerCapture(e.pointerId);
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -608,13 +555,15 @@ export default function Test() {
             {/* Blue Section: Take Photo */}
             <BlueSection>
                 {(!(videoBlob?.size && videoBlob?.size > 0) && !image) &&
-                    <div style={{ position: 'absolute',
+                    <div style={{
+                        position: 'absolute',
                         top: 0,
                         left: 0,
                         width: '100%',      // give it real layout size
                         height: '100%',     // or whatever aspect you need
                         opacity: 0,         // fully transparent
-                        pointerEvents: 'none' }}>
+                        pointerEvents: 'none'
+                    }}>
                         <Camera
                             aspectRatio={4 / 3}
                             facingMode={'environment'}
@@ -622,15 +571,15 @@ export default function Test() {
                             aria-label="Camera viewfinder"
                             errorMessages={{}}
                         />
-                         <input
+                        <input
                             ref={fileInputRef}
                             type="file"
                             accept="image/*"
-                            capture="environment"          
+                            capture="environment"
                             onChange={(e) => handleCapture(e.target)}
                             style={{ display: 'none' }}
                         />
-                        
+
                     </div>
                 }
                 <Box
@@ -705,6 +654,7 @@ export default function Test() {
                                         fontWeight: 'bold',
                                         letterSpacing: '0.1em',
                                         height: '10rem',
+                                        width: '100%',
                                         boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
                                         '&:hover': {
                                             backgroundColor: '#e0e0e0',
@@ -715,9 +665,9 @@ export default function Test() {
                                     }}
                                     onPointerDown={handlePointerDown}
                                     onPointerUp={handlePointerUp}
-                                    aria-label="Tap for Picture Hold for Video"
+                                    aria-label="Tap for Picture, Hold for Video"
                                 >
-                                    {isRecording ? "STOP VIDEO" : "START CAPTURE"}
+                                    {isRecording ? "STOP VIDEO" : "CAMERA BUTTON"}
                                 </Button>
                             </Box>
                         )}
@@ -813,14 +763,13 @@ export default function Test() {
                         alignItems: 'center',
                     }}
                 >
-                <AccessibleTypography>Ask a Question</AccessibleTypography>
+                    <AccessibleTypography>Enter A Question Below</AccessibleTypography>
                 </Box>
                 <AccessibleTextField
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     sx={{ bgcolor: 'white', marginY: 2, maxWidth: '550px', borderRadius: '12px', width: '98%' }}
-                    label="Enter a question:"
-                    aria-label="User input"
+                    aria-label="Type Out Your Question Here"
                     fullWidth
                     InputProps={{
                         endAdornment: (
@@ -839,9 +788,9 @@ export default function Test() {
                 />
                 {/* speech to text button below */}
                 <Button
-                    onPointerDown={startListening}
+                    onPointerDown={(e) => startListening(e)}
                     // onPointerDown={()=> SpeechRecognition.startListening}
-                    onPointerUp={stopListening}
+                    onPointerUp={(e) => stopListening(e)}
                     // onPointerUp={() => {SpeechRecognition.stopListening(); console.log(transcript)}}
                     // onTouchStart={startListening}
                     // onTouchEnd={stopListening}
@@ -961,10 +910,10 @@ export default function Test() {
                                     🔊
                                 </span>
                                 Play/Pause Response
-                            </AccessibleButton>  }
+                            </AccessibleButton>}
                             <AccessibleTypography>{openAIResponse}</AccessibleTypography>
                             <ReportMessage openAIResponse={openAIResponse} currentMessageId={currentMessageId} currentChatId={currentChatId} />
-                            
+
                         </Box>
                     )}
 
@@ -973,7 +922,7 @@ export default function Test() {
                     {/* --------------------------------------------------------------------------------------------- */}
 
                     {/*TTS Button with Play/Pause option*/}
-                    
+
                 </div>
             </GreenSection>
             {/* Sticky Call Button */}

@@ -11,6 +11,7 @@ export interface messageInterface {
 }
 export interface chatLogInterface {
   messages: messageInterface[],
+  user?: string,
   date: Date
 }
 
@@ -29,6 +30,7 @@ const MessageSchema = new Schema<messageInterface>({
 
 const ChatLogSchema = new Schema<chatLogInterface>({
   messages: [MessageSchema],
+  user : {type: String, required: false},
   date: {type: Date, default: Date.now}
 })
 

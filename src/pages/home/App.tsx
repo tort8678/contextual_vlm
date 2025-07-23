@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeviceOrientation } from '../../hooks/useDeviceOrientation';
-import OrientationSwitcher from '../../components/OrientationSwitcher';
 import { Box, Button, Typography, Container, Link } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { FaArrowRightLong } from "react-icons/fa6";
@@ -47,10 +46,10 @@ const App: React.FC = () => {
   };
   const { orientation, requestAccess, revokeAccess } = useDeviceOrientation();
  
-    const onToggle = (toggleState: boolean): void => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const result = toggleState ? requestAccess() : revokeAccess();
-    };
+  const onToggle = (toggleState: boolean): void => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const result = toggleState ? requestAccess() : revokeAccess();
+  };
 
 
   // Enable camera using the MediaDevices API

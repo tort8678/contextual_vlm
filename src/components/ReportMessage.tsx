@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
-import { AccessibleButton, AccessibleTextField } from '../pages/test/style';
+import { AccessibleButton, AccessibleTextField } from '../pages/main/style';
 import { useState } from 'react';
 import { flagMessage } from '../api/chatLog';
 

@@ -1,12 +1,12 @@
-import chatLogModel, {messageInterface} from "../database/models/chatLog";
+import chatLogModel, {messageInterface, chatLogInterface} from "../database/models/chatLog";
 import {AppContext} from "../types";
 
 export class ChatLogService {
-  async newChatLog(ctx: AppContext, body: messageInterface) {
+  async newChatLog(ctx: AppContext, body: chatLogInterface) {
     const {res} = ctx;
     try {
 
-      const result = await chatLogModel.create({messages: body});
+      const result = await chatLogModel.create({user: body.user, messages: body.messages});
       if (result) {
         res.status(200).json({
           message: "Created new chat log!",
