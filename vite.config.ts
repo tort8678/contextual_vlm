@@ -13,10 +13,10 @@ export default defineConfig({
   ],
   server: {
     // allows for local testing over https, allows camemra access
-    https: {
-      key: fs.readFileSync('./.cert/key.pem'),
-      cert: fs.readFileSync('./.cert/cert.pem'),
-    },
+    // https: {
+    //   key: fs.readFileSync('./.cert/key.pem'),
+    //   cert: fs.readFileSync('./.cert/cert.pem'),
+    // },
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
