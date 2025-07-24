@@ -1,12 +1,12 @@
 import {ChatLogService} from "../services/chatLog";
 import {Request, Response} from "express";
-import {messageInterface} from "../database/models/chatLog";
+import {messageInterface, chatLogInterface} from "../database/models/chatLog";
 
 const chatLogService = new ChatLogService();
 
 export class ChatLogController {
   async createChatLog(req: Request, res: Response): Promise<void> {
-    const body: messageInterface = req.body;
+    const body: chatLogInterface = req.body;
     await chatLogService.newChatLog({req,res}, body);
   }
 
