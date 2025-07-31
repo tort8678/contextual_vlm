@@ -539,19 +539,23 @@ export default function Test() {
             timeoutRef.current = undefined;
             // console.log(camera.current)
             try {
-                const capturedImage = camera.current?.takePhoto() as string;
-                if (capturedImage.length > 0) {
-                    // console.log("image captured ", capturedImage)
-                    setImage(capturedImage);
-                    speechSynthesis.cancel();
-                    speak("Image captured.")
-                    setUserInput('Describe the image');
-                    // navigator.vibrate(200)
-                }
+                // const capturedImage = camera.current?.takePhoto() as string;
+                // if (capturedImage.length > 0) {
+                //     // console.log("image captured ", capturedImage)
+                //     setImage(capturedImage);
+                //     speechSynthesis.cancel();
+                //     speak("Image captured.")
+                //     setUserInput('Describe the image');
+                //     // navigator.vibrate(200)
+                // }
+                fileInputRef.current?.click();
+                setUserInput('Describe the image');
+                if (image) speak("Image Captured")
             } catch (error) {
                 console.error('Failed to capture image. ', error);
                 fileInputRef.current?.click();
                 setUserInput('Describe the image');
+                if (image) speak("Image Captured")
             }
             //console.log(orientation);
 
