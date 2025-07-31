@@ -82,7 +82,6 @@ const Name: React.FC = () => {
                     background: 'black',
                     color: 'white',
                     textAlign: 'center',
-                    overflow: 'hidden',
                     height: '100dvh', // Fill the entire viewport height.
                 }}
                 aria-label="welcome page container"
@@ -102,7 +101,7 @@ const Name: React.FC = () => {
                             fontWeight: 'bold',
                             letterSpacing: '0.05em',
                             textTransform: 'uppercase',
-                            fontSize: '2.8rem',
+                            fontSize: '2.6rem',
                             lineHeight: 1.2,
                             marginTop: '2vh'
                         }}
@@ -118,7 +117,7 @@ const Name: React.FC = () => {
                         variant="body1"
                         sx={{
                             fontWeight: 'bold',
-                            fontSize: { xs: '1.1rem', sm: '1.4rem', md: '1.5rem' },
+                            fontSize: { xs: '1rem', sm: '1.2rem', md: '1.3rem' },
                             letterSpacing: '0.02em',
                             mb: "5%",
                             px: 1,
@@ -160,8 +159,6 @@ const Name: React.FC = () => {
                             justifyContent: "center",
                             alignItems: "center",
                             width: "fit-content",          // allows it to size based on content
-                            marginTop: "5px",
-                            marginBottom: "16px",
                             border: "none",
                             minWidth: '100%', // minimum width for better touch target
                         }}
