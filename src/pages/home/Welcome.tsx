@@ -41,21 +41,29 @@ const Welcome: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
+      <Box
+      sx={{
+        height: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: 'black',
+        color: 'white',
+        textAlign: 'center',
+      }}
+    >
       <Container
         maxWidth="sm"
         sx={{
+          flex: 1,
+          width: '100%',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           alignItems: 'center',
-          background: 'black',
-          color: 'white',
-          textAlign: 'center',
-          p: { xs: 1, sm: 2 },
-          overflow: 'hidden',
-          height: '100dvh', // Fill the entire viewport height.
+          py: { xs: 1, sm: 2 },
         }}
-        aria-label="welcome page container"
       >
         {/* Header: Logo and Title */}
         <Box
@@ -160,6 +168,7 @@ const Welcome: React.FC = () => {
           </Button>
         </Box>
       </Container>
+      </Box>
     </ThemeProvider>
   );
 };

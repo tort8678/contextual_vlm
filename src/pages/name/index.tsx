@@ -93,12 +93,9 @@ const Name: React.FC = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        mt: { xs: 1, sm: 3 },
-
                         width: '100%',
                     }}
                 >
-
                     <Typography
                         variant="h3"
                         sx={{
@@ -136,9 +133,8 @@ const Name: React.FC = () => {
                     </Typography>
 
                     <AccessibleTextField
-                        sx={{ color: 'black', bgcolor: 'white', marginY: 2, maxWidth: '550px', borderRadius: '12px', width: '98%' }}
+                        sx={{ color: 'black', bgcolor: 'white', marginY: 2, maxWidth: '550px', borderRadius: '12px', width: '93%' }}
                         aria-label="Enter Name Text Field"
-                        fullWidth
                         onChange={(e) => setUserInput(e.target.value)}
                     />
                     <Button

@@ -32,8 +32,8 @@ const CallAccessARideButton: React.FC = () => {
       <style>{`
          .call-button {
            position: fixed;
-           bottom: 20px;
-           right: 20px;
+           bottom: 10px;
+           right: 10px;
            width: 80px;
            height: 80px;
            background-color: white;

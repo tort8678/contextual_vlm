@@ -1,11 +1,12 @@
 import {styled} from "@mui/material/styles";
-import {Box, Button, TextField, Typography} from "@mui/material";
+import {Box, Button, TextareaAutosize, Typography} from "@mui/material";
+
 
 export const AccessibleButton = styled(Button)({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  width: '100%',
+  width: '90%',
   maxWidth: '600px',
   padding: '16px',
   fontSize: '1.5rem',
@@ -32,7 +33,7 @@ export const AccessibleButton = styled(Button)({
   // },
 });
 
-export const AccessibleTextField = styled(TextField)({
+export const AccessibleTextField = styled(TextareaAutosize)({
   '& .MuiInputBase-input': {
     fontSize: '1.5rem', // Increased font size
   },
@@ -45,6 +46,11 @@ export const AccessibleTextField = styled(TextField)({
   '& .Mui-focused .MuiInputLabel-root': {
     color: 'black !important' , // Black label text on focus
   },
+  fontSize: '2rem', // Increased font size for better readability
+  color: 'black',
+  fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+  padding: '12px',
+  resize: 'none',
 });
 
 export const AccessibleTypography = styled(Typography)({
@@ -55,6 +61,7 @@ export const AccessibleTypography = styled(Typography)({
   width: "100%", // Adjusted for full width
   display: 'flex',
   flexDirection: 'column',
+  whiteSpace: 'pre-line'
 });
 
 // styles for sections

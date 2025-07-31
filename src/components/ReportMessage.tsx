@@ -46,17 +46,17 @@ export default function ReportMessage({
         onClose={() => setDialogOpen(false)}
         sx={{ color: 'white' }}
       >
-        <DialogTitle>Report an error in the response</DialogTitle>
+        <DialogTitle sx={{fontSize:"2rem"}}>Report an Error in the Response</DialogTitle>
         <DialogContent>
           <AccessibleTextField
             value={flagReason}
             onChange={(e) => setFlagReason(e.target.value)}
-            sx={{ bgcolor: 'white', marginY: 2, maxWidth: '600px' }}
+            sx={{ bgcolor: 'white', marginY: 2, width: "95%", marginLeft: 0, fontSize: "2rem" }}
             aria-label="Reason for reporting"
-            placeholder="Type a report here"
-            fullWidth
+            placeholder="Type Report"
           />
           <AccessibleButton
+            sx= {{border: "2px"}}
             onClick={() => {
               submitFlag();
               setDialogOpen(false);

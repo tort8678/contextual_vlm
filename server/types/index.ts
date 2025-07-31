@@ -32,31 +32,46 @@ export interface history{
 export const AIPrompt = `You are a assistant to a Blind or Low Vision person, be quick and to the point answering what 
 the user asks. Additional geolocation data is here to orient your systems. Try your best to give a coherent response using a 
 synthesis of provided image data and location data. Previous chat history is provided, please use it when answering questions that refer to a previous 
-chat. Refrain from adding any unnecessary words to your response; just answer the question. If giving 
-directions, list them out.  
-If the user asks about the contents of an image, use the provided image data to answer their question. Only use the provided image data to answer questions about images. 
-Users may refer to an image sent in a previous chat, so use the image data provided in the chat history to answer questions about images as well.
-When the user refers to a video, it's a set of frames as images. Use the frames in order and think of it as a video.
-Do not mention the existence of the frames, the user thinks they sent the full video. Don't use the word frame in your response, just say beginning, middle, or end of the video.
-Given the location and the image, you should be able to pinpoint the users location. If a user requests transportation, prioritize
-identifying the nearest subway or bus stations or relevant transport services. The most important thing is
+chat. Refrain from adding any unnecessary words to your response; just answer the question. Do not give the user latitude or longtitude coordinates, just give them the address or location name.
+Given the location and the image, you should be able to pinpoint the users location. 
+Use provided heading information if available and change compass directions to contextual directions, e.g. if they are facing north: "head straight for 10 feet then make a left" 
+rather than "head north for 10 feet then turn west". Use the compass heading to answer if the user wants to know what direction they are facing. 
+0 degrees = north, 90 = east, 180 = south, andn 270 = west. The most important thing is
 to utilize provided information for your responses rather than generating new information, USE PROVIDED GEOLOCATION INFORMATION WHEN ANSWERING QUESTIONS.
-When asked about entrances or how to enter a building, give all the information to the user that is provided such as door type, knob type, and whether there are stairs or ramps. 
+Do not state the user's current location's
+address unless asked to, do not list ratings unless asked to. Lengthen 'ave', 'st', 'blvd', etc to their full titles: avenue, street, boulevard, etc, for better tts.
+Strive to give multiple options when answering questions. The top of the list is the closest option!
+Only use provided geolocation, image data, and Doorfront database data to answer. Do not invent any partial information.
+`;
+
+export const imagePrompt = `If the user asks about the contents of an image, use the provided base64 image data to answer their question. Only use the provided image data to answer questions about images. 
+Users may refer to an image sent in a previous chat, so use the image data provided in the chat history to answer questions about images as well. If there is no image attached to the request, do not make up any information about an image.
+Do not infer what a potenial image may look like from the geolocation data, only use the provided image data to answer questions about images. If there is no base64 image attached to the request, say "There is no image attached, please try again."
+`
+export const videoPrompt = `When the user refers to a video, it's a set of frames as images. Use the frames in order and think of it as a video.
+Do not mention the existence of the frames, the user thinks they sent the full video. Don't use the word frame in your response, just say beginning, middle, or end of the video.
+If there are no frames provided, do not make up any information about a video. If there are no frames provided, say "There is no video attached, please try again."`
+
+export const nearbyPlacesPrompt = `If a user requests transportation, prioritize
+identifying the nearest subway or bus stations or relevant transport services.`
+
+export const entrancePrompt = `When asked about entrances or how to enter a building, give all the information to the user that is provided such as door type, knob type, and whether there are stairs or ramps. 
 Entrance information is provided with the main type first [door, ramp, knob, etc] then the subtype in parentheses. Ramps and stairs do not have subtypes.
 Use bounding box information (x,y,width,height) to relate features to each other. Example: "The knob is on the right side of the door, and the stairs are to the left of the door."
 If an address does not have entrance information in the doorfront database, do not make up an entrance type, just say that there is no entrance information available and
-advise the user to put in a request at doorfront.org. Do not state the user's current location's
-address unless asked to, do not list ratings unless asked to. Lengthen 'ave', 'st', 'blvd', etc to their full titles: avenue, street, boulevard, etc, for better tts.
-Strive to give multiple options when answering questions. The top of the list is the closest option!
-Only use provided geolocation, image data, and Doorfront database data to answer. If no entrance data is provided, you must not speculate or assume entrance types. 
-Do not generalize based on prior answers. If no data is provided for an address, say: 
-"There is no entrance information available for this address. You can request more details at doorfront.org." Do not invent any partial information.
-If the user is asking about cross streets, a map will be provided. Use the map to read the nearby cross streets and provide them to the user.
-`;
+advise the user to put in a request at doorfront.org.  If no entrance data is provided, you must not speculate or assume entrance types. 
+Do not generalize based on prior answers. If no entrance data is provided for an address, say: 
+"There is no entrance information available for this address. You can request more details at doorfront.org."`
 
 export const directionsPrompt = 
-`When a user asks for directions, you will be provided with step by step directions from Google Maps. If data exists for entrance information, that will be provided as well.
-Additionally, a static map image will be provided to use the provided data to answer the user's question. If no data is provided, do not make up any information. `
+`When a user asks for directions, you will be provided with step by step directions from Google Maps. If giving 
+directions, list them out. If data exists for entrance information, that will be provided as well.
+Additionally, a static map image with markers and the route drawn on will be provided. The markers are helpful landmarks such as trees, subway grates, and more.
+The legend for this map is as follows: green T markers - trees, blue U marker - user starting location, red R marker - pedestrian ramp, orange S marker - subway grate.
+If no data is provided, do not make up any information. 
+Only use the provided Google Maps Step by Step directions, do not create a new route. `
+
+export const crossStreetsPrompt = `If the user is asking about cross streets, a map will be provided. Use the map to read the nearby cross streets and provide them to the user.`
 
 export const openAITools= [
   {
@@ -102,45 +117,46 @@ export const openAITools= [
       }
     }
   },
-  // {
-  //   type: "function" as "function",
-  //   function: {
-  //     name: "generateGoogleDirectionAPILink",
-  //     description: "Generates a Google Directions API link based on user location. Use when a user asks for a direction to a location. If there are spaces in user request, replace with {%20}" +
-  //       "Link Format: https://maps.googleapis.com/maps/api/directions/json?destination={USER_REQUEST}&mode=walking&origin={LAT,LNG}",
-  //     parameters: {
-  //       type: "object",
-  //       properties: {
-  //         link: {
-  //           type: "string",
-  //           description: "The completed Google Directions API link."
-  //         }
-  //       },
-  //       required: ["link"]
-  //     }
-  //   }
-  // },
-    {
+  {
     type: "function" as "function",
     function: {
       name: "generateGoogleDirectionAPILink",
-      description: "Extracts destination from user query to generate a Google Directions API link. Use when a user asks for directions to a location. The user may provide an address or a store/establishment name. Either can be used as the destination.",
+      description: `Generates a Google Directions API link based on user location. Use when a user asks for a direction to a location. 
+      If no city is provided, add "New York" by default. If there are spaces in user request, replace with {%20}
+        Link Format: https://maps.googleapis.com/maps/api/directions/json?destination={USER_REQUEST}&mode=walking&origin={LAT,LNG}`,
       parameters: {
         type: "object",
         properties: {
-          destination: {
+          link: {
             type: "string",
-            description: "The user's requested destination for directions. This can be an address or a store/establishment name."
-          },
-          address:{
-            type: "boolean",
-            description: "Indicates if the destination is an address. If true, the destination is treated as a full address; if false, it is treated as a store/establishment name."
+            description: "The completed Google Directions API link."
           }
         },
-        required: ["destination", "address"]
+        required: ["link"]
       }
     }
   },
+  //   {
+  //   type: "function" as "function",
+  //   function: {
+  //     name: "generateGoogleDirectionAPILink",
+  //     description: "Extracts destination from user query to generate a Google Directions API link. Use when a user asks for directions to a location. The user may provide an address or a store/establishment name. Either can be used as the destination.",
+  //     parameters: {
+  //       type: "object",
+  //       properties: {
+  //         destination: {
+  //           type: "string",
+  //           description: "The user's requested destination for directions. This can be an address or a store/establishment name."
+  //         },
+  //         address:{
+  //           type: "boolean",
+  //           description: "Indicates if the destination is an address. If true, the destination is treated as a full address; if false, it is treated as a store/establishment name."
+  //         }
+  //       },
+  //       required: ["destination", "address"]
+  //     }
+  //   }
+  // },
   {
     type: "function" as "function",
     function: {
@@ -214,6 +230,28 @@ export const openAITools= [
       }
     }
   },
+  {
+    type: "function" as "function",
+    function: {
+      name: "imageDescription",
+      description: "Return if user wants a description of an image.",
+    }
+  },
+  {
+    type: "function" as "function",
+    function: {
+      name: "videoDescription",
+      description: "Return if user wants a description of a video.",
+    }
+  },
+  {
+    type: "function" as "function",
+    function: {
+      name: "historyQuery",
+      description: "Return if user wants information about their chat history.  ",
+    }
+  },
+
 
 
   // {

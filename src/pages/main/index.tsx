@@ -13,8 +13,7 @@ import { useDeviceOrientation } from '../../hooks/useDeviceOrientation.ts';
 import CallAccessARideButton from "../../components/call.tsx"
 import { createSpeechRecognitionPonyfill } from 'web-speech-cognitive-services';
 import { getToken } from '../../api/token.ts';
-
-
+import { playSound, useSound } from 'react-sounds';
 
 export default function Test() {
     const camera = useRef<CameraType>(null);
@@ -52,6 +51,8 @@ export default function Test() {
     const HOLD_DELAY = 600;
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [lastError, setLastError] = useState<string>("");
+    const [showImage, setShowImage] = useState<boolean>(false)
+    const headingRef = useRef<number>(0);
 
     useEffect(() => {
         (async function () {
@@ -69,8 +70,12 @@ export default function Test() {
                 recognition.interimResults = false;
                 recognition.lang = 'en-US';
 
-                recognition.onstart = () => setIsListening(true);
-                recognition.onend = () => setIsListening(false);
+                recognition.onstart = () => {
+                    setIsListening(true);
+                }
+                recognition.onend = () => {
+                    setIsListening(false);
+                };
                 recognition.onerror = (event) => console.error('Speech recognition error:', event.error);
                 recognition.onresult = (event) => {
                     const lastResultIndex = event.results.length - 1;
@@ -82,6 +87,22 @@ export default function Test() {
             }
         })()
     }, [])
+
+    useEffect(()=> {
+        if (isListening) {
+            try{
+                playSound('ui/item_select'); // Play sound when starting listening
+            } catch (error) {
+                console.error('Error playing sound:', error);
+            }
+        } else if (!isListening && recognitionRef.current) {
+            try {
+                playSound('ui/item_deselect'); // Play sound when stopping listening
+            } catch (error) {
+                console.error('Error playing sound:', error);
+            }
+        }
+    }, [isListening])
 
 
     useEffect(() => {
@@ -141,12 +162,19 @@ export default function Test() {
 
     useEffect(() => {
         window.addEventListener('deviceorientation', function(e: any) {
-            console.log("device orientation", e.webkitCompassHeading);
+            if (typeof e.webkitCompassHeading === 'number') {
+                // already 0–360° relative to north
+                headingRef.current = e.webkitCompassHeading
+            } else {
+                // fallback to alpha on Android/Chrome
+                // e.alpha is 0–360°, but measured clockwise from the device’s initial orientation
+                // if you want “compass” you may need to invert it:
+                headingRef.current = e.alpha
+            }
+            console.log('heading (approx):', headingRef.current);
+            
         }, false);
     }, []);
-
-
-
 
     useEffect(() => {
         (async function () {
@@ -386,7 +414,7 @@ export default function Test() {
                 accuracy: coords.accuracy,
                 altitude: coords.altitude,
                 altitudeAccuracy: coords.altitudeAccuracy,
-                heading: coords.heading !== undefined ? coords.heading : null,
+                heading: headingRef.current,
                 speed: coords.speed,
                 orientation: orientation ? {
                     alpha: orientation.alpha !== null ? orientation.alpha : null,
@@ -435,18 +463,22 @@ export default function Test() {
     // -------------------------------------------------------------------------------------------------------------------
     //speech to text- Speech recognition
     const startListening = (e: React.PointerEvent) => {
-        e.currentTarget.setPointerCapture(e.pointerId);
-        if (!('webkitSpeechRecognition' in window)) {
-            alert('Speech recognition is not supported in your browser.');
-            return;
-        }
-        recognitionRef.current?.start();
+        if (!isListening){ 
+            e.currentTarget.setPointerCapture(e.pointerId);
+            
+            if (!('webkitSpeechRecognition' in window)) {
+                alert('Speech recognition is not supported in your browser.');
+                return;
+            }
+            recognitionRef.current?.start();
+        } else recognitionRef.current?.stop();
     };
 
     const stopListening = (e: React.PointerEvent) => {
         e.currentTarget.releasePointerCapture(e.pointerId);
         recognitionRef.current?.stop();
         setIsListening(false);
+        // console.log(useSound('ui/item_deselect')); // Play sound when stopping listening
     };
     // -------------------------------------------------------------------------------------------------------------------
     const handleCapture = (target: EventTarget & HTMLInputElement) => {
@@ -518,7 +550,7 @@ export default function Test() {
                 }
             } catch (error) {
                 console.error('Failed to capture image. ', error);
-                // fileInputRef.current?.click();
+                fileInputRef.current?.click();
                 setUserInput('Describe the image');
             }
             //console.log(orientation);
@@ -551,6 +583,15 @@ export default function Test() {
                 // paddingBottom: '100px',
             }}
         >
+            {/* {showImage &&
+            <Box  height="100vh" width="100vw" color="black">
+                <img src={image as string} style={{width: "100%"}} />
+                <AccessibleButton onClick={()=>setShowImage(false)}>
+                    Close Photo Preview
+                </AccessibleButton>
+                
+            </Box>
+            } */}
 
             {/* Blue Section: Take Photo */}
             <BlueSection>
@@ -590,8 +631,8 @@ export default function Test() {
 
                     }}
                 >
-                    <AccessibleTypography sx={{ alignSelf: "center", marginBottom: '1rem' }}>
-                        {((videoBlob?.size && videoBlob?.size > 0) || image) ? "Image/Video Captured!" : "Tap for Photo, Hold for Video"}
+                    <AccessibleTypography sx={{ alignSelf: "center", marginBottom: '1rem', fontSize: '2rem' }}>
+                        {((videoBlob?.size && videoBlob?.size > 0) || image) ? (videoBlob?.size && videoBlob?.size > 0) ? "Video Captured": "Image Captured" : <>{"Tap for Photo"} <br /> {"Hold for Video"}</>}
                     </AccessibleTypography>
                 </Box>
                 {/* Condition for displaying either camera or video view depending on whether the image or videoBlob exists */}
@@ -645,7 +686,7 @@ export default function Test() {
                                         alignItems: 'center',
                                         padding: '20px',
                                         fontSize: '2rem',
-                                        marginBottom: '16px',
+                                        marginBottom: '2rem',
                                         backgroundColor: 'white',
                                         color: 'black',
                                         borderRadius: '20px',
@@ -653,8 +694,8 @@ export default function Test() {
                                         cursor: 'pointer',
                                         fontWeight: 'bold',
                                         letterSpacing: '0.1em',
-                                        height: '10rem',
-                                        width: '100%',
+                                        height: '8rem',
+                                        width: '90%',
                                         boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
                                         '&:hover': {
                                             backgroundColor: '#e0e0e0',
@@ -665,6 +706,10 @@ export default function Test() {
                                     }}
                                     onPointerDown={handlePointerDown}
                                     onPointerUp={handlePointerUp}
+                                    onPointerCancel={handlePointerUp} // Ensure it stops if finger is moved
+                                    onPointerLeave={handlePointerUp} // Stop if pointer leaves the button
+                                    onPointerOut={handlePointerUp} // Stop if pointer is moved out
+                                    disabled={isRecording} // Disable button while recording
                                     aria-label="Tap for Picture, Hold for Video"
                                 >
                                     {isRecording ? "STOP VIDEO" : "CAMERA BUTTON"}
@@ -728,7 +773,25 @@ export default function Test() {
                     <>
                         {/* <p>Buddy Walk</p> this text is a conditon that helps the video render */}
                         {/* Video Preview */}
+                        
                         <Box sx={{ width: '100%', maxWidth: '600px', textAlign: 'center' }}>
+                            {/* `<AccessibleButton
+                                sx={{
+                                    width: '100%',
+                                    maxWidth: '600px',
+                                    marginTop: '16px',
+                                    marginBottom: '16px',
+                                    '&:hover': { backgroundColor: '#303030', },
+                                    '&:focus': {
+                                        outline: '3px solid #FFA500',
+                                        outlineOffset: '2px',
+                                    },
+                                }}
+                                aria-label="View Captured Photo"
+                                onClick={()=>setShowImage(true)}
+                            >
+                                View Captured Photo
+                            </AccessibleButton>` */}
                             <AccessibleButton
                                 onPointerUp={handleRetake}
                                 aria-label="Retake photo or video"
@@ -744,7 +807,7 @@ export default function Test() {
                                     },
                                 }}
                             >
-                                Retake
+                                Retake Photo
                             </AccessibleButton>
                         </Box>
                     </>
@@ -768,23 +831,22 @@ export default function Test() {
                 <AccessibleTextField
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
-                    sx={{ bgcolor: 'white', marginY: 2, maxWidth: '550px', borderRadius: '12px', width: '98%' }}
+                    sx={{ bgcolor: 'white', marginY: 2, maxWidth: '550px', borderRadius: '12px', width: '90%' }}
                     aria-label="Type Out Your Question Here"
-                    fullWidth
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton
-                                    aria-label="clear text"
-                                    onClick={() => setUserInput("")}
-                                    edge="end"
-                                    sx={{ visibility: userInput ? "visible" : "hidden" }}
-                                >
-                                    <ClearIcon />
-                                </IconButton>
-                            </InputAdornment>
-                        ),
-                    }}
+                    // InputProps={{
+                    //     endAdornment: (
+                    //         <InputAdornment position="end">
+                    //             <IconButton
+                    //                 aria-label="clear text"
+                    //                 onClick={() => setUserInput("")}
+                    //                 edge="end"
+                    //                 sx={{ visibility: userInput ? "visible" : "hidden" }}
+                    //             >
+                    //                 <ClearIcon />
+                    //             </IconButton>
+                    //         </InputAdornment>
+                    //     ),
+                    // }}
                 />
                 {/* speech to text button below */}
                 <Button
@@ -795,6 +857,9 @@ export default function Test() {
                     // onTouchStart={startListening}
                     // onTouchEnd={stopListening}
                     onPointerCancel={stopListening} // Ensure it stops if finger is moved
+                    onPointerLeave={stopListening} // Stop if pointer leaves the button
+                    aria-label="Hold to Ask a Question"
+                    onPointerOut={stopListening} // Stop if pointer is moved out
                     // onPointerCancel={() => SpeechRecognition.stopListening()}
                     style={{
                         padding: "12px 28px",          // shorter height and wider for tap comfort
@@ -809,7 +874,7 @@ export default function Test() {
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
-                        width: "fit-content",          // allows it to size based on content
+                        width: "90%",          // allows it to size based on content
                         marginTop: "5px",
                         marginBottom: "16px",
                         border: "none",
@@ -830,13 +895,13 @@ export default function Test() {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        width: '100%',                 // full width
+                        width: '90%',                 // full width
                         maxWidth: '600px',            // responsive cap
                         height: '80px',               // shorter than 120px but still chunky
                         padding: '20px',
                         fontSize: '2rem',
-                        marginTop: '16px',
-                        marginBottom: '16px',
+                        marginTop: '2rem',
+                        marginBottom: '.5rem',
                         backgroundColor: 'white',
                         color: 'black',
                         borderRadius: '20px',
@@ -881,7 +946,8 @@ export default function Test() {
                         </Box>
                     ) : (
                         <Box aria-live="polite" role="status" sx={{ marginTop: 2, maxWidth: '600px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            {openAIResponse != "" && <AccessibleButton
+                            {openAIResponse != "" && 
+                            <AccessibleButton
                                 onClick={() => {
                                     if (speechSynthesis.speaking) speechSynthesis.cancel(); // Stop TTS if it's currently speaking
                                     else speak(openAIResponse); // Play TTS message
@@ -912,6 +978,11 @@ export default function Test() {
                                 Play/Pause Response
                             </AccessibleButton>}
                             <AccessibleTypography>{openAIResponse}</AccessibleTypography>
+                            {openAIResponse != "" && 
+                            <AccessibleButton onClick={()=> {navigator.clipboard.writeText(openAIResponse); speak("Response copied")}}>
+                                Copy Response
+                            </AccessibleButton>
+                            }
                             <ReportMessage openAIResponse={openAIResponse} currentMessageId={currentMessageId} currentChatId={currentChatId} />
 
                         </Box>

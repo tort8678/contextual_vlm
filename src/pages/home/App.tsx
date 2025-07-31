@@ -45,7 +45,7 @@ const App: React.FC = () => {
     }
   };
   const { orientation, requestAccess, revokeAccess } = useDeviceOrientation();
- 
+
   const onToggle = (toggleState: boolean): void => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const result = toggleState ? requestAccess() : revokeAccess();
@@ -88,37 +88,37 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
-    <Container
-      maxWidth="sm"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'black',
-        color: 'white',
-        textAlign: 'center',
-        padding: 2,
-        minHeight: '100vh', //covers the full viewport height
-      }}
-    >
-      <Typography
-      variant="h3"
-      sx={{
-      fontWeight: 'bold',
-      marginTop: 5,
-      letterSpacing: '0.05em',
-      textAlign: 'center',
-      color: 'white',
-      textTransform: 'uppercase',
-      marginBottom: 3,
-      }}
-      aria-label="User Agreement"
+      <Container
+        maxWidth="sm"
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'black',
+          color: 'white',
+          textAlign: 'center',
+          padding: 2,
+          minHeight: '100vh', //covers the full viewport height
+        }}
       >
-      User Agreement     
-      </Typography>
-{/* code below is for changing langauges,might do for entire app */}
-{/* <FormControl fullWidth sx={{ marginBottom: 2 }}>
+        <Typography
+          variant="h3"
+          sx={{
+            fontWeight: 'bold',
+            marginTop: 5,
+            letterSpacing: '0.05em',
+            textAlign: 'center',
+            color: 'white',
+            textTransform: 'uppercase',
+            marginBottom: 3,
+          }}
+          aria-label="User Agreement"
+        >
+          User Agreement
+        </Typography>
+        {/* code below is for changing langauges,might do for entire app */}
+        {/* <FormControl fullWidth sx={{ marginBottom: 2 }}>
   <InputLabel id="language-select-label" sx={{ color: 'white' }}>Language</InputLabel>
   <Select
     labelId="language-select-label"
@@ -146,128 +146,127 @@ const App: React.FC = () => {
     <MenuItem value="zh">中文</MenuItem>
   </Select>
 </FormControl> */}
-{/* ----------------------------- */}
-      <Box
-      sx={{
-        maxHeight: '250px', // Adjust height as needed
-        overflowY: 'auto',
-        paddingRight: 1,
-        marginBottom: 2,
-        border: '1px solid white',
-        borderRadius: 2,
-      }}
-    >
-      <Typography
-        variant="h5"
-        gutterBottom
-        sx={{
-          fontWeight: 'bold',
-          fontSize: '1.5rem',
-          letterSpacing: '0.05em',
-          textAlign: 'center',
-          color: 'white',
-        }}
-      >
-        This app is designed to assist blind and visually impaired users in navigation and localization.
-        However, due to the limitations of AI, GPS accuracy, and real-world conditions, the app may not
-        always provide correct or real-time information. Users should not rely solely on this app for
-        navigation and should use additional assistive tools. By using this app, you acknowledge that
-        you assume full responsibility for your safety and agree that the developers are not liable for
-        any accidents, injuries, or damages that may occur while using the app. For the detailed Waiver
-        and Disclaimer for AI-Powered Navigation App, please click the link below:<br></br>
-        <Link
-          aria-label="Link to Waiver"
+        {/* ----------------------------- */}
+        <Box
           sx={{
-            color: 'white',
-            textDecorationColor: 'white',
-            fontWeight: '1000',
-            cursor: 'pointer',
+            overflowY: 'auto',
+            paddingRight: 1,
+            marginBottom: 2,
+            border: '1px solid white',
+            borderRadius: 2,
           }}
-          component="button"
-          onClick={() => navigate('/waiver')}
         >
-          Waiver
-        </Link>
-      </Typography>
-    </Box>
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{
+              fontWeight: 'bold',
+              fontSize: '1.5rem',
+              letterSpacing: '0.05em',
+              textAlign: 'center',
+              color: 'white',
+            }}
+          >
+            This app is designed to assist blind and visually impaired users in navigation and localization.
+            However, due to the limitations of AI, GPS accuracy, and real-world conditions, the app may not
+            always provide correct or real-time information. Users should not rely solely on this app for
+            navigation and should use additional assistive tools. By using this app, you acknowledge that
+            you assume full responsibility for your safety and agree that the developers are not liable for
+            any accidents, injuries, or damages that may occur while using the app. For the detailed Waiver
+            and Disclaimer for AI-Powered Navigation App, please click the link below:<br></br>
+            <Link
+              aria-label="Link to Waiver"
+              sx={{
+                color: 'white',
+                textDecorationColor: 'white',
+                fontWeight: '1000',
+                cursor: 'pointer',
+              }}
+              component="button"
+              onClick={() => navigate('/waiver')}
+            >
+              Waiver
+            </Link>
+          </Typography>
+        </Box>
 
-  
-
-      
-      <br></br>
-      <Typography variant="h5"
-                  gutterBottom
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: '1.5rem', //enlarged for readability
-                    letterSpacing: '0.05em',
-                    textAlign: 'center',
-                    color: 'white',
-                  }}
-      >
-        If you agree to the waiver, please enable location, camera, and microphone access to continue
-      </Typography>
 
 
-      <Button
-        variant="contained"
-        onClick={enableLocation}
-        aria-label="Enable location access"
-        sx={{
-          padding: "10px 20px",
-          borderRadius: "20px",
-          border: "none",
-          cursor: "pointer",
-          color: "black",
-          fontSize: '1.1rem',          
-          fontWeight: '900', // Bolder text (options: 400 = normal, 700 = bold, 900 = extra bold)
-          letterSpacing: '0.15em',
-          textAlign: 'center',
-          marginY: 1,
-          width: '100%',
-          backgroundColor: 'white',
-          boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
-          '&:hover': {
-            backgroundColor: '#e0e0e0',
-          },
-          '&:active': {
-            backgroundColor: '#d0d0d0',
-          },
-        }}
-      >
-        {locationEnabled ? 'Location Enabled' : 'Enable Location'}
-      </Button>
 
-      <Button
-        variant="contained"
-        onClick={enableCamera}
-        aria-label="Enable camera access"
-        sx={{
-          padding: "10px 20px",
-          borderRadius: "20px",
-          border: "none",
-          cursor: "pointer",
-          color: "black",
-          fontSize: '1.1rem',          
-          fontWeight: '900', // Bolder text (options: 400 = normal, 700 = bold, 900 = extra bold)
-          letterSpacing: '0.15em',
-          textAlign: 'center',
-          marginY: 1,
-          width: '100%',
-          backgroundColor: 'white',
-          boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
-          '&:hover': {
-            backgroundColor: '#e0e0e0',
-          },
-          '&:active': {
-            backgroundColor: '#d0d0d0',
-          },
-        }}
-      >
-        {cameraEnabled ? 'Camera Enabled' : 'Enable Camera'}
-      </Button>
+        <br></br>
+        <Typography variant="h5"
+          gutterBottom
+          sx={{
+            fontWeight: 'bold',
+            fontSize: '1.5rem', //enlarged for readability
+            letterSpacing: '0.05em',
+            textAlign: 'center',
+            color: 'white',
+          }}
+        >
+          If you agree to the waiver, please enable location, camera, and microphone access to continue
+        </Typography>
 
-      <Button
+
+        <Button
+          variant="contained"
+          onClick={enableLocation}
+          aria-label="Enable location access"
+          sx={{
+            padding: "10px 20px",
+            borderRadius: "20px",
+            border: "none",
+            cursor: "pointer",
+            color: "black",
+            fontSize: '1.1rem',
+            fontWeight: '900', // Bolder text (options: 400 = normal, 700 = bold, 900 = extra bold)
+            letterSpacing: '0.15em',
+            textAlign: 'center',
+            marginY: 1,
+            width: '100%',
+            backgroundColor: 'white',
+            boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+            '&:hover': {
+              backgroundColor: '#e0e0e0',
+            },
+            '&:active': {
+              backgroundColor: '#d0d0d0',
+            },
+          }}
+        >
+          {locationEnabled ? 'Location Enabled' : 'Enable Location'}
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={enableCamera}
+          aria-label="Enable camera access"
+          sx={{
+            padding: "10px 20px",
+            borderRadius: "20px",
+            border: "none",
+            cursor: "pointer",
+            color: "black",
+            fontSize: '1.1rem',
+            fontWeight: '900', // Bolder text (options: 400 = normal, 700 = bold, 900 = extra bold)
+            letterSpacing: '0.15em',
+            textAlign: 'center',
+            marginY: 1,
+            width: '100%',
+            backgroundColor: 'white',
+            boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+            '&:hover': {
+              backgroundColor: '#e0e0e0',
+            },
+            '&:active': {
+              backgroundColor: '#d0d0d0',
+            },
+          }}
+        >
+          {cameraEnabled ? 'Camera Enabled' : 'Enable Camera'}
+        </Button>
+
+        <Button
           variant="contained"
           onClick={enableMicrophone}
           aria-label="Enable microphone access"
@@ -277,7 +276,7 @@ const App: React.FC = () => {
             border: "none",
             cursor: "pointer",
             color: "black",
-            fontSize: '1.1rem',          
+            fontSize: '1.1rem',
             fontWeight: '900', // Bolder text (options: 400 = normal, 700 = bold, 900 = extra bold)
             letterSpacing: '0.15em',
             textAlign: 'center',
@@ -304,42 +303,42 @@ const App: React.FC = () => {
           /> */}
 
 
-      {locationEnabled && cameraEnabled && microphoneEnabled &&(
-        <Button
-          variant="contained"
-          onClick={handleContinue}
-          aria-label="Continue to the next step"
-          sx={{
-            padding: "20px 40px", // Increase the padding to double the size
-            borderRadius: "45px 45px 0 0", // corner radius
-            // borderRadius: "45px 45px 45px 45px", 
-            cursor: "pointer",
-            color: "black",
-            fontSize: '2rem',  
-            fontWeight: '900',
-            letterSpacing: '0.15em',
-            textAlign: 'center',
-            marginY: 1,
-            marginBottom: 0,
-            width: '100%',
-            display: "flex", // Flexbox to align text and icon
-            flexDirection: "column", // Stack the text and icon vertically
-            backgroundColor: 'white',
-            boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
-            '&:hover': {
-              backgroundColor: '#e0e0e0',
-            },
-            '&:active': {
-              backgroundColor: '#d0d0d0',
-            },
-          }}
-        >
-          Continue
-          <FaArrowRightLong size={80}/>
-        </Button>
+        {locationEnabled && cameraEnabled && microphoneEnabled && (
+          <Button
+            variant="contained"
+            onClick={handleContinue}
+            aria-label="Continue to the next step"
+            sx={{
+              padding: "20px 40px", // Increase the padding to double the size
+              borderRadius: "45px 45px 0 0", // corner radius
+              // borderRadius: "45px 45px 45px 45px", 
+              cursor: "pointer",
+              color: "black",
+              fontSize: '2rem',
+              fontWeight: '900',
+              letterSpacing: '0.15em',
+              textAlign: 'center',
+              marginY: 1,
+              marginBottom: 0,
+              width: '100%',
+              display: "flex", // Flexbox to align text and icon
+              flexDirection: "column", // Stack the text and icon vertically
+              backgroundColor: 'white',
+              boxShadow: '2px 2px 10px rgba(0, 0, 0, 0.2)',
+              '&:hover': {
+                backgroundColor: '#e0e0e0',
+              },
+              '&:active': {
+                backgroundColor: '#d0d0d0',
+              },
+            }}
+          >
+            Continue
+            <FaArrowRightLong size={80} />
+          </Button>
         )}
-     
-    </Container>
+
+      </Container>
     </ThemeProvider>
   );
 };
