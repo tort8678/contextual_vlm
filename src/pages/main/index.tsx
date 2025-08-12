@@ -24,7 +24,7 @@ export default function Test() {
     const [openAIResponse, setOpenAIResponse] = useState<string>('');
     const [loading, setLoading] = useState(false); //for the loading bar
     const responseRef = useRef<HTMLDivElement>(null); //to make the page scroll down when submit is clicked
-    const [userInput, setUserInput] = useState<string>('Describe the image'); //-----------------------------
+    const [userInput, setUserInput] = useState<string>(''); //-----------------------------
     const [audioUrl, setAudioUrl] = useState("");
     const [currentChatId, setCurrentChatId] = useState("")
     const [currentMessageId, setCurrentMessageId] = useState("")
@@ -436,6 +436,7 @@ export default function Test() {
             if (res) {
                 //console.log('Received response from OpenAI:', res);
                 setOpenAIResponse(res.output);
+                setUserInput('')
                 //navigator.vibrate([100,100])
             }
 
@@ -894,7 +895,7 @@ export default function Test() {
                 {/* Submit button */}
                 <AccessibleButton
                     onClick={() => sendRequestOpenAI()}
-                    aria-label="Get description"
+                    aria-label="Submit Question"
                     sx={{
                         display: 'flex',
                         justifyContent: 'center',
